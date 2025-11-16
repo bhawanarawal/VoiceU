@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from database import create_db_and_tables
 from routers.organization_router import router as organization_router
+from routers.position_router import router as position_router
 
 app = FastAPI()
 
@@ -8,9 +9,6 @@ app = FastAPI()
 def on_startup():
     create_db_and_tables()
 
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
 app.include_router(organization_router)
+app.include_router(position_router)
+
