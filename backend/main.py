@@ -18,3 +18,8 @@ app = FastAPI(lifespan=lifespan, title="VoiceU Api")
 app.include_router(organization_router)
 app.include_router(position_router)
 app.include_router(affiliation_router)
+
+
+@app.get("/")
+def root():
+    return {"message": "Welcome to the VoiceU!"}
