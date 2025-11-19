@@ -16,6 +16,7 @@ def enable_foreign_keys(dbapi_connection, connection_record):
 def create_db_and_tables():
     from models.affiliation import Affiliation
     from models.organization import Organization
+    from models.position import Position
     SQLModel.metadata.create_all(engine)
 
 
