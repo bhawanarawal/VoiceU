@@ -4,6 +4,9 @@ from database import create_db_and_tables
 from routers.organization_router import router as organization_router
 from routers.position_router import router as position_router
 from routers.affiliation_router import router as affiliation_router
+from routers.election_router import router as election_router
+
+
 
 
 @asynccontextmanager
@@ -18,6 +21,7 @@ app = FastAPI(lifespan=lifespan, title="VoiceU Api")
 app.include_router(organization_router)
 app.include_router(position_router)
 app.include_router(affiliation_router)
+app.include_router(election_router)
 
 
 @app.get("/")
