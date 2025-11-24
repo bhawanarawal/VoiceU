@@ -48,13 +48,13 @@ def update_election(election_id: int, data: ElectionCreate, session: Session = D
     if not election:
         raise HTTPException(status_code=404, detail="Election not found")
 
-    election.org_id = data.org_id
+    election.user_id = data.user_id
+    election.affiliation_id = data.affiliation_id
     election.election_name = data.election_name
     election.start_date = data.start_date
     election.end_date = data.end_date
     election.status = data.status
     election.description = data.description
-    election.type = data.type
     election.updated_at = datetime.now(timezone.utc)
     try:
         session.add(election)
@@ -63,7 +63,7 @@ def update_election(election_id: int, data: ElectionCreate, session: Session = D
         return election
     except IntegrityError:
         session.rollback()
-        raise HTTPException(status_code=400, detail="Invalid org_id")
+        raise HTTPException(status_code=400,  detail="Invalid user_id or affiliation_id")
 
 
 @router.delete("/{election_id}")
