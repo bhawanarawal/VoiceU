@@ -18,6 +18,7 @@ def create_db_and_tables():
     from models.organization import Organization
     from models.position import Position
     from models.election import Election
+    from models.candidate import Candidate
     SQLModel.metadata.create_all(engine)
 
 
