@@ -7,7 +7,7 @@ class OrganizationCreate(BaseModel):
     description: Optional[str] = None
 
 class OrganizationRead(BaseModel):
-    id: int
+    org_id: int
     name: str
     address: Optional[str] = None
     description: Optional[str] = None
