@@ -7,8 +7,7 @@ from routers.affiliation_router import router as affiliation_router
 from routers.election_router import router as election_router
 from routers.candidate_router import router as candidate_router
 from routers.voter_router import router as voter_router
-
-
+from routers.vote_router import router as vote_router
 
 
 
@@ -28,6 +27,7 @@ app.include_router(affiliation_router)
 app.include_router(election_router)
 app.include_router(candidate_router)
 app.include_router(voter_router)
+app.include_router(vote_router)
 
 
 @app.get("/")

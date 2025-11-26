@@ -20,6 +20,7 @@ def create_db_and_tables():
     from models.election import Election
     from models.candidate import Candidate
     from models.voter import Voter
+    from models.vote import Vote
     SQLModel.metadata.create_all(engine)
 
 
