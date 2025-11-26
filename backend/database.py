@@ -21,6 +21,9 @@ def create_db_and_tables():
     from models.candidate import Candidate
     from models.voter import Voter
     from models.vote import Vote
+    from models.result import Result
+
+
     SQLModel.metadata.create_all(engine)
 
 
