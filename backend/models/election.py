@@ -7,7 +7,7 @@ def utc_now():
 
 class Election(SQLModel, table=True):
     election_id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: int #= Field(foreign_key="user.user_id")
+    user_id: int = Field(foreign_key="user.user_id")
     affiliation_id: int = Field(foreign_key="affiliation.affiliation_id")
     election_name: str
     start_date: datetime
