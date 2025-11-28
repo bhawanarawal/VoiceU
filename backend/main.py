@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends
 from sqlmodel import Session
 from database import create_db_and_tables, get_session
+from fastapi.middleware.cors import CORSMiddleware
 
 from routers.organization_router import router as organization_router
 from routers.position_router import router as position_router
@@ -25,6 +26,21 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan, title="VoiceU API")
+
+origins = [
+    "http://localhost:5173", 
+    "http://127.0.0.1:5173",
+
+    
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 app.include_router(organization_router)
