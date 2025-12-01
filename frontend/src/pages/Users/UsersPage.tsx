@@ -23,7 +23,7 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [selectedRole, setSelectedRole] = useState("");
 
-  // Fetch users and roles from backend
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -46,7 +46,7 @@ export default function UsersPage() {
 
   const openModal = (user: User) => {
     setEditingUser(user);
-    // Default to user's first role or first available role
+    
     setSelectedRole(user.roles[0] || (roles.length > 0 ? roles[0].name : ""));
   };
 
@@ -67,7 +67,7 @@ export default function UsersPage() {
 
       if (!res.ok) throw new Error("Failed to assign role");
 
-      // Update frontend state
+      
       setUsers((prev) =>
         prev.map((u) =>
           u.user_id === editingUser.user_id ? { ...u, roles: [selectedRole] } : u
