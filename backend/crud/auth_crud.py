@@ -20,9 +20,13 @@ def create_user(db: Session, user: UserCreate):
         full_name=user.full_name,
         hashed_password=hashed_password
     )
+
     default_role = db.exec(select(Role).where(Role.name == "user")).first()
-    if default_role:
+    
+   
+    if default_role and default_role not in db_user.roles:
         db_user.roles.append(default_role)
+
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -53,11 +57,14 @@ def assign_role_to_user(db: Session, user: User, role_name: str):
     role = get_role_by_name(db, role_name)
     if not role:
         return None
-    if role not in user.roles:
-        user.roles.append(role)
-        db.add(user)
-        db.commit()
-        db.refresh(user)
+
+    if any(r.role_id == role.role_id for r in user.roles):
+        return user
+
+    user.roles.append(role)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
     return user
 
 def get_role_by_name(db: Session, name: str):
