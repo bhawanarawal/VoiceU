@@ -79,12 +79,14 @@ def assign_role(assign: AssignRole, db: Session = Depends(get_session)):
     if not role:
         raise HTTPException(status_code=404, detail="Role not found")
     
-    if role not in user.roles:
-        user.roles.append(role)
-        db.add(user)
-        db.commit()
-        db.refresh(user)
+    user.roles = []
+
+    user.roles.append(role)
     
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
     return {"message": f"Role '{role.name}' assigned to user '{user.username}' successfully."}
 
 @router.delete("/roles/{role_id}", status_code=204)

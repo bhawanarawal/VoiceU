@@ -3,6 +3,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../compon
 import Badge from "../../components/ui/badge/Badge";
 import Button from "../../components/ui/button/Button";
 
+
 interface User {
   user_id: number;
   username: string;
@@ -119,31 +120,36 @@ export default function UsersPage() {
       </div>
 
       {editingUser && (
-        <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-80">
-            <h3 className="text-lg font-semibold mb-4">
-              Assign Role for {editingUser.full_name || editingUser.username}
-            </h3>
-            <select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              className="w-full mb-4 p-2 border rounded"
-            >
-              {roles.map((role) => (
-                <option key={role.role_id} value={role.name}>
-                  {role.name}
-                </option>
-              ))}
-            </select>
-            <div className="flex justify-end gap-2">
-              <Button onClick={closeModal} variant="outline">
-                Cancel
-              </Button>
-              <Button onClick={saveRole}>Save</Button>
-            </div>
-          </div>
-        </div>
-      )}
+  <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50 p-4">
+    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-96 max-w-full relative shadow-lg">
+      <h3 className="text-lg font-semibold mb-6">
+        Assign Role for {editingUser.full_name || editingUser.username}
+      </h3>
+      
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-2">Select Role</label>
+        <select
+          value={selectedRole}
+          onChange={(e) => setSelectedRole(e.target.value)}
+          className="w-full p-3 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          {roles.map((role) => (
+            <option key={role.role_id} value={role.name}>
+              {role.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex justify-end gap-3">
+        <Button onClick={closeModal} variant="outline">
+          Cancel
+        </Button>
+        <Button onClick={saveRole}>Save</Button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
