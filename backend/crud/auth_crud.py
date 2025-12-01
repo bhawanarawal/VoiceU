@@ -28,6 +28,9 @@ def create_user(db: Session, user: UserCreate):
     db.refresh(db_user)
     return db_user
 
+def get_all_users(db: Session):
+    return db.exec(select(User)).all()
+
 def authenticate_user(db: Session, username: str, password: str):
     user = get_user_by_username(db, username)
     if not user or not pwd_context.verify(password, user.hashed_password):
@@ -41,6 +44,21 @@ def create_role(db: Session, name: str, description: str = ""):
     db.commit()
     db.refresh(db_role)
     return db_role
+
+def get_all_roles(db: Session):
+    return db.exec(select(Role)).all()
+
+
+def assign_role_to_user(db: Session, user: User, role_name: str):
+    role = get_role_by_name(db, role_name)
+    if not role:
+        return None
+    if role not in user.roles:
+        user.roles.append(role)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    return user
 
 def get_role_by_name(db: Session, name: str):
     return db.exec(select(Role).where(Role.name == name)).first()
