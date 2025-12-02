@@ -70,24 +70,25 @@ def read_all_roles(db: Session = Depends(get_session)):
     return [RoleRead(role_id=role.role_id, name=role.name) for role in roles]
 
 @router.post("/assign-role")
-def assign_role(assign: AssignRole, db: Session = Depends(get_session)):
+def assign_roles(assign: AssignRole, db: Session = Depends(get_session)):
     user = db.get(User, assign.user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
-    role = get_role_by_name(db, assign.role_name)
-    if not role:
-        raise HTTPException(status_code=404, detail="Role not found")
-    
+
     user.roles = []
 
-    user.roles.append(role)
-    
+    for role_name in assign.role_names:
+        role = get_role_by_name(db, role_name)
+        if not role:
+            raise HTTPException(status_code=404, detail=f"Role '{role_name}' not found")
+        user.roles.append(role)
+
     db.add(user)
     db.commit()
     db.refresh(user)
 
-    return {"message": f"Role '{role.name}' assigned to user '{user.username}' successfully."}
+    return {"message": "Roles updated successfully", "roles": [r.name for r in user.roles]}
+
 
 @router.delete("/roles/{role_id}", status_code=204)
 def delete_role(role_id: int, db: Session = Depends(get_session)):

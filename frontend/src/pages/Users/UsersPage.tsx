@@ -3,7 +3,6 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../compon
 import Badge from "../../components/ui/badge/Badge";
 import Button from "../../components/ui/button/Button";
 
-
 interface User {
   user_id: number;
   username: string;
@@ -22,9 +21,10 @@ export default function UsersPage() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [selectedRole, setSelectedRole] = useState("");
 
   
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -47,12 +47,23 @@ export default function UsersPage() {
 
   const openModal = (user: User) => {
     setEditingUser(user);
+
     
-    setSelectedRole(user.roles[0] || (roles.length > 0 ? roles[0].name : ""));
+    setSelectedRoles(user.roles);
   };
 
   const closeModal = () => setEditingUser(null);
 
+  
+  const toggleRole = (roleName: string) => {
+    setSelectedRoles((prev) =>
+      prev.includes(roleName)
+        ? prev.filter((r) => r !== roleName)
+        : [...prev, roleName]
+    );
+  };
+
+  
   const saveRole = async () => {
     if (!editingUser) return;
 
@@ -62,7 +73,7 @@ export default function UsersPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_id: editingUser.user_id,
-          role_name: selectedRole,
+          role_names: selectedRoles,
         }),
       });
 
@@ -71,13 +82,14 @@ export default function UsersPage() {
       
       setUsers((prev) =>
         prev.map((u) =>
-          u.user_id === editingUser.user_id ? { ...u, roles: [selectedRole] } : u
+          u.user_id === editingUser.user_id ? { ...u, roles: selectedRoles } : u
         )
       );
+
       closeModal();
     } catch (err) {
       console.error(err);
-      alert("Failed to assign role");
+      alert("Failed to assign roles");
     }
   };
 
@@ -94,7 +106,7 @@ export default function UsersPage() {
               <TableCell isHeader className="px-6 py-3 text-left">ID</TableCell>
               <TableCell isHeader className="px-6 py-3 text-left">Email</TableCell>
               <TableCell isHeader className="px-6 py-3 text-left">Username</TableCell>
-              <TableCell isHeader className="px-6 py-3 text-left">Role</TableCell>
+              <TableCell isHeader className="px-6 py-3 text-left">Roles</TableCell>
               <TableCell isHeader className="px-6 py-3 text-left">Action</TableCell>
             </TableRow>
           </TableHeader>
@@ -105,12 +117,22 @@ export default function UsersPage() {
                 <TableCell className="px-6 py-4">{user.user_id}</TableCell>
                 <TableCell className="px-6 py-4">{user.email}</TableCell>
                 <TableCell className="px-6 py-4">{user.full_name || "-"}</TableCell>
+
+                
                 <TableCell className="px-6 py-4">
-                  <Badge color="primary">{user.roles[0] || "No Role"}</Badge>
+                  <div className="flex gap-2 flex-wrap">
+                    {user.roles.length > 0
+                      ? user.roles.map((r) => (
+                          <Badge key={r} color="primary">{r}</Badge>
+                        ))
+                      : <Badge color="primary">No Role</Badge>
+                    }
+                  </div>
                 </TableCell>
+
                 <TableCell className="px-6 py-4">
                   <Button size="sm" onClick={() => openModal(user)}>
-                    Assign Role
+                    Assign Roles
                   </Button>
                 </TableCell>
               </TableRow>
@@ -119,37 +141,40 @@ export default function UsersPage() {
         </Table>
       </div>
 
-      {editingUser && (
-  <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50 p-4">
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-96 max-w-full relative shadow-lg">
-      <h3 className="text-lg font-semibold mb-6">
-        Assign Role for {editingUser.full_name || editingUser.username}
-      </h3>
       
-      <div className="mb-6">
-        <label className="block text-sm font-medium mb-2">Select Role</label>
-        <select
-          value={selectedRole}
-          onChange={(e) => setSelectedRole(e.target.value)}
-          className="w-full p-3 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          {roles.map((role) => (
-            <option key={role.role_id} value={role.name}>
-              {role.name}
-            </option>
-          ))}
-        </select>
-      </div>
+      {editingUser && (
+        <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-96 max-w-full relative shadow-lg">
+            <h3 className="text-lg font-semibold mb-6">
+              Assign Roles for {editingUser.full_name || editingUser.username}
+            </h3>
 
-      <div className="flex justify-end gap-3">
-        <Button onClick={closeModal} variant="outline">
-          Cancel
-        </Button>
-        <Button onClick={saveRole}>Save</Button>
-      </div>
-    </div>
-  </div>
-)}
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">Select Roles</label>
+
+              <div className="space-y-2">
+                {roles.map((role) => (
+                  <label key={role.role_id} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedRoles.includes(role.name)}
+                      onChange={() => toggleRole(role.name)}
+                    />
+                    <span>{role.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <Button onClick={closeModal} variant="outline">
+                Cancel
+              </Button>
+              <Button onClick={saveRole}>Save</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
