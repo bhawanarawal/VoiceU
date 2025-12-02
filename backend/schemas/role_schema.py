@@ -1,6 +1,6 @@
 
 from pydantic import BaseModel
-from typing import Optional
+from typing import List
 
 class RoleCreate(BaseModel):
     name: str
@@ -11,4 +11,4 @@ class RoleRead(BaseModel):
 
 class AssignRole(BaseModel):
     user_id: int
-    role_name: str
+    role_names: List[str]
