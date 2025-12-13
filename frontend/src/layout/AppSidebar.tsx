@@ -4,7 +4,6 @@ import { Link, useLocation } from "react-router";
 // Assume these icons are imported from an icon library
 import {
   BoxCubeIcon,
-  CalenderIcon,
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
@@ -14,6 +13,7 @@ import {
   PlugInIcon,
   TableIcon,
   UserCircleIcon,
+  GroupIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 
@@ -31,9 +31,12 @@ const navItems: NavItem[] = [
     path: "/",
   },
   {
-    icon: <CalenderIcon />,
-    name: "Calendar",
-    path: "/calendar",
+    name: "Organization",
+    icon: <GroupIcon />,
+    subItems: [
+      { name: "Add Organization", path: "/organization/new" },
+      { name: "View Organizations", path: "/organization" },
+    ],
   },
   {
     icon: <UserCircleIcon />,
@@ -310,30 +313,27 @@ const AppSidebar: React.FC = () => {
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
         }`}
       >
-        <Link to="/">
+        <Link
+          to="/"
+          className="flex items-center justify-center gap-1 font-extrabold"
+        >
           {isExpanded || isHovered || isMobileOpen ? (
             <>
+              <span className="text-blue-700 dark:text-blue-500 text-4xl">
+                Voice<span className="text-gray-900 dark:text-white">U</span>
+              </span>
+
               <img
-                className="dark:hidden"
-                src="/images/logo/logo.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-              <img
-                className="hidden dark:block"
-                src="/images/logo/logo-dark.svg"
-                alt="Logo"
-                width={150}
-                height={40}
+                src="/images/logo/Dashboardlogo.svg"
+                alt="VoiceU Logo"
+                className="h-14 w-14"
               />
             </>
           ) : (
             <img
-              src="/images/logo/logo-icon.svg"
-              alt="Logo"
-              width={32}
-              height={32}
+              src="images/logo/Dashboardlogo.svg"
+              alt="VoiceU Logo"
+              className="h-8 w-8"
             />
           )}
         </Link>
@@ -352,7 +352,9 @@ const AppSidebar: React.FC = () => {
                 {isExpanded || isHovered || isMobileOpen ? (
                   "Menu"
                 ) : (
-                  <span className="size-6"><HorizontaLDots /></span>
+                  <span className="size-6">
+                    <HorizontaLDots />
+                  </span>
                 )}
               </h2>
               {renderMenuItems(navItems, "main")}
@@ -375,7 +377,6 @@ const AppSidebar: React.FC = () => {
             </div>
           </div>
         </nav>
-        
       </div>
     </aside>
   );
