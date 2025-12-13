@@ -1,5 +1,6 @@
 import AlertHexaIcon from "./alert-hexa.svg?react";
 import ErrorHexaIcon from "./info-hexa.svg?react";
+import ElectionIcon from "./election.png";
 import PlusIcon from "./plus.svg?react";
 import CloseIcon from "./close.svg?react";
 import BoxIcon from "./box.svg?react";
@@ -58,6 +59,7 @@ import MoreDotIcon from "./moredot.svg?react";
 export {
   AlertHexaIcon,
   ErrorHexaIcon,
+  ElectionIcon,
   PlusIcon,
   CloseIcon,
   BoxIcon,
