@@ -4,17 +4,17 @@ import Button from "../../components/ui/button/Button";
 import { Modal } from "../../components/ui/modal";
 import Toast from "../../components/common/Toast";
 import { DataTable } from "../../components/ui/table";
-import { getOrganizations, deleteOrganization } from "./organizationService";
+import { getPositions, deletePosition } from "./positionService";
 
-interface Organization {
-  org_id: number;
-  name: string;
-  address?: string;
+interface Position {
+  position_id: number;
+  position_name: string;
   description?: string;
+  max_candidates?: number;
 }
 
-export default function OrganizationList() {
-  const [data, setData] = useState<Organization[]>([]);
+export default function PositionList() {
+  const [data, setData] = useState<Position[]>([]);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error";
@@ -26,10 +26,10 @@ export default function OrganizationList() {
 
   const fetchData = async () => {
     try {
-      const res = await getOrganizations();
+      const res = await getPositions();
       setData(res.data);
     } catch {
-      setToast({ message: "Failed to fetch organizations", type: "error" });
+      setToast({ message: "Failed to fetch positions", type: "error" });
     }
   };
 
@@ -39,22 +39,19 @@ export default function OrganizationList() {
 
   const handleDelete = async (id: number) => {
     try {
-      await deleteOrganization(id);
-      setToast({
-        message: "Organization deleted successfully",
-        type: "success",
-      });
+      await deletePosition(id);
+      setToast({ message: "Position deleted successfully", type: "success" });
       fetchData();
     } catch {
-      setToast({ message: "Failed to delete organization", type: "error" });
+      setToast({ message: "Failed to delete position", type: "error" });
     } finally {
       setConfirmDelete(null);
     }
   };
 
-  const columns: { header: string; key: keyof Organization }[] = [
-    { header: "Name", key: "name" },
-    { header: "Address", key: "address" },
+  const columns: { header: string; key: keyof Position }[] = [
+    { header: "Position Name", key: "position_name" },
+    { header: "Maximum Candidates", key: "max_candidates" },
     { header: "Description", key: "description" },
   ];
 
@@ -71,12 +68,12 @@ export default function OrganizationList() {
 
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Organizations</h2>
+        <h2 className="text-xl font-semibold">Positions</h2>
         <Link
-          to="/organization/new"
+          to="/position/new"
           className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition"
         >
-          Add Organization
+          Add Position
         </Link>
       </div>
 
@@ -84,18 +81,21 @@ export default function OrganizationList() {
       <DataTable
         columns={columns}
         data={data}
-        emptyMessage="No organizations found"
-        renderActions={(org) => (
+        emptyMessage="No positions found"
+        renderActions={(pos) => (
           <div className="flex gap-3">
             <Link
-              to={`/organization/edit/${org.org_id}`}
+              to={`/position/edit/${pos.position_id}`}
               className="text-blue-600 hover:underline"
             >
               Edit
             </Link>
             <button
               onClick={() =>
-                setConfirmDelete({ id: org.org_id, name: org.name })
+                setConfirmDelete({
+                  id: pos.position_id,
+                  name: pos.position_name,
+                })
               }
               className="text-red-600 hover:underline"
             >
@@ -105,14 +105,13 @@ export default function OrganizationList() {
         )}
       />
 
-      {/* Confirm Delete Modal */}
       {confirmDelete && (
         <Modal
           isOpen
           onClose={() => setConfirmDelete(null)}
           className="max-w-md p-6"
         >
-          <h3 className="text-lg font-semibold mb-4">Delete Organization</h3>
+          <h3 className="text-lg font-semibold mb-4">Delete Position</h3>
           <p className="mb-4">
             Are you sure you want to delete "{confirmDelete.name}"?
           </p>

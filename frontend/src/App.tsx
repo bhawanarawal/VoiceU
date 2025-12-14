@@ -18,9 +18,13 @@ import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
-import UsersPage from "./pages/Users/UsersPage"; 
+import UsersPage from "./pages/Users/UsersPage";
 import OrganizationForm from "./pages/Organization/OrganizationForm";
 import OrganizationList from "./pages/Organization/OrganizationList";
+import PositionForm from "./pages/Position/PositionForm";
+import PositionList from "./pages/Position/PositionList";
+import AffiliationList from "./pages/Affiliation/AffiliationList";
+import AffiliationForm from "./pages/Affiliation/AffiliationForm";
 
 export default function App() {
   return (
@@ -36,6 +40,15 @@ export default function App() {
           <Route path="organization" element={<OrganizationList />} />
           <Route path="organization/new" element={<OrganizationForm />} />
           <Route path="organization/edit/:id" element={<OrganizationForm />} />
+
+          {/* Position Pages */}
+          <Route path="position" element={<PositionList />} />
+          <Route path="position/new" element={<PositionForm />} />
+          <Route path="position/edit/:id" element={<PositionForm />} />
+
+          <Route path="affiliation" element={<AffiliationList />} />
+          <Route path="affiliation/new" element={<AffiliationForm />} />
+          <Route path="affiliation/edit/:id" element={<AffiliationForm />} />
 
           {/* Other Pages */}
           <Route path="profile" element={<UserProfiles />} />
