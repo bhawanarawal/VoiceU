@@ -5,6 +5,7 @@ import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
 import { Link, useNavigate } from "react-router-dom";
+import api from "../../utils/api"; // Axios instance
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -12,11 +13,13 @@ export default function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
       const formData = new URLSearchParams();
@@ -24,32 +27,32 @@ export default function SignInForm() {
       formData.append("username", email);
       formData.append("password", password);
       formData.append("scope", "");
-      formData.append("client_id", "");
-      formData.append("client_secret", "");
 
-      const res = await fetch("http://127.0.0.1:8000/auth/token", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: formData.toString(),
+      const res = await api.post("/auth/token", formData.toString(), {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
       });
 
-      const data = await res.json();
+      // Store token
+      const token = res.data.access_token;
+      if (isChecked) localStorage.setItem("access_token", token);
+      else sessionStorage.setItem("access_token", token);
 
-      if (!res.ok) {
-        setError(data.detail || "Invalid username or password");
-        return;
-      }
+      // Set default Axios header for future requests
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-      
-      localStorage.setItem("access_token", data.access_token);
-
-      navigate("/");
-
-    } catch (err) {
+      navigate("/"); // Redirect after login
+    } catch (err: any) {
       console.error(err);
-      setError("Unable to connect to server.");
+      // Safe error extraction
+      let message = "Invalid username or password";
+      if (err.response?.data) {
+        if (typeof err.response.data === "string") message = err.response.data;
+        else if (err.response.data.detail) message = err.response.data.detail;
+        else message = JSON.stringify(err.response.data);
+      } else if (err.message) message = err.message;
+      setError(message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -81,7 +84,9 @@ export default function SignInForm() {
           <form onSubmit={handleLogin}>
             <div className="space-y-6">
               <div>
-                <Label>Email <span className="text-error-500">*</span></Label>
+                <Label>
+                  Email <span className="text-error-500">*</span>
+                </Label>
                 <Input
                   placeholder="info@gmail.com"
                   value={email}
@@ -90,7 +95,9 @@ export default function SignInForm() {
               </div>
 
               <div>
-                <Label>Password <span className="text-error-500">*</span></Label>
+                <Label>
+                  Password <span className="text-error-500">*</span>
+                </Label>
                 <div className="relative">
                   <Input
                     type={showPassword ? "text" : "password"}
@@ -128,8 +135,13 @@ export default function SignInForm() {
                 </Link>
               </div>
 
-              <Button className="w-full" size="sm" type="submit">
-                Sign in
+              <Button
+                className="w-full"
+                size="sm"
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? "Signing in..." : "Sign in"}
               </Button>
             </div>
           </form>

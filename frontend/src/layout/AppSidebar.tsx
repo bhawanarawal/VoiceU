@@ -14,6 +14,10 @@ import {
   UserCircleIcon,
   FolderIcon,
   DocsIcon,
+  Polling,
+  Election,
+  Voting,
+  Ballot,
   BoxIconLine,
   GroupIcon,
 } from "../icons";
@@ -32,6 +36,12 @@ const navItems: NavItem[] = [
     name: "Dashboard",
     path: "/",
   },
+
+  {
+    icon: <UserCircleIcon />,
+    name: "User Profile",
+    path: "/profile",
+  },
   {
     name: "Organization",
     icon: <GroupIcon />,
@@ -41,12 +51,6 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    icon: <UserCircleIcon />,
-    name: "User Profile",
-    path: "/profile",
-  },
-
-  {
     name: "Affiliation",
     icon: <BoxIconLine />,
     subItems: [
@@ -54,16 +58,16 @@ const navItems: NavItem[] = [
       { name: "View Affiliations", path: "/affiliation" },
     ],
   },
-  {
-    name: "Forms",
-    icon: <ListIcon />,
-    subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
-  },
-  {
-    name: "Tables",
-    icon: <TableIcon />,
-    subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
-  },
+  // {
+  //   name: "Forms",
+  //   icon: <ListIcon />,
+  //   subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
+  // },
+  // {
+  //   name: "Tables",
+  //   icon: <TableIcon />,
+  //   subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
+  // },
   {
     name: "Position",
     icon: <ListIcon />,
@@ -74,6 +78,14 @@ const navItems: NavItem[] = [
   },
 
   {
+    name: "Election",
+    icon: <TableIcon />,
+    subItems: [
+      { name: "Add Election", path: "/election/new" },
+      { name: "View Elections", path: "/election" },
+    ],
+  },
+  {
     icon: <UserCircleIcon />,
     name: "Users",
     path: "/users/userspage",
@@ -81,26 +93,26 @@ const navItems: NavItem[] = [
 ];
 
 const othersItems: NavItem[] = [
-  {
-    icon: <PieChartIcon />,
-    name: "Charts",
-    subItems: [
-      { name: "Line Chart", path: "/line-chart", pro: false },
-      { name: "Bar Chart", path: "/bar-chart", pro: false },
-    ],
-  },
-  {
-    icon: <BoxCubeIcon />,
-    name: "UI Elements",
-    subItems: [
-      { name: "Alerts", path: "/alerts", pro: false },
-      { name: "Avatar", path: "/avatars", pro: false },
-      { name: "Badge", path: "/badge", pro: false },
-      { name: "Buttons", path: "/buttons", pro: false },
-      { name: "Images", path: "/images", pro: false },
-      { name: "Videos", path: "/videos", pro: false },
-    ],
-  },
+  // {
+  //   icon: <PieChartIcon />,
+  //   name: "Charts",
+  //   subItems: [
+  //     { name: "Line Chart", path: "/line-chart", pro: false },
+  //     { name: "Bar Chart", path: "/bar-chart", pro: false },
+  //   ],
+  // },
+  // {
+  //   icon: <BoxCubeIcon />,
+  //   name: "UI Elements",
+  //   subItems: [
+  //     { name: "Alerts", path: "/alerts", pro: false },
+  //     { name: "Avatar", path: "/avatars", pro: false },
+  //     { name: "Badge", path: "/badge", pro: false },
+  //     { name: "Buttons", path: "/buttons", pro: false },
+  //     { name: "Images", path: "/images", pro: false },
+  //     { name: "Videos", path: "/videos", pro: false },
+  //   ],
+  // },
   {
     icon: <PlugInIcon />,
     name: "Authentication",

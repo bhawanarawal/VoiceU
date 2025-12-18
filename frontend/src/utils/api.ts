@@ -1,16 +1,19 @@
-// src/utils/api.ts
 import axios from "axios";
 
-// Create an Axios instance
 const api = axios.create({
-  baseURL: "http://127.0.0.1:8000", // <-- Replace with your FastAPI backend URL
+  baseURL: "http://127.0.0.1:8000",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Optional: add interceptors for auth / error handling
-// api.interceptors.request.use(config => { ... });
-// api.interceptors.response.use(response => { ... });
+// Set Authorization header dynamically from localStorage
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("access_token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 export default api;

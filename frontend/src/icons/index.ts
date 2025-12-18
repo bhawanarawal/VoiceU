@@ -55,11 +55,19 @@ import MailIcon from "./mail-line.svg?react";
 import HorizontaLDots from "./horizontal-dots.svg?react";
 import ChatIcon from "./chat.svg?react";
 import MoreDotIcon from "./moredot.svg?react";
+import Election from "./elections.svg?react"
+import Polling from "./polling.svg?react"
+import Voting from "./voting.svg?react"
+import Ballot from "./ballot.svg?react";
 
 export {
   AlertHexaIcon,
   ErrorHexaIcon,
   ElectionIcon,
+  Election,
+  Polling,
+  Voting,
+  Ballot,
   PlusIcon,
   CloseIcon,
   BoxIcon,
