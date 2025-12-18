@@ -5,7 +5,6 @@ from typing import Optional
 NPT = timezone(timedelta(hours=5, minutes=45))
 
 class ElectionCreate(BaseModel):
-    user_id: int
     affiliation_id: int
     election_name: str
     start_date: datetime
@@ -34,6 +33,18 @@ class ElectionRead(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+class ElectionListItem(BaseModel):
+    election_id: int
+    election_name: str
+    start_date: datetime
+    end_date: datetime
+    status: str
+    description: Optional[str]
+    affiliation_name: str
+    organization_name: str
+    created_at: datetime
+    updated_at: datetime
+    
     model_config = {
         "from_attributes": True
     }

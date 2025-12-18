@@ -25,6 +25,8 @@ import PositionForm from "./pages/Position/PositionForm";
 import PositionList from "./pages/Position/PositionList";
 import AffiliationList from "./pages/Affiliation/AffiliationList";
 import AffiliationForm from "./pages/Affiliation/AffiliationForm";
+import ElectionList from "./pages/Election/ElectionList";
+import ElectionForm from "./pages/Election/ElectionForm";
 
 export default function App() {
   return (
@@ -49,6 +51,11 @@ export default function App() {
           <Route path="affiliation" element={<AffiliationList />} />
           <Route path="affiliation/new" element={<AffiliationForm />} />
           <Route path="affiliation/edit/:id" element={<AffiliationForm />} />
+
+          {/* ✅ Election Pages */}
+          <Route path="election" element={<ElectionList />} />
+          <Route path="election/new" element={<ElectionForm />} />
+          <Route path="election/edit/:id" element={<ElectionForm />} />
 
           {/* Other Pages */}
           <Route path="profile" element={<UserProfiles />} />
