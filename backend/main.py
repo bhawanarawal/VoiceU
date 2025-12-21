@@ -3,8 +3,7 @@ from fastapi import FastAPI, Depends
 from sqlmodel import Session
 from database import create_db_and_tables, get_session
 from fastapi.middleware.cors import CORSMiddleware
-
-
+from fastapi.staticfiles import StaticFiles
 from routers.organization_router import router as organization_router
 from routers.position_router import router as position_router
 from routers.affiliation_router import router as affiliation_router
@@ -19,12 +18,12 @@ from schemas.user_schema import UserRead as User
 from models.user import User
 from models.role import Role
 
- 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    create_db_and_tables()  
+    create_db_and_tables()
     yield
+
 
 app = FastAPI(lifespan=lifespan, title="VoiceU API")
 
@@ -41,6 +40,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(organization_router)
 app.include_router(position_router)
@@ -56,6 +56,3 @@ app.include_router(auth_router)
 @app.get("/")
 def root():
     return {"message": "Welcome to the VoiceU!"}
-
-
-

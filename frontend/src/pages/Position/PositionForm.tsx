@@ -79,7 +79,7 @@ export default function PositionForm() {
   };
 
   const handleSubmit = async () => {
-    if (!validateForm()) return; // Stop submission if validation fails
+    if (!validateForm()) return;
 
     try {
       if (id) {
@@ -89,7 +89,7 @@ export default function PositionForm() {
         await createPosition(form);
         setToast({ message: "Position created successfully", type: "success" });
       }
-      // Navigate after short delay to show toast
+
       setTimeout(() => navigate("/position"), 1000);
     } catch (err) {
       setToast({ message: "Failed to save position", type: "error" });

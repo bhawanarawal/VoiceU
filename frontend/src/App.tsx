@@ -27,6 +27,8 @@ import AffiliationList from "./pages/Affiliation/AffiliationList";
 import AffiliationForm from "./pages/Affiliation/AffiliationForm";
 import ElectionList from "./pages/Election/ElectionList";
 import ElectionForm from "./pages/Election/ElectionForm";
+import CandidateList from "./pages/Candidate/CandidateList";
+import CandidateForm from "./pages/Candidate/CandidateForm";
 
 export default function App() {
   return (
@@ -36,6 +38,7 @@ export default function App() {
         {/* Dashboard Layout */}
         <Route element={<AppLayout />}>
           <Route index element={<Home />} />
+
           <Route path="users" element={<UsersPage />} />
 
           {/* Organization Pages */}
@@ -52,10 +55,15 @@ export default function App() {
           <Route path="affiliation/new" element={<AffiliationForm />} />
           <Route path="affiliation/edit/:id" element={<AffiliationForm />} />
 
-          {/* ✅ Election Pages */}
+          {/*  Election Pages */}
           <Route path="election" element={<ElectionList />} />
           <Route path="election/new" element={<ElectionForm />} />
           <Route path="election/edit/:id" element={<ElectionForm />} />
+
+          {/* Candidate Pages */}
+          <Route path="candidate" element={<CandidateList />} />
+          <Route path="candidate/new" element={<CandidateForm />} />
+          <Route path="candidate/edit/:id" element={<CandidateForm />} />
 
           {/* Other Pages */}
           <Route path="profile" element={<UserProfiles />} />

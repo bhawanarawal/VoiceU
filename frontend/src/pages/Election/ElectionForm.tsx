@@ -1,4 +1,3 @@
-// src/pages/Election/ElectionForm.tsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
@@ -22,7 +21,6 @@ interface Affiliation {
   affiliation_name: string;
 }
 
-// Determine election phase / status
 function getElectionPhase(start: string, end: string) {
   const now = new Date();
   const startDate = new Date(start);
@@ -33,7 +31,6 @@ function getElectionPhase(start: string, end: string) {
   return "Past";
 }
 
-// Badge color mapping
 function getBadgeColor(phase: string) {
   switch (phase) {
     case "Upcoming":
@@ -68,7 +65,6 @@ export default function ElectionForm() {
   } | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Fetch affiliations and election for edit mode
   useEffect(() => {
     const fetchAffiliations = async () => {
       try {
@@ -120,7 +116,6 @@ export default function ElectionForm() {
   const handleSubmit = async () => {
     const newErrors: Record<string, string> = {};
 
-    // Client-side validation
     if (!form.election_name.trim())
       newErrors.election_name = "Election name is required";
     if (!form.affiliation_id || form.affiliation_id === 0)
@@ -133,13 +128,12 @@ export default function ElectionForm() {
       return;
     }
 
-    // Prepare payload
     const payload = {
       ...form,
       affiliation_id: Number(form.affiliation_id),
       start_date: new Date(form.start_date).toISOString(),
       end_date: new Date(form.end_date).toISOString(),
-      status: getElectionPhase(form.start_date, form.end_date), // auto-set status
+      status: getElectionPhase(form.start_date, form.end_date),
     };
 
     console.log("Submitting payload:", payload);
@@ -213,6 +207,8 @@ export default function ElectionForm() {
                 value={form.election_name}
                 onChange={handleChange}
                 disabled={!isEditable}
+                placeholder="Enter election name"
+                aria-label="Election Name"
                 className="w-full border px-4 py-3 rounded"
               />
               {errors.election_name && (
@@ -231,6 +227,8 @@ export default function ElectionForm() {
                 value={form.description}
                 onChange={handleChange}
                 disabled={!isEditable}
+                placeholder="Enter election description"
+                aria-label="Description"
                 className="w-full border px-4 py-3 rounded"
               />
             </div>
@@ -244,6 +242,7 @@ export default function ElectionForm() {
                 value={form.affiliation_id}
                 onChange={handleChange}
                 disabled={!isEditable || isPartialEditable}
+                aria-label="Affiliation"
                 className="w-full border px-4 py-3 rounded"
               >
                 <option value={0}>Select affiliation</option>
@@ -270,6 +269,7 @@ export default function ElectionForm() {
                 value={form.start_date}
                 onChange={handleChange}
                 disabled={!isEditable || isPartialEditable}
+                aria-label="Start Date"
                 className="w-full border px-4 py-3 rounded"
               />
               {errors.start_date && (
@@ -287,6 +287,8 @@ export default function ElectionForm() {
                 value={form.end_date}
                 onChange={handleChange}
                 disabled={!isEditable || isPartialEditable}
+                placeholder="End Date"
+                aria-label="End Date"
                 className="w-full border px-4 py-3 rounded"
               />
               {errors.end_date && (

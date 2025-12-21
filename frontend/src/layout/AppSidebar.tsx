@@ -86,9 +86,17 @@ const navItems: NavItem[] = [
     ],
   },
   {
+    name: "Candidate",
+    icon: <UserCircleIcon />,
+    subItems: [
+      { name: "Add Candidate", path: "/candidate/new" },
+      { name: "View Candidates", path: "/candidate" },
+    ],
+  },
+  {
     icon: <UserCircleIcon />,
     name: "Users",
-    path: "/users/userspage",
+    path: "/Users",
   },
 ];
 

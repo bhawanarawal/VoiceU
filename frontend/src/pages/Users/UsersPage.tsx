@@ -1,5 +1,11 @@
 import { useState, useEffect } from "react";
-import { Table, TableBody, TableCell, TableHeader, TableRow } from "../../components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHeader,
+  TableRow,
+} from "../../components/ui/table";
 import Badge from "../../components/ui/badge/Badge";
 import Button from "../../components/ui/button/Button";
 
@@ -22,7 +28,6 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
-  
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
 
   useEffect(() => {
@@ -48,13 +53,11 @@ export default function UsersPage() {
   const openModal = (user: User) => {
     setEditingUser(user);
 
-    
     setSelectedRoles(user.roles);
   };
 
   const closeModal = () => setEditingUser(null);
 
-  
   const toggleRole = (roleName: string) => {
     setSelectedRoles((prev) =>
       prev.includes(roleName)
@@ -63,7 +66,6 @@ export default function UsersPage() {
     );
   };
 
-  
   const saveRole = async () => {
     if (!editingUser) return;
 
@@ -79,7 +81,6 @@ export default function UsersPage() {
 
       if (!res.ok) throw new Error("Failed to assign role");
 
-      
       setUsers((prev) =>
         prev.map((u) =>
           u.user_id === editingUser.user_id ? { ...u, roles: selectedRoles } : u
@@ -103,30 +104,47 @@ export default function UsersPage() {
         <Table className="min-w-[700px]">
           <TableHeader>
             <TableRow className="bg-gray-100 dark:bg-gray-800">
-              <TableCell isHeader className="px-6 py-3 text-left">ID</TableCell>
-              <TableCell isHeader className="px-6 py-3 text-left">Email</TableCell>
-              <TableCell isHeader className="px-6 py-3 text-left">Username</TableCell>
-              <TableCell isHeader className="px-6 py-3 text-left">Roles</TableCell>
-              <TableCell isHeader className="px-6 py-3 text-left">Action</TableCell>
+              <TableCell isHeader className="px-6 py-3 text-left">
+                ID
+              </TableCell>
+              <TableCell isHeader className="px-6 py-3 text-left">
+                Email
+              </TableCell>
+              <TableCell isHeader className="px-6 py-3 text-left">
+                Username
+              </TableCell>
+              <TableCell isHeader className="px-6 py-3 text-left">
+                Roles
+              </TableCell>
+              <TableCell isHeader className="px-6 py-3 text-left">
+                Action
+              </TableCell>
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {users.map((user) => (
-              <TableRow key={user.user_id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+              <TableRow
+                key={user.user_id}
+                className="hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
                 <TableCell className="px-6 py-4">{user.user_id}</TableCell>
                 <TableCell className="px-6 py-4">{user.email}</TableCell>
-                <TableCell className="px-6 py-4">{user.full_name || "-"}</TableCell>
+                <TableCell className="px-6 py-4">
+                  {user.full_name || "-"}
+                </TableCell>
 
-                
                 <TableCell className="px-6 py-4">
                   <div className="flex gap-2 flex-wrap">
-                    {user.roles.length > 0
-                      ? user.roles.map((r) => (
-                          <Badge key={r} color="primary">{r}</Badge>
-                        ))
-                      : <Badge color="primary">No Role</Badge>
-                    }
+                    {user.roles.length > 0 ? (
+                      user.roles.map((r) => (
+                        <Badge key={r} color="primary">
+                          {r}
+                        </Badge>
+                      ))
+                    ) : (
+                      <Badge color="primary">No Role</Badge>
+                    )}
                   </div>
                 </TableCell>
 
@@ -141,7 +159,6 @@ export default function UsersPage() {
         </Table>
       </div>
 
-      
       {editingUser && (
         <div className="fixed inset-0 bg-black/30 flex justify-center items-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-96 max-w-full relative shadow-lg">
@@ -150,7 +167,9 @@ export default function UsersPage() {
             </h3>
 
             <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">Select Roles</label>
+              <label className="block text-sm font-medium mb-2">
+                Select Roles
+              </label>
 
               <div className="space-y-2">
                 {roles.map((role) => (
