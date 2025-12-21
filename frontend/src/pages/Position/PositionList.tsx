@@ -57,7 +57,6 @@ export default function PositionList() {
 
   return (
     <div className="p-5">
-      {/* Toast */}
       {toast && (
         <Toast
           message={toast.message}
@@ -66,7 +65,6 @@ export default function PositionList() {
         />
       )}
 
-      {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Positions</h2>
         <Link
@@ -77,7 +75,6 @@ export default function PositionList() {
         </Link>
       </div>
 
-      {/* DataTable */}
       <DataTable
         columns={columns}
         data={data}

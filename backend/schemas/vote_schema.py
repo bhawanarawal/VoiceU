@@ -9,7 +9,7 @@ NPT = timezone(timedelta(hours=5, minutes=45))
 class VoteCreate(BaseModel):
     voter_id: int
     candidate_id: int
-    election_id: int  
+    election_id: int
 
 
 class VoteRead(BaseModel):

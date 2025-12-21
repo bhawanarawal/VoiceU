@@ -37,7 +37,6 @@ export default function AffiliationFormPage() {
     type: "success" | "error";
   } | null>(null);
 
-  // State for validation errors
   const [errors, setErrors] = useState<{
     affiliation_name?: string;
     org_id?: string;
@@ -69,11 +68,10 @@ export default function AffiliationFormPage() {
     >
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    setErrors({ ...errors, [e.target.name]: undefined }); // Clear error on change
+    setErrors({ ...errors, [e.target.name]: undefined });
   };
 
   const handleSubmit = async () => {
-    // Front-end validation
     const newErrors: typeof errors = {};
     if (!form.affiliation_name.trim())
       newErrors.affiliation_name = "Affiliation Name is required";
@@ -161,6 +159,7 @@ export default function AffiliationFormPage() {
                 name="org_id"
                 value={form.org_id}
                 onChange={handleChange}
+                aria-label="Organization"
                 className="w-full border border-gray-300 dark:border-gray-700 px-4 py-3 rounded bg-transparent text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
               >
                 <option value={0}>

@@ -20,7 +20,6 @@ interface Election {
   phase?: string;
 }
 
-// Compute election phase based on dates
 function getElectionPhase(start: string, end: string) {
   const now = new Date();
   const startDate = new Date(start);
@@ -31,15 +30,14 @@ function getElectionPhase(start: string, end: string) {
   return "Past";
 }
 
-// Map phase to Badge color
 function getBadgeColor(phase: string) {
   switch (phase) {
     case "Upcoming":
-      return "info"; // blue
+      return "info";
     case "Ongoing":
-      return "success"; // green
+      return "success";
     case "Past":
-      return "dark"; // gray
+      return "dark";
     default:
       return "light";
   }
@@ -58,7 +56,7 @@ export default function ElectionList() {
 
   const fetchData = async () => {
     try {
-      const res = await getElections(); // already includes affiliation_name & organization_name
+      const res = await getElections();
       setData(
         res.data.map((e: any) => ({
           ...e,

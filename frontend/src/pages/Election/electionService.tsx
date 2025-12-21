@@ -1,5 +1,4 @@
-// src/pages/Election/electionService.ts
-import api from "../../utils/api"; // Axios instance with auth interceptor
+import api from "../../utils/api";
 
 export const getElections = () => {
   return api.get("/elections/");

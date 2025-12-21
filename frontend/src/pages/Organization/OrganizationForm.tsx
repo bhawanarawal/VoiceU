@@ -30,7 +30,6 @@ export default function OrganizationForm() {
     type: "success" | "error";
   } | null>(null);
 
-  // Validation errors
   const [errors, setErrors] = useState<{ name?: string; address?: string }>({});
 
   useEffect(() => {
@@ -47,11 +46,10 @@ export default function OrganizationForm() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    setErrors({ ...errors, [e.target.name]: undefined }); // clear error on change
+    setErrors({ ...errors, [e.target.name]: undefined });
   };
 
   const handleSubmit = async () => {
-    // Front-end validation
     const newErrors: typeof errors = {};
     if (!form.name.trim()) newErrors.name = "Organization Name is required";
     if (form.address && form.address.length > 100)
@@ -59,7 +57,7 @@ export default function OrganizationForm() {
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      return; // stop submission
+      return;
     }
 
     try {

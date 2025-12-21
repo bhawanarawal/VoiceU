@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from sqlalchemy.exc import IntegrityError
-
 from models.affiliation import Affiliation
 from schemas.affiliation_schema import AffiliationCreate, AffiliationRead
 from database import get_session
@@ -19,7 +18,9 @@ def create_affiliation(aff: AffiliationCreate, session: Session = Depends(get_se
         return db_aff
     except IntegrityError:
         session.rollback()
-        raise HTTPException(status_code=400, detail="Organization does not exist (invalid org_id)")
+        raise HTTPException(
+            status_code=400, detail="Organization does not exist (invalid org_id)"
+        )
 
 
 @router.get("/", response_model=list[AffiliationRead])
@@ -34,16 +35,21 @@ def get_affiliation(affiliation_id: int, session: Session = Depends(get_session)
         raise HTTPException(status_code=404, detail="Affiliation not found")
     return aff
 
+
 @router.put("/{affiliation_id}", response_model=AffiliationRead)
-def update_affiliation(affiliation_id: int, updated_aff: AffiliationCreate, session: Session = Depends(get_session)):
+def update_affiliation(
+    affiliation_id: int,
+    updated_aff: AffiliationCreate,
+    session: Session = Depends(get_session),
+):
     aff = session.get(Affiliation, affiliation_id)
     if not aff:
         raise HTTPException(status_code=404, detail="Affiliation not found")
-    
+
     aff.affiliation_name = updated_aff.affiliation_name
     aff.description = updated_aff.description
     aff.org_id = updated_aff.org_id
-    
+
     try:
         session.add(aff)
         session.commit()
@@ -51,7 +57,9 @@ def update_affiliation(affiliation_id: int, updated_aff: AffiliationCreate, sess
         return aff
     except IntegrityError:
         session.rollback()
-        raise HTTPException(status_code=400, detail="Organization does not exist (invalid org_id)")
+        raise HTTPException(
+            status_code=400, detail="Organization does not exist (invalid org_id)"
+        )
 
 
 @router.delete("/{affiliation_id}")
@@ -59,7 +67,7 @@ def delete_affiliation(affiliation_id: int, session: Session = Depends(get_sessi
     aff = session.get(Affiliation, affiliation_id)
     if not aff:
         raise HTTPException(status_code=404, detail="Affiliation not found")
-    
+
     session.delete(aff)
     session.commit()
     return {"message": "Affiliation deleted successfully"}
