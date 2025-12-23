@@ -8,6 +8,7 @@ NPT = timezone(timedelta(hours=5, minutes=45))
 class ResultRead(BaseModel):
     result_id: int
     candidate_id: int
+    election_id: int
     total_votes: int
     winner_flag: bool
     created_at: datetime

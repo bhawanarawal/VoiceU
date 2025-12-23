@@ -94,6 +94,14 @@ const navItems: NavItem[] = [
     ],
   },
   {
+    name: "Voter",
+    icon: <UserCircleIcon />,
+    subItems: [
+      { name: "Add Voter", path: "/voter/new" },
+      { name: "View Voters", path: "/voter" },
+    ],
+  },
+  {
     icon: <UserCircleIcon />,
     name: "Users",
     path: "/Users",

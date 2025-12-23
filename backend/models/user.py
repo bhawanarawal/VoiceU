@@ -1,7 +1,6 @@
 from typing import List, Optional, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
-
-from models.user_role_link import UserRoleLink  
+from models.user_role_link import UserRoleLink
 
 if TYPE_CHECKING:
     from models.role import Role
@@ -15,7 +14,4 @@ class User(SQLModel, table=True):
     hashed_password: str
     is_active: bool = True
 
-    roles: List["Role"] = Relationship(
-        back_populates="users",
-        link_model=UserRoleLink
-    )
+    roles: List["Role"] = Relationship(back_populates="users", link_model=UserRoleLink)
