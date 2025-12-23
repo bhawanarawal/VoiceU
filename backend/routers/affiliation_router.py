@@ -5,6 +5,7 @@ from models.affiliation import Affiliation
 from models.program import Program
 from models.semester import Semester
 from models.organization import Organization
+
 from schemas.affiliation_schema import (
     AffiliationCreate,
     AffiliationRead,
@@ -12,13 +13,17 @@ from schemas.affiliation_schema import (
 )
 from schemas.program_schema import ProgramWithSemesters
 from schemas.organization_schema import OrganizationRead
+
 from database import get_session
 
 router = APIRouter(prefix="/affiliations", tags=["Affiliations"])
 
 
 @router.post("/", response_model=AffiliationRead)
-def create_affiliation(aff: AffiliationCreate, session: Session = Depends(get_session)):
+def create_affiliation(
+    aff: AffiliationCreate,
+    session: Session = Depends(get_session),
+):
     db_aff = Affiliation(
         affiliation_name=aff.affiliation_name,
         description=aff.description,
@@ -35,7 +40,10 @@ def read_affiliations(session: Session = Depends(get_session)):
 
 
 @router.get("/{affiliation_id}", response_model=AffiliationRead)
-def get_affiliation(affiliation_id: int, session: Session = Depends(get_session)):
+def get_affiliation(
+    affiliation_id: int,
+    session: Session = Depends(get_session),
+):
     aff = session.get(Affiliation, affiliation_id)
     if not aff:
         raise HTTPException(status_code=404, detail="Affiliation not found")
@@ -43,18 +51,21 @@ def get_affiliation(affiliation_id: int, session: Session = Depends(get_session)
 
 
 @router.get(
-    "/{affiliation_id}/with-details", response_model=AffiliationReadWithPrograms
+    "/{affiliation_id}/with-details",
+    response_model=AffiliationReadWithPrograms,
 )
 def get_affiliation_with_details(
-    affiliation_id: int, session: Session = Depends(get_session)
+    affiliation_id: int,
+    session: Session = Depends(get_session),
 ):
     aff = session.get(Affiliation, affiliation_id)
     if not aff:
         raise HTTPException(status_code=404, detail="Affiliation not found")
 
     programs = session.exec(
-        select(Program).where(Program.affiliation_id == aff.affiliation_id)
+        select(Program).where(Program.affiliation_id == affiliation_id)
     ).all()
+
     programs_with_semesters = []
     for program in programs:
         semesters = session.exec(
@@ -62,6 +73,7 @@ def get_affiliation_with_details(
                 Semester.program_id == program.program_id
             )
         ).all()
+
         programs_with_semesters.append(
             ProgramWithSemesters(
                 program_id=program.program_id,
@@ -73,8 +85,9 @@ def get_affiliation_with_details(
         )
 
     organizations = session.exec(
-        select(Organization).where(Organization.affiliation_id == aff.affiliation_id)
+        select(Organization).where(Organization.affiliation_id == affiliation_id)
     ).all()
+
     orgs_read = [OrganizationRead.from_orm(org) for org in organizations]
 
     return AffiliationReadWithPrograms(
@@ -99,14 +112,16 @@ def update_affiliation(
     aff.affiliation_name = updated_aff.affiliation_name
     aff.description = updated_aff.description
 
-    session.add(aff)
     session.commit()
     session.refresh(aff)
     return aff
 
 
 @router.delete("/{affiliation_id}")
-def delete_affiliation(affiliation_id: int, session: Session = Depends(get_session)):
+def delete_affiliation(
+    affiliation_id: int,
+    session: Session = Depends(get_session),
+):
     aff = session.get(Affiliation, affiliation_id)
     if not aff:
         raise HTTPException(status_code=404, detail="Affiliation not found")
