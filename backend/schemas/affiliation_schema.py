@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import List, Optional
 from schemas.program_schema import ProgramWithSemesters
 from schemas.organization_schema import OrganizationRead
 
@@ -17,6 +17,9 @@ class AffiliationRead(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class AffiliationReadWithPrograms(AffiliationRead):
-    programs: List[ProgramWithSemesters] = []
-    organizations: List[OrganizationRead] = []
+class AffiliationReadWithPrograms(BaseModel):
+    affiliation_id: int
+    affiliation_name: str
+    description: Optional[str] = None
+    programs: List[ProgramWithSemesters]
+    organizations: List[OrganizationRead]

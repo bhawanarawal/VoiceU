@@ -10,28 +10,55 @@ import {
   createOrganization,
   updateOrganization,
 } from "./organizationService";
+import { getAffiliations } from "../Affiliation/affiliationService";
 
 interface FormData {
   name: string;
   address?: string;
   description?: string;
+  affiliation_id?: number; // added affiliation
+}
+
+interface Affiliation {
+  affiliation_id: number;
+  affiliation_name: string;
 }
 
 export default function OrganizationForm() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [form, setForm] = useState<FormData>({
     name: "",
     address: "",
     description: "",
+    affiliation_id: 0,
   });
+
+  const [affiliations, setAffiliations] = useState<Affiliation[]>([]);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error";
   } | null>(null);
+  const [errors, setErrors] = useState<{
+    name?: string;
+    affiliation_id?: string;
+  }>({});
 
-  const [errors, setErrors] = useState<{ name?: string; address?: string }>({});
+  // Fetch affiliations
+  useEffect(() => {
+    const fetchAffiliations = async () => {
+      try {
+        const res = await getAffiliations();
+        setAffiliations(res.data);
+      } catch {
+        setToast({ message: "Failed to fetch affiliations", type: "error" });
+      }
+    };
+    fetchAffiliations();
+  }, []);
 
+  // Fetch existing organization if editing
   useEffect(() => {
     if (id) {
       getOrganizationById(Number(id))
@@ -43,17 +70,23 @@ export default function OrganizationForm() {
   }, [id]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    setErrors({ ...errors, [e.target.name]: undefined });
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: name === "affiliation_id" ? Number(value) : value,
+    }));
+    setErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
   const handleSubmit = async () => {
     const newErrors: typeof errors = {};
     if (!form.name.trim()) newErrors.name = "Organization Name is required";
-    if (form.address && form.address.length > 100)
-      newErrors.address = "Address cannot exceed 200 characters";
+    if (!form.affiliation_id || form.affiliation_id === 0)
+      newErrors.affiliation_id = "Please select an affiliation";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -74,9 +107,8 @@ export default function OrganizationForm() {
           type: "success",
         });
       }
-
       setTimeout(() => navigate("/organization"), 1000);
-    } catch (err) {
+    } catch {
       setToast({ message: "Failed to save organization", type: "error" });
     }
   };
@@ -97,13 +129,14 @@ export default function OrganizationForm() {
         }
         description="Add or edit Organization on dashboard"
       />
-
       <PageBreadcrumb
         pageTitle={id ? "Edit Organization" : "Add Organization"}
       />
+
       <div className="max-w-lg mx-auto mt-6">
         <ComponentCard title={id ? "Edit Organization" : "Add Organization"}>
           <div className="space-y-6">
+            {/* Organization Name */}
             <div>
               <label className="block text-gray-500 dark:text-gray-400 text-sm mb-1">
                 Organization Name
@@ -121,6 +154,36 @@ export default function OrganizationForm() {
               )}
             </div>
 
+            {/* Affiliation Dropdown */}
+            <div>
+              <label
+                htmlFor="affiliation_id"
+                className="block text-gray-500 dark:text-gray-400 text-sm mb-1"
+              >
+                Affiliation
+              </label>
+              <select
+                id="affiliation_id"
+                name="affiliation_id"
+                value={form.affiliation_id}
+                onChange={handleChange}
+                className="w-full border border-gray-300 dark:border-gray-700 px-4 py-3 rounded bg-transparent text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value={0}>Select affiliation</option>
+                {affiliations.map((aff) => (
+                  <option key={aff.affiliation_id} value={aff.affiliation_id}>
+                    {aff.affiliation_name}
+                  </option>
+                ))}
+              </select>
+              {errors.affiliation_id && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.affiliation_id}
+                </p>
+              )}
+            </div>
+
+            {/* Address */}
             <div>
               <label className="block text-gray-500 dark:text-gray-400 text-sm mb-1">
                 Address
@@ -135,6 +198,7 @@ export default function OrganizationForm() {
               />
             </div>
 
+            {/* Description */}
             <div>
               <label className="block text-gray-500 dark:text-gray-400 text-sm mb-1">
                 Description
@@ -148,6 +212,7 @@ export default function OrganizationForm() {
               />
             </div>
 
+            {/* Buttons */}
             <div className="flex justify-between mt-4">
               <Button
                 variant="outline"
