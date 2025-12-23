@@ -1,10 +1,10 @@
-# backend/routers/program_router.py
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List
 from database import get_session
 from models.program import Program
 from models.semester import Semester
+from models.affiliation import Affiliation
 from schemas.program_schema import ProgramCreate, ProgramRead, ProgramWithSemesters
 
 router = APIRouter(prefix="/programs", tags=["Programs"])
@@ -27,12 +27,21 @@ def create_program(data: ProgramCreate, session: Session = Depends(get_session))
         session.add(semester)
     session.commit()
 
+    affiliation = session.get(Affiliation, program.affiliation_id)
+    program.affiliation_name = affiliation.affiliation_name if affiliation else None
+
     return program
 
 
 @router.get("/", response_model=List[ProgramRead])
 def read_programs(session: Session = Depends(get_session)):
-    return session.exec(select(Program).where(Program.is_active == True)).all()
+    programs = session.exec(select(Program).where(Program.is_active == True)).all()
+
+    for program in programs:
+        affiliation = session.get(Affiliation, program.affiliation_id)
+        program.affiliation_name = affiliation.affiliation_name if affiliation else None
+
+    return programs
 
 
 @router.get("/{program_id}", response_model=ProgramWithSemesters)
@@ -40,6 +49,9 @@ def get_program(program_id: int, session: Session = Depends(get_session)):
     program = session.get(Program, program_id)
     if not program or not program.is_active:
         raise HTTPException(status_code=404, detail="Program not found")
+
+    affiliation = session.get(Affiliation, program.affiliation_id)
+    program.affiliation_name = affiliation.affiliation_name if affiliation else None
 
     semesters = session.exec(
         select(Semester.semester_number).where(Semester.program_id == program_id)
@@ -50,6 +62,9 @@ def get_program(program_id: int, session: Session = Depends(get_session)):
         program_name=program.program_name,
         total_semesters=program.total_semesters,
         semesters=semesters,
+        is_active=program.is_active,
+        affiliation_id=program.affiliation_id,
+        affiliation_name=program.affiliation_name,
     )
 
 
@@ -68,6 +83,10 @@ def update_program(
     session.add(program)
     session.commit()
     session.refresh(program)
+
+    affiliation = session.get(Affiliation, program.affiliation_id)
+    program.affiliation_name = affiliation.affiliation_name if affiliation else None
+
     return program
 
 

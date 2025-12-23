@@ -5,14 +5,11 @@ import { Modal } from "../../components/ui/modal";
 import Toast from "../../components/common/Toast";
 import { DataTable } from "../../components/ui/table";
 import { getAffiliations, deleteAffiliation } from "./affiliationService";
-import { getOrganizations } from "../Organization/organizationService";
 
 interface Affiliation {
   affiliation_id: number;
   affiliation_name: string;
   description?: string;
-  org_id: number;
-  org_name?: string;
 }
 
 export default function AffiliationList() {
@@ -28,22 +25,8 @@ export default function AffiliationList() {
 
   const fetchData = async () => {
     try {
-      const [affRes, orgRes] = await Promise.all([
-        getAffiliations(),
-        getOrganizations(),
-      ]);
-      const orgMap = orgRes.data.reduce(
-        (acc: Record<number, string>, org: any) => {
-          acc[org.org_id] = org.name;
-          return acc;
-        },
-        {}
-      );
-      const enriched = affRes.data.map((aff: any) => ({
-        ...aff,
-        org_name: orgMap[aff.org_id] || "Unknown",
-      }));
-      setData(enriched);
+      const res = await getAffiliations();
+      setData(res.data);
     } catch {
       setToast({ message: "Failed to fetch affiliations", type: "error" });
     }
@@ -71,7 +54,6 @@ export default function AffiliationList() {
   const columns: { header: string; key: keyof Affiliation }[] = [
     { header: "Affiliation", key: "affiliation_name" },
     { header: "Description", key: "description" },
-    { header: "Organization", key: "org_name" },
   ];
 
   return (
