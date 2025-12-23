@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from typing import Optional
 from datetime import datetime, timezone, timedelta
 from pydantic import field_serializer
 
@@ -17,10 +16,10 @@ class VoteRead(BaseModel):
     voter_id: int
     candidate_id: int
     election_id: int
-    vote_time: datetime
+    created_at: datetime
 
     model_config = {"from_attributes": True}
 
-    @field_serializer("vote_time")
-    def format_vote_time(self, dt: datetime, _info):
+    @field_serializer("created_at")
+    def format_created_at(self, dt: datetime, _info):
         return dt.astimezone(NPT).strftime("%Y-%m-%d %H:%M:%S")

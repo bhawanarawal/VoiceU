@@ -29,6 +29,8 @@ import ElectionList from "./pages/Election/ElectionList";
 import ElectionForm from "./pages/Election/ElectionForm";
 import CandidateList from "./pages/Candidate/CandidateList";
 import CandidateForm from "./pages/Candidate/CandidateForm";
+import VoterList from "./pages/Voter/VoterList";
+import VoterForm from "./pages/Voter/VoterForm";
 
 export default function App() {
   return (
@@ -64,6 +66,11 @@ export default function App() {
           <Route path="candidate" element={<CandidateList />} />
           <Route path="candidate/new" element={<CandidateForm />} />
           <Route path="candidate/edit/:id" element={<CandidateForm />} />
+
+          {/* Voter Pages */}
+          <Route path="voter" element={<VoterList />} />
+          <Route path="voter/new" element={<VoterForm />} />
+          <Route path="voter/edit/:id" element={<VoterForm />} />
 
           {/* Other Pages */}
           <Route path="profile" element={<UserProfiles />} />
