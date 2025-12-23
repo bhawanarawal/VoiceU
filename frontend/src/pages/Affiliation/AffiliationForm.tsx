@@ -10,72 +10,56 @@ import {
   createAffiliation,
   updateAffiliation,
 } from "./affiliationService";
-import { getOrganizations } from "../Organization/organizationService";
 
 interface AffiliationForm {
   affiliation_name: string;
   description?: string;
-  org_id: number;
-}
-
-interface Organization {
-  org_id: number;
-  name: string;
 }
 
 export default function AffiliationFormPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
+
   const [form, setForm] = useState<AffiliationForm>({
     affiliation_name: "",
     description: "",
-    org_id: 0,
   });
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error";
   } | null>(null);
-
-  const [errors, setErrors] = useState<{
-    affiliation_name?: string;
-    org_id?: string;
-  }>({});
+  const [errors, setErrors] = useState<{ affiliation_name?: string }>({});
 
   useEffect(() => {
-    const fetchOrgs = async () => {
-      try {
-        const res = await getOrganizations();
-        setOrganizations(res.data);
-      } catch {}
-    };
-    fetchOrgs();
-
     if (id) {
       const fetchAff = async () => {
         try {
           const res = await getAffiliationById(Number(id));
-          setForm(res.data);
-        } catch {}
+          setForm({
+            affiliation_name: res.data.affiliation_name,
+            description: res.data.description || "",
+          });
+        } catch (err) {
+          console.error("Failed to fetch affiliation", err);
+          setToast({ message: "Failed to load affiliation", type: "error" });
+        }
       };
       fetchAff();
     }
   }, [id]);
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    setErrors({ ...errors, [e.target.name]: undefined });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
   const handleSubmit = async () => {
     const newErrors: typeof errors = {};
     if (!form.affiliation_name.trim())
       newErrors.affiliation_name = "Affiliation Name is required";
-    if (form.org_id === 0) newErrors.org_id = "Please select an organization";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -97,7 +81,8 @@ export default function AffiliationFormPage() {
         });
       }
       setTimeout(() => navigate("/affiliation"), 500);
-    } catch {
+    } catch (err) {
+      console.error("Failed to save affiliation", err);
       setToast({ message: "Failed to save affiliation", type: "error" });
     }
   };
@@ -118,9 +103,11 @@ export default function AffiliationFormPage() {
           onClose={() => setToast(null)}
         />
       )}
+
       <div className="max-w-lg mx-auto mt-6">
         <ComponentCard title="Affiliation Information">
           <div className="space-y-6">
+            {/* Affiliation Name */}
             <div>
               <label className="block text-gray-500 text-sm mb-1">
                 Affiliation Name
@@ -139,6 +126,8 @@ export default function AffiliationFormPage() {
                 </p>
               )}
             </div>
+
+            {/* Description */}
             <div>
               <label className="block text-gray-500 text-sm mb-1">
                 Description
@@ -151,32 +140,8 @@ export default function AffiliationFormPage() {
                 className="w-full border border-gray-300 dark:border-gray-700 px-4 py-3 rounded bg-transparent text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
-            <div>
-              <label className="block text-gray-500 text-sm mb-1">
-                Organization
-              </label>
-              <select
-                name="org_id"
-                value={form.org_id}
-                onChange={handleChange}
-                aria-label="Organization"
-                className="w-full border border-gray-300 dark:border-gray-700 px-4 py-3 rounded bg-transparent text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              >
-                <option value={0}>
-                  {organizations.length === 0
-                    ? "No organizations available"
-                    : "Select organization"}
-                </option>
-                {organizations.map((org) => (
-                  <option key={org.org_id} value={org.org_id}>
-                    {org.name}
-                  </option>
-                ))}
-              </select>
-              {errors.org_id && (
-                <p className="text-red-500 text-sm mt-1">{errors.org_id}</p>
-              )}
-            </div>
+
+            {/* Buttons */}
             <div className="flex justify-between">
               <Button
                 variant="outline"

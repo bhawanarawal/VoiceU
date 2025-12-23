@@ -13,10 +13,8 @@ from routers.voter_router import router as voter_router
 from routers.vote_router import router as vote_router
 from routers.result_router import router as result_router
 from routers.auth_router import router as auth_router
-from auth import get_current_active_user
-from schemas.user_schema import UserRead as User
-from models.user import User
-from models.role import Role
+from routers.program_router import router as program_router
+from routers.semester_router import router as semester_router
 
 
 @asynccontextmanager
@@ -51,6 +49,8 @@ app.include_router(voter_router)
 app.include_router(vote_router)
 app.include_router(result_router)
 app.include_router(auth_router)
+app.include_router(program_router)
+app.include_router(semester_router)
 
 
 @app.get("/")
