@@ -3,6 +3,7 @@ from sqlmodel import SQLModel, Field, Relationship
 
 if TYPE_CHECKING:
     from models.affiliation import Affiliation
+    from models.program import Program
 
 
 class Organization(SQLModel, table=True):
@@ -15,3 +16,4 @@ class Organization(SQLModel, table=True):
     )
 
     affiliation: Optional["Affiliation"] = Relationship(back_populates="organizations")
+    programs: list["Program"] = Relationship(back_populates="organization")

@@ -13,4 +13,3 @@ class Affiliation(SQLModel, table=True):
     description: Optional[str] = Field(default=None)
 
     organizations: List["Organization"] = Relationship(back_populates="affiliation")
-    programs: List["Program"] = Relationship(back_populates="affiliation")
