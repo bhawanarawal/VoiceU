@@ -5,13 +5,12 @@ from models.affiliation import Affiliation
 from models.program import Program
 from models.semester import Semester
 from models.organization import Organization
-
 from schemas.affiliation_schema import (
     AffiliationCreate,
     AffiliationRead,
     AffiliationReadWithPrograms,
 )
-from schemas.program_schema import ProgramWithSemesters
+from schemas.program_schema import ProgramRead
 from schemas.organization_schema import OrganizationRead
 
 from database import get_session
@@ -66,23 +65,8 @@ def get_affiliation_with_details(
         select(Program).where(Program.affiliation_id == affiliation_id)
     ).all()
 
-    programs_with_semesters = []
-    for program in programs:
-        semesters = session.exec(
-            select(Semester.semester_number).where(
-                Semester.program_id == program.program_id
-            )
-        ).all()
-
-        programs_with_semesters.append(
-            ProgramWithSemesters(
-                program_id=program.program_id,
-                program_name=program.program_name,
-                total_semesters=program.total_semesters,
-                semesters=semesters,
-                is_active=program.is_active,
-            )
-        )
+    # Convert programs to Pydantic models
+    programs_read = [ProgramRead.from_orm(prog) for prog in programs]
 
     organizations = session.exec(
         select(Organization).where(Organization.affiliation_id == affiliation_id)
@@ -94,7 +78,7 @@ def get_affiliation_with_details(
         affiliation_id=aff.affiliation_id,
         affiliation_name=aff.affiliation_name,
         description=aff.description,
-        programs=programs_with_semesters,
+        programs=programs_read,
         organizations=orgs_read,
     )
 

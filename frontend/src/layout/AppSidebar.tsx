@@ -51,6 +51,14 @@ const navItems: NavItem[] = [
     ],
   },
   {
+    name: "Program",
+    icon: <FolderIcon />,
+    subItems: [
+      { name: "Add Program", path: "/program/new" },
+      { name: "View Programs", path: "/program" },
+    ],
+  },
+  {
     name: "Affiliation",
     icon: <BoxIconLine />,
     subItems: [

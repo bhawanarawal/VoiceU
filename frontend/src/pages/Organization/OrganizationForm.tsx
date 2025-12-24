@@ -16,7 +16,7 @@ interface FormData {
   name: string;
   address?: string;
   description?: string;
-  affiliation_id?: number; // added affiliation
+  affiliation_id?: number;
 }
 
 interface Affiliation {
@@ -45,7 +45,6 @@ export default function OrganizationForm() {
     affiliation_id?: string;
   }>({});
 
-  // Fetch affiliations
   useEffect(() => {
     const fetchAffiliations = async () => {
       try {
@@ -58,7 +57,6 @@ export default function OrganizationForm() {
     fetchAffiliations();
   }, []);
 
-  // Fetch existing organization if editing
   useEffect(() => {
     if (id) {
       getOrganizationById(Number(id))
@@ -136,7 +134,6 @@ export default function OrganizationForm() {
       <div className="max-w-lg mx-auto mt-6">
         <ComponentCard title={id ? "Edit Organization" : "Add Organization"}>
           <div className="space-y-6">
-            {/* Organization Name */}
             <div>
               <label className="block text-gray-500 dark:text-gray-400 text-sm mb-1">
                 Organization Name
@@ -154,7 +151,6 @@ export default function OrganizationForm() {
               )}
             </div>
 
-            {/* Affiliation Dropdown */}
             <div>
               <label
                 htmlFor="affiliation_id"
@@ -183,7 +179,6 @@ export default function OrganizationForm() {
               )}
             </div>
 
-            {/* Address */}
             <div>
               <label className="block text-gray-500 dark:text-gray-400 text-sm mb-1">
                 Address
@@ -198,7 +193,6 @@ export default function OrganizationForm() {
               />
             </div>
 
-            {/* Description */}
             <div>
               <label className="block text-gray-500 dark:text-gray-400 text-sm mb-1">
                 Description
@@ -212,7 +206,6 @@ export default function OrganizationForm() {
               />
             </div>
 
-            {/* Buttons */}
             <div className="flex justify-between mt-4">
               <Button
                 variant="outline"

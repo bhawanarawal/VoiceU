@@ -1,5 +1,5 @@
 from typing import Optional, TYPE_CHECKING
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Relationship, UniqueConstraint
 
 if TYPE_CHECKING:
     from models.program import Program
@@ -11,3 +11,5 @@ class Semester(SQLModel, table=True):
     semester_number: int = Field(gt=0)
 
     program: Optional["Program"] = Relationship(back_populates="semesters")
+
+    __table_args__ = (UniqueConstraint("program_id", "semester_number"),)
