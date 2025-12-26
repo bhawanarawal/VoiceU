@@ -1,15 +1,24 @@
 from pydantic import BaseModel, model_validator, field_serializer
 from datetime import datetime, timezone, timedelta
 from typing import Optional
+from enum import Enum
 
 NPT = timezone(timedelta(hours=5, minutes=45))
 
+
+class ElectionStatus(str, Enum):
+    upcoming = "upcoming"
+    ongoing = "ongoing"
+    past = "past"
+
+
 class ElectionCreate(BaseModel):
-    affiliation_id: int
+    program_id: int
     election_name: str
     start_date: datetime
     end_date: datetime
-    status: str
+    status: ElectionStatus
+    affiliation_name: Optional[str] = None
     description: Optional[str] = None
 
     @model_validator(mode="before")
@@ -23,31 +32,58 @@ class ElectionCreate(BaseModel):
 
 class ElectionRead(BaseModel):
     election_id: int
-    user_id: int
-    affiliation_id: int
+    program_id: int
     election_name: str
     start_date: datetime
     end_date: datetime
-    status: str
+    status: ElectionStatus
     description: Optional[str] = None
     created_at: datetime
     updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+    @field_serializer("start_date", "end_date", "created_at", "updated_at")
+    def format_date(self, dt: datetime, _info):
+        return dt.astimezone(NPT).strftime("%Y-%m-%d %H:%M:%S")
+
 
 class ElectionListItem(BaseModel):
     election_id: int
     election_name: str
     start_date: datetime
     end_date: datetime
-    status: str
-    description: Optional[str]
-    affiliation_name: str
+    status: ElectionStatus
+    description: Optional[str] = None
+    program_name: str
     organization_name: str
+    affiliation_name: str
     created_at: datetime
     updated_at: datetime
-    
-    model_config = {
-        "from_attributes": True
-    }
-    @field_serializer("start_date", "end_date", "created_at","updated_at")
+
+    model_config = {"from_attributes": True}
+
+    @field_serializer("start_date", "end_date", "created_at", "updated_at")
+    def format_date(self, dt: datetime, _info):
+        return dt.astimezone(NPT).strftime("%Y-%m-%d %H:%M:%S")
+
+
+class ElectionDetail(BaseModel):
+    election_id: int
+    election_name: str
+
+    program_id: int
+    organization_id: int
+    organization_name: str
+    affiliation_name: str
+
+    start_date: datetime
+    end_date: datetime
+    status: ElectionStatus
+    description: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+    @field_serializer("start_date", "end_date")
     def format_date(self, dt: datetime, _info):
         return dt.astimezone(NPT).strftime("%Y-%m-%d %H:%M:%S")

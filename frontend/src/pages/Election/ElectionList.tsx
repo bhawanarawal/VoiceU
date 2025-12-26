@@ -5,12 +5,12 @@ import { Modal } from "../../components/ui/modal";
 import Toast from "../../components/common/Toast";
 import { DataTable } from "../../components/ui/table";
 import Badge from "../../components/ui/badge/Badge";
-
 import { getElections, deleteElection } from "./electionService";
 
 interface Election {
   election_id: number;
   election_name: string;
+  program_name: string;
   description?: string;
   affiliation_name: string;
   organization_name: string;
@@ -78,6 +78,7 @@ export default function ElectionList() {
     renderCell?: (_columnKey: keyof Election, row: Election) => JSX.Element;
   }[] = [
     { header: "Election", key: "election_name" },
+    { header: "Program", key: "program_name" },
     { header: "Affiliation", key: "affiliation_name" },
     { header: "Organization", key: "organization_name" },
     {
