@@ -11,14 +11,22 @@ import api from "../../utils/api";
 interface ElectionFormState {
   election_name: string;
   description?: string;
-  affiliation_id: number;
+  organization_id: number;
+  program_id: number;
+  affiliation_name: string;
   start_date: string;
   end_date: string;
 }
 
-interface Affiliation {
-  affiliation_id: number;
+interface Organization {
+  org_id: number;
+  name: string;
   affiliation_name: string;
+}
+
+interface Program {
+  program_id: number;
+  program_name: string;
 }
 
 function getElectionPhase(start: string, end: string) {
@@ -51,12 +59,15 @@ export default function ElectionForm() {
   const [form, setForm] = useState<ElectionFormState>({
     election_name: "",
     description: "",
-    affiliation_id: 0,
+    organization_id: 0,
+    program_id: 0,
+    affiliation_name: "",
     start_date: "",
     end_date: "",
   });
 
-  const [affiliations, setAffiliations] = useState<Affiliation[]>([]);
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [phase, setPhase] = useState("Upcoming");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [toast, setToast] = useState<{
@@ -66,42 +77,48 @@ export default function ElectionForm() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchAffiliations = async () => {
+    const fetchOrganizations = async () => {
       try {
-        const res = await api.get("/affiliations/");
-        setAffiliations(res.data);
+        const res = await api.get("/organizations/");
+        setOrganizations(res.data);
       } catch (err) {
-        console.error("Failed to load affiliations", err);
+        console.error("Failed to load organizations", err);
       }
     };
-    fetchAffiliations();
+    fetchOrganizations();
+  }, []);
 
-    if (id) {
-      const fetchElection = async () => {
-        try {
-          const res = await api.get(`/elections/${id}`);
-          const start = res.data.start_date.slice(0, 16);
-          const end = res.data.end_date.slice(0, 16);
-          const currentPhase = getElectionPhase(
-            res.data.start_date,
-            res.data.end_date
+  useEffect(() => {
+    if (!id) return;
+    const fetchElection = async () => {
+      try {
+        const res = await api.get(`/elections/${id}`);
+        const start = res.data.start_date.slice(0, 16);
+        const end = res.data.end_date.slice(0, 16);
+
+        setForm({
+          election_name: res.data.election_name,
+          description: res.data.description || "",
+          organization_id: res.data.organization_id,
+          program_id: res.data.program_id,
+          affiliation_name: res.data.affiliation_name,
+          start_date: start,
+          end_date: end,
+        });
+
+        if (res.data.organization_id) {
+          const resPrograms = await api.get(
+            `/programs/?org_id=${res.data.organization_id}`
           );
-
-          setForm({
-            election_name: res.data.election_name,
-            description: res.data.description || "",
-            affiliation_id: res.data.affiliation_id,
-            start_date: start,
-            end_date: end,
-          });
-
-          setPhase(currentPhase);
-        } catch (err) {
-          console.error("Failed to load election", err);
+          setPrograms(resPrograms.data);
         }
-      };
-      fetchElection();
-    }
+
+        setPhase(getElectionPhase(res.data.start_date, res.data.end_date));
+      } catch (err) {
+        console.error("Failed to load election", err);
+      }
+    };
+    fetchElection();
   }, [id]);
 
   const handleChange = (
@@ -109,34 +126,55 @@ export default function ElectionForm() {
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    setErrors({ ...errors, [e.target.name]: "" });
+    const { name, value } = e.target;
+
+    setForm((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
+
+    if (name === "organization_id") {
+      const org = organizations.find((o) => o.org_id === Number(value));
+      setForm((prev) => ({
+        ...prev,
+        affiliation_name: org ? org.affiliation_name : "",
+        program_id: 0,
+      }));
+
+      const fetchPrograms = async () => {
+        try {
+          const res = await api.get(`/programs/?org_id=${value}`);
+          setPrograms(res.data);
+        } catch {
+          setPrograms([]);
+        }
+      };
+      fetchPrograms();
+    }
   };
 
   const handleSubmit = async () => {
     const newErrors: Record<string, string> = {};
-
     if (!form.election_name.trim())
       newErrors.election_name = "Election name is required";
-    if (!form.affiliation_id || form.affiliation_id === 0)
-      newErrors.affiliation_id = "Please select an affiliation";
+    if (!form.organization_id)
+      newErrors.organization_id = "Please select an organization";
+    if (!form.program_id) newErrors.program_id = "Please select a program";
     if (!form.start_date) newErrors.start_date = "Start date is required";
     if (!form.end_date) newErrors.end_date = "End date is required";
 
-    if (Object.keys(newErrors).length > 0) {
+    if (Object.keys(newErrors).length) {
       setErrors(newErrors);
       return;
     }
 
     const payload = {
-      ...form,
-      affiliation_id: Number(form.affiliation_id),
+      election_name: form.election_name,
+      description: form.description,
+      program_id: Number(form.program_id),
+      affiliation_name: form.affiliation_name,
       start_date: new Date(form.start_date).toISOString(),
       end_date: new Date(form.end_date).toISOString(),
-      status: getElectionPhase(form.start_date, form.end_date),
+      status: getElectionPhase(form.start_date, form.end_date).toLowerCase(),
     };
-
-    console.log("Submitting payload:", payload);
 
     setLoading(true);
     try {
@@ -149,24 +187,8 @@ export default function ElectionForm() {
       }
       setTimeout(() => navigate("/election"), 500);
     } catch (err: any) {
-      console.error("Failed to save election:", err.response?.data || err);
-
-      let errorMessage = "Failed to save election";
-
-      if (
-        err.response?.status === 422 &&
-        Array.isArray(err.response.data?.detail)
-      ) {
-        errorMessage = err.response.data.detail
-          .map((d: any) => {
-            const field = d.loc[d.loc.length - 1];
-            return `${field}: ${d.msg}`;
-          })
-          .join(", ");
-      } else if (err.response?.data?.detail) {
-        errorMessage = err.response.data.detail;
-      }
-
+      const errorMessage =
+        err.response?.data?.detail || "Failed to save election";
       setToast({ message: errorMessage, type: "error" });
     } finally {
       setLoading(false);
@@ -174,7 +196,6 @@ export default function ElectionForm() {
   };
 
   const isEditable = phase !== "Past";
-  const isPartialEditable = phase === "Ongoing";
 
   return (
     <div>
@@ -183,7 +204,6 @@ export default function ElectionForm() {
         description="Election form"
       />
       <PageBreadcrumb pageTitle={id ? "Edit Election" : "Add Election"} />
-
       {toast && <Toast {...toast} onClose={() => setToast(null)} />}
 
       {id && (
@@ -198,17 +218,20 @@ export default function ElectionForm() {
         <ComponentCard title="Election Information">
           <div className="space-y-6">
             <div>
-              <label className="block text-sm text-gray-500 mb-1">
+              <label
+                htmlFor="election_name"
+                className="block text-sm text-gray-500 mb-1"
+              >
                 Election Name
               </label>
               <input
+                id="election_name"
                 type="text"
                 name="election_name"
+                placeholder="Enter election name"
                 value={form.election_name}
                 onChange={handleChange}
                 disabled={!isEditable}
-                placeholder="Enter election name"
-                aria-label="Election Name"
                 className="w-full border px-4 py-3 rounded"
               />
               {errors.election_name && (
@@ -219,81 +242,131 @@ export default function ElectionForm() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-500 mb-1">
-                Description
-              </label>
-              <textarea
-                name="description"
-                value={form.description}
-                onChange={handleChange}
-                disabled={!isEditable}
-                placeholder="Enter election description"
-                aria-label="Description"
-                className="w-full border px-4 py-3 rounded"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-500 mb-1">
-                Affiliation
+              <label
+                htmlFor="organization"
+                className="block text-sm text-gray-500 mb-1"
+              >
+                Organization
               </label>
               <select
-                name="affiliation_id"
-                value={form.affiliation_id}
+                id="organization"
+                name="organization_id"
+                value={form.organization_id}
                 onChange={handleChange}
-                disabled={!isEditable || isPartialEditable}
-                aria-label="Affiliation"
+                disabled={!isEditable}
                 className="w-full border px-4 py-3 rounded"
               >
-                <option value={0}>Select affiliation</option>
-                {affiliations.map((a) => (
-                  <option key={a.affiliation_id} value={a.affiliation_id}>
-                    {a.affiliation_name}
+                <option value={0}>Select organization</option>
+                {organizations.map((o) => (
+                  <option key={o.org_id} value={o.org_id}>
+                    {o.name}
                   </option>
                 ))}
               </select>
-              {errors.affiliation_id && (
+              {errors.organization_id && (
                 <p className="text-red-500 text-sm mt-1">
-                  {errors.affiliation_id}
+                  {errors.organization_id}
                 </p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm text-gray-500 mb-1">
-                Start Date
+              <label
+                htmlFor="program"
+                className="block text-sm text-gray-500 mb-1"
+              >
+                Program
               </label>
-              <input
-                type="datetime-local"
-                name="start_date"
-                value={form.start_date}
+              <select
+                id="program"
+                name="program_id"
+                value={form.program_id}
                 onChange={handleChange}
-                disabled={!isEditable || isPartialEditable}
-                aria-label="Start Date"
+                disabled={!isEditable || !form.organization_id}
                 className="w-full border px-4 py-3 rounded"
-              />
-              {errors.start_date && (
-                <p className="text-red-500 text-sm mt-1">{errors.start_date}</p>
+              >
+                <option value={0}>Select program</option>
+                {programs.map((p) => (
+                  <option key={p.program_id} value={p.program_id}>
+                    {p.program_name}
+                  </option>
+                ))}
+              </select>
+              {errors.program_id && (
+                <p className="text-red-500 text-sm mt-1">{errors.program_id}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm text-gray-500 mb-1">
+              <label
+                htmlFor="affiliation"
+                className="block text-sm text-gray-500 mb-1"
+              >
+                Affiliation
+              </label>
+              <input
+                id="affiliation"
+                type="text"
+                name="affiliation_name"
+                value={form.affiliation_name}
+                disabled
+                className="w-full border px-4 py-3 rounded bg-gray-100"
+                aria-readonly="true"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="description"
+                className="block text-sm text-gray-500 mb-1"
+              >
+                Description
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                placeholder="Enter election description"
+                value={form.description}
+                onChange={handleChange}
+                disabled={!isEditable}
+                className="w-full border px-4 py-3 rounded"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="start_date"
+                className="block text-sm text-gray-500 mb-1"
+              >
+                Start Date
+              </label>
+              <input
+                id="start_date"
+                type="datetime-local"
+                name="start_date"
+                value={form.start_date}
+                onChange={handleChange}
+                disabled={!isEditable}
+                className="w-full border px-4 py-3 rounded"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="end_date"
+                className="block text-sm text-gray-500 mb-1"
+              >
                 End Date
               </label>
               <input
+                id="end_date"
                 type="datetime-local"
                 name="end_date"
                 value={form.end_date}
                 onChange={handleChange}
-                disabled={!isEditable || isPartialEditable}
-                placeholder="End Date"
-                aria-label="End Date"
+                disabled={!isEditable}
                 className="w-full border px-4 py-3 rounded"
               />
-              {errors.end_date && (
-                <p className="text-red-500 text-sm mt-1">{errors.end_date}</p>
-              )}
             </div>
 
             <div className="flex justify-between">

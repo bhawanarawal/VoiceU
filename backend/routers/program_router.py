@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
-from typing import List
+from typing import List, Optional
 from database import get_session
 from models.program import Program
 from models.organization import Organization
@@ -39,17 +39,25 @@ def create_program(program: ProgramCreate, session: Session = Depends(get_sessio
         org_id=program.org_id,
     )
     session.add(db_program)
-    session.commit()
-    session.refresh(db_program)
+    session.flush()
 
     sync_semesters(session, db_program.program_id, db_program.total_semesters)
 
+    session.commit()
+    session.refresh(db_program)
     return db_program
 
 
+# Corrected GET endpoint: supports optional org_id filter
 @router.get("/", response_model=List[ProgramRead])
-def read_programs(session: Session = Depends(get_session)):
-    return session.exec(select(Program)).all()
+def read_programs(
+    org_id: Optional[int] = Query(None, description="Filter programs by organization"),
+    session: Session = Depends(get_session),
+):
+    query = select(Program)
+    if org_id:
+        query = query.where(Program.org_id == org_id)
+    return session.exec(query).all()
 
 
 @router.get("/{program_id}", response_model=ProgramReadWithOrganization)
@@ -107,12 +115,13 @@ def update_program(
         program.org_id = updated_program.org_id
 
     session.add(program)
-    session.commit()
-    session.refresh(program)
+    session.flush()
 
     if updated_program.total_semesters is not None:
         sync_semesters(session, program.program_id, program.total_semesters)
 
+    session.commit()
+    session.refresh(program)
     return program
 
 

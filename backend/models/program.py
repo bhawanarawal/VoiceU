@@ -4,6 +4,7 @@ from sqlmodel import SQLModel, Field, Relationship
 if TYPE_CHECKING:
     from models.semester import Semester
     from models.organization import Organization
+    from models.election import Election
 
 
 class Program(SQLModel, table=True):
@@ -15,3 +16,4 @@ class Program(SQLModel, table=True):
 
     semesters: List["Semester"] = Relationship(back_populates="program")
     organization: Optional["Organization"] = Relationship(back_populates="programs")
+    elections: List["Election"] = Relationship(back_populates="program")
