@@ -12,7 +12,6 @@ class ApprovalStatus(str, Enum):
 
 class Candidate(SQLModel, table=True):
     candidate_id: Optional[int] = Field(default=None, primary_key=True)
-
     user_id: int = Field(foreign_key="user.user_id", index=True)
     election_id: int = Field(foreign_key="election.election_id", index=True)
     position_id: int = Field(foreign_key="position.position_id", index=True)

@@ -29,23 +29,27 @@ interface Program {
   program_name: string;
 }
 
+interface Position {
+  position_id: number;
+  position_name: string;
+}
+
 function getElectionPhase(start: string, end: string) {
   const now = new Date();
   const startDate = new Date(start);
   const endDate = new Date(end);
-
-  if (now < startDate) return "Upcoming";
-  if (now >= startDate && now <= endDate) return "Ongoing";
-  return "Past";
+  if (now < startDate) return "upcoming";
+  if (now >= startDate && now <= endDate) return "ongoing";
+  return "past";
 }
 
 function getBadgeColor(phase: string) {
   switch (phase) {
-    case "Upcoming":
+    case "upcoming":
       return "info";
-    case "Ongoing":
+    case "ongoing":
       return "success";
-    case "Past":
+    case "past":
       return "dark";
     default:
       return "light";
@@ -68,57 +72,62 @@ export default function ElectionForm() {
 
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [programs, setPrograms] = useState<Program[]>([]);
-  const [phase, setPhase] = useState("Upcoming");
+  const [positions, setPositions] = useState<Position[]>([]);
+  const [selectedPositions, setSelectedPositions] = useState<number[]>([]);
+  const [positionsOpen, setPositionsOpen] = useState(false);
+
+  const [phase, setPhase] = useState("upcoming");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [toast, setToast] = useState<{
-    message: string;
+    message: string | any[];
     type: "success" | "error";
   } | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchOrganizations = async () => {
-      try {
-        const res = await api.get("/organizations/");
-        setOrganizations(res.data);
-      } catch (err) {
-        console.error("Failed to load organizations", err);
-      }
-    };
-    fetchOrganizations();
+    api
+      .get("/organizations/")
+      .then((res) => setOrganizations(res.data))
+      .catch(console.error);
   }, []);
 
   useEffect(() => {
+    api
+      .get("/positions/")
+      .then((res) => setPositions(res.data))
+      .catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    if (form.organization_id) {
+      api
+        .get(`/programs/?org_id=${form.organization_id}`)
+        .then((res) => setPrograms(res.data))
+        .catch(() => setPrograms([]));
+    }
+  }, [form.organization_id]);
+
+  useEffect(() => {
     if (!id) return;
-    const fetchElection = async () => {
-      try {
-        const res = await api.get(`/elections/${id}`);
-        const start = res.data.start_date.slice(0, 16);
-        const end = res.data.end_date.slice(0, 16);
-
+    api
+      .get(`/elections/${id}`)
+      .then((res) => {
+        const data = res.data;
         setForm({
-          election_name: res.data.election_name,
-          description: res.data.description || "",
-          organization_id: res.data.organization_id,
-          program_id: res.data.program_id,
-          affiliation_name: res.data.affiliation_name,
-          start_date: start,
-          end_date: end,
+          election_name: data.election_name,
+          description: data.description || "",
+          organization_id: data.organization_id,
+          program_id: data.program_id,
+          affiliation_name: data.affiliation_name,
+          start_date: data.start_date.slice(0, 16),
+          end_date: data.end_date.slice(0, 16),
         });
-
-        if (res.data.organization_id) {
-          const resPrograms = await api.get(
-            `/programs/?org_id=${res.data.organization_id}`
-          );
-          setPrograms(resPrograms.data);
-        }
-
-        setPhase(getElectionPhase(res.data.start_date, res.data.end_date));
-      } catch (err) {
-        console.error("Failed to load election", err);
-      }
-    };
-    fetchElection();
+        setSelectedPositions(
+          data.positions?.map((p: any) => p.position_id) || []
+        );
+        setPhase(getElectionPhase(data.start_date, data.end_date));
+      })
+      .catch(console.error);
   }, [id]);
 
   const handleChange = (
@@ -127,7 +136,6 @@ export default function ElectionForm() {
     >
   ) => {
     const { name, value } = e.target;
-
     setForm((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
 
@@ -135,19 +143,9 @@ export default function ElectionForm() {
       const org = organizations.find((o) => o.org_id === Number(value));
       setForm((prev) => ({
         ...prev,
-        affiliation_name: org ? org.affiliation_name : "",
+        affiliation_name: org?.affiliation_name || "",
         program_id: 0,
       }));
-
-      const fetchPrograms = async () => {
-        try {
-          const res = await api.get(`/programs/?org_id=${value}`);
-          setPrograms(res.data);
-        } catch {
-          setPrograms([]);
-        }
-      };
-      fetchPrograms();
     }
   };
 
@@ -160,6 +158,8 @@ export default function ElectionForm() {
     if (!form.program_id) newErrors.program_id = "Please select a program";
     if (!form.start_date) newErrors.start_date = "Start date is required";
     if (!form.end_date) newErrors.end_date = "End date is required";
+    if (!selectedPositions.length)
+      newErrors.positions = "Please select at least one position";
 
     if (Object.keys(newErrors).length) {
       setErrors(newErrors);
@@ -170,10 +170,10 @@ export default function ElectionForm() {
       election_name: form.election_name,
       description: form.description,
       program_id: Number(form.program_id),
-      affiliation_name: form.affiliation_name,
       start_date: new Date(form.start_date).toISOString(),
       end_date: new Date(form.end_date).toISOString(),
-      status: getElectionPhase(form.start_date, form.end_date).toLowerCase(),
+      status: getElectionPhase(form.start_date, form.end_date),
+      position_ids: selectedPositions.map(Number),
     };
 
     setLoading(true);
@@ -187,15 +187,24 @@ export default function ElectionForm() {
       }
       setTimeout(() => navigate("/election"), 500);
     } catch (err: any) {
-      const errorMessage =
-        err.response?.data?.detail || "Failed to save election";
+      let errorMessage: string | any[] = "Failed to save election";
+      if (
+        err.response?.status === 422 &&
+        Array.isArray(err.response.data.detail)
+      ) {
+        errorMessage = err.response.data.detail.map(
+          (e: any) => `${e.loc.join(" > ")}: ${e.msg}`
+        );
+      } else if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      }
       setToast({ message: errorMessage, type: "error" });
     } finally {
       setLoading(false);
     }
   };
 
-  const isEditable = phase !== "Past";
+  const isEditable = phase !== "past";
 
   return (
     <div>
@@ -204,7 +213,17 @@ export default function ElectionForm() {
         description="Election form"
       />
       <PageBreadcrumb pageTitle={id ? "Edit Election" : "Add Election"} />
-      {toast && <Toast {...toast} onClose={() => setToast(null)} />}
+      {toast && (
+        <Toast
+          message={
+            Array.isArray(toast.message)
+              ? toast.message.join("\n") // join array into a string
+              : toast.message
+          }
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
 
       {id && (
         <div className="mb-4">
@@ -218,14 +237,10 @@ export default function ElectionForm() {
         <ComponentCard title="Election Information">
           <div className="space-y-6">
             <div>
-              <label
-                htmlFor="election_name"
-                className="block text-sm text-gray-500 mb-1"
-              >
+              <label className="block text-sm text-gray-500 mb-1">
                 Election Name
               </label>
               <input
-                id="election_name"
                 type="text"
                 name="election_name"
                 placeholder="Enter election name"
@@ -242,15 +257,13 @@ export default function ElectionForm() {
             </div>
 
             <div>
-              <label
-                htmlFor="organization"
-                className="block text-sm text-gray-500 mb-1"
-              >
+              <label className="block text-sm text-gray-500 mb-1">
                 Organization
               </label>
               <select
-                id="organization"
+                id="organization_id"
                 name="organization_id"
+                aria-label="Organization"
                 value={form.organization_id}
                 onChange={handleChange}
                 disabled={!isEditable}
@@ -271,15 +284,13 @@ export default function ElectionForm() {
             </div>
 
             <div>
-              <label
-                htmlFor="program"
-                className="block text-sm text-gray-500 mb-1"
-              >
+              <label className="block text-sm text-gray-500 mb-1">
                 Program
               </label>
               <select
-                id="program"
+                id="program_id"
                 name="program_id"
+                aria-label="Program"
                 value={form.program_id}
                 onChange={handleChange}
                 disabled={!isEditable || !form.organization_id}
@@ -298,34 +309,74 @@ export default function ElectionForm() {
             </div>
 
             <div>
-              <label
-                htmlFor="affiliation"
-                className="block text-sm text-gray-500 mb-1"
-              >
+              <label className="block text-sm text-gray-500 mb-1">
                 Affiliation
               </label>
               <input
-                id="affiliation"
+                id="affiliation_name"
                 type="text"
                 name="affiliation_name"
+                placeholder="Affiliation"
                 value={form.affiliation_name}
                 disabled
                 className="w-full border px-4 py-3 rounded bg-gray-100"
-                aria-readonly="true"
               />
             </div>
 
             <div>
-              <label
-                htmlFor="description"
-                className="block text-sm text-gray-500 mb-1"
-              >
+              <label className="block text-sm text-gray-500 mb-1">
+                Select Positions
+              </label>
+              <div className="relative">
+                <button
+                  type="button"
+                  className="w-full border px-4 py-3 rounded text-left flex justify-between items-center"
+                  onClick={() => setPositionsOpen((prev) => !prev)}
+                >
+                  {selectedPositions.length
+                    ? `Selected (${selectedPositions.length})`
+                    : "Select positions"}
+                  <span className="ml-2">{positionsOpen ? "▲" : "▼"}</span>
+                </button>
+                {positionsOpen && (
+                  <div className="absolute z-10 w-full bg-white border rounded mt-1 max-h-60 overflow-y-auto shadow-lg">
+                    {positions.map((pos) => (
+                      <label
+                        key={pos.position_id}
+                        className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          value={pos.position_id}
+                          checked={selectedPositions.includes(pos.position_id)}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setSelectedPositions((prev) =>
+                              checked
+                                ? [...prev, pos.position_id]
+                                : prev.filter((id) => id !== pos.position_id)
+                            );
+                          }}
+                          className="mr-2"
+                        />
+                        {pos.position_name}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {errors.positions && (
+                <p className="text-red-500 text-sm mt-1">{errors.positions}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm text-gray-500 mb-1">
                 Description
               </label>
               <textarea
-                id="description"
+                placeholder="Enter description"
                 name="description"
-                placeholder="Enter election description"
                 value={form.description}
                 onChange={handleChange}
                 disabled={!isEditable}
@@ -334,16 +385,14 @@ export default function ElectionForm() {
             </div>
 
             <div>
-              <label
-                htmlFor="start_date"
-                className="block text-sm text-gray-500 mb-1"
-              >
+              <label className="block text-sm text-gray-500 mb-1">
                 Start Date
               </label>
               <input
                 id="start_date"
                 type="datetime-local"
                 name="start_date"
+                placeholder="Select start date"
                 value={form.start_date}
                 onChange={handleChange}
                 disabled={!isEditable}
@@ -352,16 +401,14 @@ export default function ElectionForm() {
             </div>
 
             <div>
-              <label
-                htmlFor="end_date"
-                className="block text-sm text-gray-500 mb-1"
-              >
+              <label className="block text-sm text-gray-500 mb-1">
                 End Date
               </label>
               <input
                 id="end_date"
                 type="datetime-local"
                 name="end_date"
+                placeholder="Select end date"
                 value={form.end_date}
                 onChange={handleChange}
                 disabled={!isEditable}

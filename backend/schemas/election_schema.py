@@ -1,6 +1,6 @@
 from pydantic import BaseModel, model_validator, field_serializer
 from datetime import datetime, timezone, timedelta
-from typing import Optional
+from typing import Optional, List
 from enum import Enum
 
 NPT = timezone(timedelta(hours=5, minutes=45))
@@ -18,8 +18,8 @@ class ElectionCreate(BaseModel):
     start_date: datetime
     end_date: datetime
     status: ElectionStatus
-    affiliation_name: Optional[str] = None
     description: Optional[str] = None
+    position_ids: Optional[List[int]] = []
 
     @model_validator(mode="before")
     def check_dates(cls, values):
@@ -58,6 +58,7 @@ class ElectionListItem(BaseModel):
     program_name: str
     organization_name: str
     affiliation_name: str
+    positions: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -71,12 +72,10 @@ class ElectionListItem(BaseModel):
 class ElectionDetail(BaseModel):
     election_id: int
     election_name: str
-
     program_id: int
     organization_id: int
     organization_name: str
     affiliation_name: str
-
     start_date: datetime
     end_date: datetime
     status: ElectionStatus
