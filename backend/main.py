@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends
 from sqlmodel import Session
+import models
 from database import create_db_and_tables, get_session
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles

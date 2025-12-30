@@ -7,6 +7,11 @@ import { DataTable } from "../../components/ui/table";
 import Badge from "../../components/ui/badge/Badge";
 import { getElections, deleteElection } from "./electionService";
 
+interface Position {
+  position_id: number;
+  position_name: string;
+}
+
 interface Election {
   election_id: number;
   election_name: string;
@@ -17,6 +22,7 @@ interface Election {
   start_date: string;
   end_date: string;
   status: string;
+  positions?: Position[];
   phase?: string;
 }
 
@@ -61,6 +67,7 @@ export default function ElectionList() {
         res.data.map((e: any) => ({
           ...e,
           phase: getElectionPhase(e.start_date, e.end_date),
+          positions: e.positions || [],
         }))
       );
     } catch {
@@ -81,6 +88,19 @@ export default function ElectionList() {
     { header: "Program", key: "program_name" },
     { header: "Affiliation", key: "affiliation_name" },
     { header: "Organization", key: "organization_name" },
+    {
+      header: "Positions",
+      key: "positions",
+      renderCell: (_key, row) => (
+        <div className="flex flex-wrap gap-1">
+          {row.positions?.map((pos, idx) => (
+            <Badge key={idx} variant="solid" color="primary">
+              {pos.position_name} {/* Render full position name */}
+            </Badge>
+          ))}
+        </div>
+      ),
+    },
     {
       header: "Status",
       key: "phase",
