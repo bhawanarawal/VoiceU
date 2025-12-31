@@ -217,7 +217,7 @@ export default function ElectionForm() {
         <Toast
           message={
             Array.isArray(toast.message)
-              ? toast.message.join("\n") // join array into a string
+              ? toast.message.join("\n")
               : toast.message
           }
           type={toast.type}

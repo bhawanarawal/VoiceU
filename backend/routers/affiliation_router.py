@@ -65,7 +65,6 @@ def get_affiliation_with_details(
         select(Program).where(Program.affiliation_id == affiliation_id)
     ).all()
 
-    # Convert programs to Pydantic models
     programs_read = [ProgramRead.from_orm(prog) for prog in programs]
 
     organizations = session.exec(
@@ -81,6 +80,14 @@ def get_affiliation_with_details(
         programs=programs_read,
         organizations=orgs_read,
     )
+
+
+@router.get("/by-org/{org_id}")
+def get_affiliations_by_org(
+    org_id: int,
+    session: Session = Depends(get_session),
+):
+    return session.exec(select(Affiliation).where(Affiliation.org_id == org_id)).all()
 
 
 @router.put("/{affiliation_id}", response_model=AffiliationRead)
