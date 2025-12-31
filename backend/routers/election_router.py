@@ -126,7 +126,8 @@ def get_all_elections(session: Session = Depends(get_session)):
         positions = session.exec(
             select(Position.position_name)
             .join(
-                ElectionPosition, Position.position_id == ElectionPosition.position_id
+                ElectionPosition,
+                Position.position_id == ElectionPosition.position_id,
             )
             .where(ElectionPosition.election_id == r.election_id)
         ).all()
@@ -142,7 +143,7 @@ def get_all_elections(session: Session = Depends(get_session)):
                 program_name=r.program_name,
                 organization_name=r.organization_name,
                 affiliation_name=r.affiliation_name,
-                positions=", ".join([p[0] for p in positions]) if positions else "",
+                positions=", ".join(positions) if positions else "",
                 created_at=r.created_at,
                 updated_at=r.updated_at,
             )

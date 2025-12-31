@@ -1,4 +1,4 @@
-import { JSX, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Button from "../../components/ui/button/Button";
 import { Modal } from "../../components/ui/modal";
@@ -9,13 +9,13 @@ import { getVoters, deleteVoter } from "./voterService";
 interface Voter {
   voter_id: number;
   user_id: number;
-  username: string;
   full_name: string;
-  org_id: number;
+  username: string;
   org_name: string;
-  affiliation_id: number;
+  program_name: string;
+  semester_number: number;
   affiliation_name: string;
-  affiliation_level?: string;
+  registered_at: string;
 }
 
 export default function VoterList() {
@@ -33,8 +33,11 @@ export default function VoterList() {
     try {
       const res = await getVoters();
       setData(res.data);
-    } catch {
-      setToast({ message: "Failed to fetch voters", type: "error" });
+    } catch (err: any) {
+      setToast({
+        message: err.response?.data?.detail || "Failed to fetch voters",
+        type: "error",
+      });
     }
   };
 
@@ -47,24 +50,25 @@ export default function VoterList() {
       await deleteVoter(id);
       setToast({ message: "Voter deleted successfully", type: "success" });
       setData((prev) => prev.filter((v) => v.voter_id !== id));
-    } catch {
-      setToast({ message: "Failed to delete voter", type: "error" });
+    } catch (err: any) {
+      setToast({
+        message: err.response?.data?.detail || "Failed to delete voter",
+        type: "error",
+      });
     } finally {
       setConfirmDelete(null);
     }
   };
 
-  const columns: {
-    header: string;
-    key: keyof Voter;
-    renderCell?: (key: keyof Voter, row: Voter) => JSX.Element | string;
-  }[] = [
+  const columns: { header: string; key: keyof Voter }[] = [
     { header: "Voter ID", key: "voter_id" },
-    { header: "Username", key: "username" },
     { header: "Full Name", key: "full_name" },
+    { header: "Username", key: "username" },
     { header: "Organization", key: "org_name" },
+    { header: "Program", key: "program_name" },
+    { header: "Semester", key: "semester_number" },
     { header: "Affiliation", key: "affiliation_name" },
-    { header: "Level", key: "affiliation_level" },
+    { header: "Registered At", key: "registered_at" },
   ];
 
   return (
@@ -95,10 +99,7 @@ export default function VoterList() {
             </Link>
             <button
               onClick={() =>
-                setConfirmDelete({
-                  id: row.voter_id,
-                  name: row.full_name,
-                })
+                setConfirmDelete({ id: row.voter_id, name: row.full_name })
               }
               className="text-red-600 hover:underline"
             >

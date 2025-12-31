@@ -95,7 +95,7 @@ export default function ElectionList() {
         <div className="flex flex-wrap gap-1">
           {row.positions?.map((pos, idx) => (
             <Badge key={idx} variant="solid" color="primary">
-              {pos.position_name} {/* Render full position name */}
+              {pos.position_name}
             </Badge>
           ))}
         </div>

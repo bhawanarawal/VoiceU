@@ -1,24 +1,26 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import ComponentCard from "../../components/common/ComponentCard";
 import Button from "../../components/ui/button/Button";
 import Toast from "../../components/common/Toast";
-import { getVoterById, createVoter, updateVoter } from "./voterService";
-import axios from "axios";
+import {
+  getMyVoter,
+  createVoter,
+  getOrganizations,
+  getProgramsByOrg,
+  getSemestersByProgram,
+  getAffiliationsByOrg,
+} from "./voterService";
 
 interface VoterFormState {
   user_id: number;
+  full_name: string;
   org_id: number;
+  program_id: number;
+  semester_id: number;
   affiliation_id: number;
-  affiliation_level: string;
-}
-
-interface User {
-  user_id: number;
-  username: string;
-  full_name?: string;
 }
 
 interface Organization {
@@ -26,99 +28,166 @@ interface Organization {
   name: string;
 }
 
+interface Program {
+  program_id: number;
+  program_name: string;
+}
+
+interface Semester {
+  semester_id: number;
+  semester_number: number;
+}
+
 interface Affiliation {
   affiliation_id: number;
   affiliation_name: string;
-  org_id: number; // important: affiliation should have org_id
 }
 
+type FormErrors = {
+  org_id?: string;
+  program_id?: string;
+  semester_id?: string;
+  affiliation_id?: string;
+};
+
 export default function VoterForm() {
-  const { id } = useParams();
   const navigate = useNavigate();
 
   const [form, setForm] = useState<VoterFormState>({
     user_id: 0,
+    full_name: "",
     org_id: 0,
+    program_id: 0,
+    semester_id: 0,
     affiliation_id: 0,
-    affiliation_level: "",
   });
 
-  const [users, setUsers] = useState<User[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [allAffiliations, setAllAffiliations] = useState<Affiliation[]>([]);
-  const [affiliations, setAffiliations] = useState<Affiliation[]>([]);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [filteredPrograms, setFilteredPrograms] = useState<Program[]>([]);
+  const [filteredSemesters, setFilteredSemesters] = useState<Semester[]>([]);
+  const [filteredAffiliations, setFilteredAffiliations] = useState<
+    Affiliation[]
+  >([]);
+  const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error";
   } | null>(null);
+  const [isRegistered, setIsRegistered] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const loadData = async () => {
       try {
-        const [usersRes, orgRes, affRes] = await Promise.all([
-          axios.get("http://127.0.0.1:8000/auth/users"),
-          axios.get("http://127.0.0.1:8000/organizations/"),
-          axios.get("http://127.0.0.1:8000/affiliations/"),
-        ]);
+        const userRes = await getMyVoter();
+        const currentUser = userRes.data;
 
-        setUsers(usersRes.data);
-        setOrganizations(orgRes.data);
-        setAllAffiliations(affRes.data);
-
-        if (id) {
-          const res = await getVoterById(Number(id));
-          setForm({
-            user_id: res.data.user_id,
-            org_id: res.data.org_id,
-            affiliation_id: res.data.affiliation_id,
-            affiliation_level: res.data.affiliation_level || "",
+        if (currentUser.voter_id) {
+          setIsRegistered(true);
+          setToast({
+            message: "You are already registered as a voter",
+            type: "success",
           });
 
-          // Filter affiliations for the selected org
-          const filtered = affRes.data.filter(
-            (a: Affiliation) => a.org_id === res.data.org_id
-          );
-          setAffiliations(filtered);
+          const [progRes, semRes, affRes, orgRes] = await Promise.all([
+            getProgramsByOrg(currentUser.org_id),
+            getSemestersByProgram(currentUser.program_id),
+            getAffiliationsByOrg(currentUser.org_id),
+            getOrganizations(),
+          ]);
+
+          let affiliations: Affiliation[] = affRes.data;
+
+          if (
+            currentUser.affiliation_id &&
+            !affiliations.find(
+              (a: Affiliation) =>
+                a.affiliation_id === currentUser.affiliation_id
+            )
+          ) {
+            affiliations.push({
+              affiliation_id: currentUser.affiliation_id,
+              affiliation_name:
+                currentUser.affiliation_name || "Registered Affiliation",
+            });
+          }
+
+          setOrganizations(orgRes.data);
+          setFilteredPrograms(progRes.data);
+          setFilteredSemesters(semRes.data);
+          setFilteredAffiliations(affiliations);
+
+          setForm({
+            user_id: currentUser.user_id,
+            full_name: currentUser.full_name,
+            org_id: currentUser.org_id,
+            program_id: currentUser.program_id,
+            semester_id: currentUser.semester_id,
+            affiliation_id: currentUser.affiliation_id || 0,
+          });
+
+          return;
         }
-      } catch {
-        setToast({ message: "Failed to load data", type: "error" });
+
+        const orgRes = await getOrganizations();
+        setOrganizations(orgRes.data);
+        setForm({
+          user_id: currentUser.user_id,
+          full_name: currentUser.full_name,
+          org_id: 0,
+          program_id: 0,
+          semester_id: 0,
+          affiliation_id: 0,
+        });
+      } catch (err: any) {
+        setToast({
+          message: err.response?.data?.detail || "Failed to load data",
+          type: "error",
+        });
       }
     };
 
-    fetchData();
-  }, [id]);
+    loadData();
+  }, []);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
-  ) => {
-    const { name, value, tagName } = e.target;
-    const newValue = tagName === "SELECT" ? Number(value) : value;
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    const numericValue = Number(value);
 
-    setForm({ ...form, [name]: newValue });
-    setErrors({ ...errors, [name]: "" });
+    setForm((prev) => ({ ...prev, [name]: numericValue }));
+    setErrors((prev) => ({ ...prev, [name]: "" }));
 
     if (name === "org_id") {
-      // Filter affiliations based on selected organization
-      const filtered = allAffiliations.filter(
-        (a) => a.org_id === Number(value)
+      getProgramsByOrg(numericValue).then((res) =>
+        setFilteredPrograms(res.data)
       );
-      setAffiliations(filtered);
+      getAffiliationsByOrg(numericValue).then((res) =>
+        setFilteredAffiliations(res.data)
+      );
+      setFilteredSemesters([]);
+      setForm((prev) => ({
+        ...prev,
+        program_id: 0,
+        semester_id: 0,
+        affiliation_id: 0,
+      }));
+    }
 
-      // Reset affiliation selection when org changes
-      setForm((prev) => ({ ...prev, affiliation_id: 0 }));
+    if (name === "program_id") {
+      getSemestersByProgram(numericValue).then((res) =>
+        setFilteredSemesters(res.data)
+      );
+      setForm((prev) => ({ ...prev, semester_id: 0 }));
     }
   };
 
   const handleSubmit = async () => {
-    const newErrors: Record<string, string> = {};
-    if (!form.user_id) newErrors.user_id = "User is required";
+    const newErrors: FormErrors = {};
     if (!form.org_id) newErrors.org_id = "Organization is required";
+    if (!form.program_id) newErrors.program_id = "Program is required";
+    if (!form.semester_id) newErrors.semester_id = "Semester is required";
     if (!form.affiliation_id)
       newErrors.affiliation_id = "Affiliation is required";
-    if (!form.affiliation_level)
-      newErrors.affiliation_level = "Affiliation level is required";
 
     if (Object.keys(newErrors).length) {
       setErrors(newErrors);
@@ -127,18 +196,12 @@ export default function VoterForm() {
 
     setLoading(true);
     try {
-      const payload = { ...form };
-      if (id) {
-        await updateVoter(Number(id), payload);
-        setToast({ message: "Voter updated", type: "success" });
-      } else {
-        await createVoter(payload);
-        setToast({ message: "Voter created", type: "success" });
-      }
-      setTimeout(() => navigate("/voter"), 700);
+      await createVoter(form);
+      setToast({ message: "Voter registered successfully", type: "success" });
+      setTimeout(() => navigate("/dashboard"), 1000);
     } catch (err: any) {
       setToast({
-        message: err.response?.data?.detail || "Failed to save voter",
+        message: err.response?.data?.detail || "Registration failed",
         type: "error",
       });
     } finally {
@@ -148,54 +211,40 @@ export default function VoterForm() {
 
   return (
     <div>
-      <PageMeta
-        title={id ? "Edit Voter" : "Add Voter"}
-        description="Voter form"
-      />
-      <PageBreadcrumb pageTitle={id ? "Edit Voter" : "Add Voter"} />
-
+      <PageMeta title="Register as Voter" description="Voter registration" />
+      <PageBreadcrumb pageTitle="Voter Registration" />
       {toast && <Toast {...toast} onClose={() => setToast(null)} />}
 
       <div className="max-w-lg mx-auto mt-6">
-        <ComponentCard title="Voter Information">
+        <ComponentCard title="Voter Registration">
           <div className="space-y-6">
-            {/* User */}
             <div>
-              <label htmlFor="user_id" className="block text-sm text-gray-500">
-                User
-              </label>
-              <select
-                id="user_id"
-                name="user_id"
-                value={form.user_id}
-                onChange={handleChange}
-                className="w-full border px-4 py-3 rounded"
-              >
-                <option value={0}>Select user</option>
-                {users.map((u) => (
-                  <option key={u.user_id} value={u.user_id}>
-                    {u.full_name || u.username}
-                  </option>
-                ))}
-              </select>
-              {errors.user_id && (
-                <p className="text-red-500 text-sm">{errors.user_id}</p>
-              )}
+              <label className="block text-sm text-gray-500">Full Name</label>
+              <input
+                id="full_name"
+                aria-label="Full Name"
+                type="text"
+                name="full_name"
+                value={form.full_name}
+                readOnly
+                className="w-full border px-4 py-3 rounded bg-gray-100"
+              />
             </div>
 
-            {/* Organization */}
             <div>
-              <label htmlFor="org_id" className="block text-sm text-gray-500">
+              <label className="block text-sm text-gray-500">
                 Organization
               </label>
               <select
-                id="org_id"
+                id="organization"
+                aria-label="Organization"
                 name="org_id"
                 value={form.org_id}
                 onChange={handleChange}
+                disabled={isRegistered}
                 className="w-full border px-4 py-3 rounded"
               >
-                <option value={0}>Select organization</option>
+                <option value={0}>Select Organization</option>
                 {organizations.map((o) => (
                   <option key={o.org_id} value={o.org_id}>
                     {o.name}
@@ -207,23 +256,65 @@ export default function VoterForm() {
               )}
             </div>
 
-            {/* Affiliation */}
             <div>
-              <label
-                htmlFor="affiliation_id"
-                className="block text-sm text-gray-500"
-              >
-                Affiliation
-              </label>
+              <label className="block text-sm text-gray-500">Program</label>
               <select
-                id="affiliation_id"
+                id="program"
+                aria-label="Program"
+                name="program_id"
+                value={form.program_id}
+                onChange={handleChange}
+                disabled={isRegistered}
+                className="w-full border px-4 py-3 rounded"
+              >
+                <option value={0}>Select Program</option>
+                {filteredPrograms.map((p) => (
+                  <option key={p.program_id} value={p.program_id}>
+                    {p.program_name}
+                  </option>
+                ))}
+              </select>
+              {errors.program_id && (
+                <p className="text-red-500 text-sm">{errors.program_id}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm text-gray-500">Semester</label>
+              <select
+                id="semester"
+                aria-label="Semester"
+                name="semester_id"
+                value={form.semester_id}
+                onChange={handleChange}
+                disabled={isRegistered}
+                className="w-full border px-4 py-3 rounded"
+              >
+                <option value={0}>Select Semester</option>
+                {filteredSemesters.map((s) => (
+                  <option key={s.semester_id} value={s.semester_id}>
+                    {s.semester_number}
+                  </option>
+                ))}
+              </select>
+              {errors.semester_id && (
+                <p className="text-red-500 text-sm">{errors.semester_id}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm text-gray-500">Affiliation</label>
+              <select
+                id="affiliation"
+                aria-label="Affiliation"
                 name="affiliation_id"
                 value={form.affiliation_id}
                 onChange={handleChange}
+                disabled={isRegistered}
                 className="w-full border px-4 py-3 rounded"
               >
-                <option value={0}>Select affiliation</option>
-                {affiliations.map((a) => (
+                <option value={0}>Select Affiliation</option>
+                {filteredAffiliations.map((a) => (
                   <option key={a.affiliation_id} value={a.affiliation_id}>
                     {a.affiliation_name}
                   </option>
@@ -234,37 +325,17 @@ export default function VoterForm() {
               )}
             </div>
 
-            {/* Affiliation Level */}
-            <div>
-              <label className="block text-sm text-gray-500">
-                Affiliation Level
-              </label>
-              <input
-                type="text"
-                name="affiliation_level"
-                value={form.affiliation_level}
-                onChange={handleChange}
-                placeholder="Enter affiliation level"
-                className="w-full border px-4 py-3 rounded"
-              />
-              {errors.affiliation_level && (
-                <p className="text-red-500 text-sm">
-                  {errors.affiliation_level}
-                </p>
-              )}
-            </div>
-
-            {/* Buttons */}
-            <div className="flex justify-between">
-              <Button variant="outline" onClick={() => navigate("/voter")}>
-                Back
-              </Button>
+            <div className="flex justify-end">
               <Button
                 variant="primary"
-                disabled={loading}
                 onClick={handleSubmit}
+                disabled={loading || isRegistered}
               >
-                {loading ? "Saving..." : id ? "Update Voter" : "Save Voter"}
+                {isRegistered
+                  ? "Already Registered"
+                  : loading
+                  ? "Registering..."
+                  : "Register as Voter"}
               </Button>
             </div>
           </div>

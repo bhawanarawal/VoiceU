@@ -8,13 +8,15 @@ NPT = timezone(timedelta(hours=5, minutes=45))
 class VoterCreate(BaseModel):
     user_id: int
     org_id: int
+    program_id: int
+    semester_id: int
     affiliation_id: int
-    affiliation_level: Optional[str] = None
 
 
 class VoterUpdate(BaseModel):
-    affiliation_id: Optional[int] = None
-    affiliation_level: Optional[str] = None
+    org_id: Optional[int] = None
+    program_id: Optional[int] = None
+    semester_id: Optional[int] = None
 
 
 class VoterRead(BaseModel):
@@ -24,14 +26,18 @@ class VoterRead(BaseModel):
     full_name: str
     org_id: int
     org_name: str
-    affiliation_id: int
-    affiliation_name: str
-    affiliation_level: Optional[str]
-    created_at: datetime
-    updated_at: datetime
+    program_id: int
+    program_name: str
+    semester_id: int
+    semester_number: int
+    affiliation_id: Optional[int] = None
+    affiliation_name: Optional[str] = None
+    registered_at: Optional[datetime]
 
     model_config = {"from_attributes": True}
 
-    @field_serializer("created_at", "updated_at")
-    def format_date(self, dt: datetime, _info):
-        return dt.astimezone(NPT).strftime("%Y-%m-%d %H:%M:%S")
+    @field_serializer("registered_at")
+    def format_date(self, value: Optional[datetime]):
+        if value is None:
+            return None
+        return value.astimezone().isoformat()
