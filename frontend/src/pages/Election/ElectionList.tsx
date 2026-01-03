@@ -6,6 +6,7 @@ import Toast from "../../components/common/Toast";
 import { DataTable } from "../../components/ui/table";
 import Badge from "../../components/ui/badge/Badge";
 import { getElections, deleteElection } from "./electionService";
+import { getElectionPhase } from "../../utils/time";
 
 interface Position {
   position_id: number;
@@ -26,16 +27,6 @@ interface Election {
   phase?: string;
 }
 
-function getElectionPhase(start: string, end: string) {
-  const now = new Date();
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-
-  if (now < startDate) return "Upcoming";
-  if (now >= startDate && now <= endDate) return "Ongoing";
-  return "Past";
-}
-
 function getBadgeColor(phase: string) {
   switch (phase) {
     case "Upcoming":
@@ -48,6 +39,22 @@ function getBadgeColor(phase: string) {
       return "light";
   }
 }
+
+const formatNepalDate = (dateStr: string) => {
+  const date = new Date(dateStr);
+  const utc = date.getTime() + date.getTimezoneOffset() * 60000;
+  const nptOffset = 5.75 * 60 * 60 * 1000;
+  const nptDate = new Date(utc + nptOffset);
+
+  return nptDate.toLocaleString("en-NP", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
 
 export default function ElectionList() {
   const [data, setData] = useState<Election[]>([]);
@@ -100,6 +107,16 @@ export default function ElectionList() {
           ))}
         </div>
       ),
+    },
+    {
+      header: "Start Date",
+      key: "start_date",
+      renderCell: (_key, row) => <span>{formatNepalDate(row.start_date)}</span>,
+    },
+    {
+      header: "End Date",
+      key: "end_date",
+      renderCell: (_key, row) => <span>{formatNepalDate(row.end_date)}</span>,
     },
     {
       header: "Status",

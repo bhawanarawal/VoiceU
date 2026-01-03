@@ -1,3 +1,4 @@
+import axios from "axios";
 import api from "../../utils/api";
 
 export const getElections = () => {
@@ -18,4 +19,12 @@ export const updateElection = (id: number, data: any) => {
 
 export const deleteElection = (id: number) => {
   return api.delete(`/elections/${id}/`);
+};
+
+export const getElection = async (id: number) => {
+  return api.get(`/elections/${id}`);
+};
+
+export const getElectionPositionsWithCount = (electionId: number) => {
+  return axios.get(`/elections/${electionId}/positions-with-count`);
 };

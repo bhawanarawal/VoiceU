@@ -34,16 +34,32 @@ interface Position {
   position_name: string;
 }
 
-function getElectionPhase(start: string, end: string) {
-  const now = new Date();
-  const startDate = new Date(start);
-  const endDate = new Date(end);
-  if (now < startDate) return "upcoming";
-  if (now >= startDate && now <= endDate) return "ongoing";
-  return "past";
-}
+const toLocalInput = (utcDate: string) => {
+  const date = new Date(utcDate);
+  const localISO = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 16);
+  return localISO;
+};
 
-function getBadgeColor(phase: string) {
+const toUTC = (localDate: string) => {
+  const date = new Date(localDate);
+  const utcISO = new Date(
+    date.getTime() + date.getTimezoneOffset() * 60000
+  ).toISOString();
+  return utcISO;
+};
+
+const getElectionPhase = (startUTC: string, endUTC: string) => {
+  const now = new Date();
+  const start = new Date(startUTC);
+  const end = new Date(endUTC);
+  if (now < start) return "upcoming";
+  if (now >= start && now <= end) return "ongoing";
+  return "past";
+};
+
+const getBadgeColor = (phase: string) => {
   switch (phase) {
     case "upcoming":
       return "info";
@@ -54,7 +70,7 @@ function getBadgeColor(phase: string) {
     default:
       return "light";
   }
-}
+};
 
 export default function ElectionForm() {
   const { id } = useParams();
@@ -99,12 +115,11 @@ export default function ElectionForm() {
   }, []);
 
   useEffect(() => {
-    if (form.organization_id) {
-      api
-        .get(`/programs/?org_id=${form.organization_id}`)
-        .then((res) => setPrograms(res.data))
-        .catch(() => setPrograms([]));
-    }
+    if (!form.organization_id) return;
+    api
+      .get(`/programs/?org_id=${form.organization_id}`)
+      .then((res) => setPrograms(res.data))
+      .catch(() => setPrograms([]));
   }, [form.organization_id]);
 
   useEffect(() => {
@@ -113,14 +128,16 @@ export default function ElectionForm() {
       .get(`/elections/${id}`)
       .then((res) => {
         const data = res.data;
+        const startLocal = toLocalInput(data.start_date);
+        const endLocal = toLocalInput(data.end_date);
         setForm({
           election_name: data.election_name,
           description: data.description || "",
           organization_id: data.organization_id,
           program_id: data.program_id,
           affiliation_name: data.affiliation_name,
-          start_date: data.start_date.slice(0, 16),
-          end_date: data.end_date.slice(0, 16),
+          start_date: startLocal,
+          end_date: endLocal,
         });
         setSelectedPositions(
           data.positions?.map((p: any) => p.position_id) || []
@@ -170,9 +187,9 @@ export default function ElectionForm() {
       election_name: form.election_name,
       description: form.description,
       program_id: Number(form.program_id),
-      start_date: new Date(form.start_date).toISOString(),
-      end_date: new Date(form.end_date).toISOString(),
-      status: getElectionPhase(form.start_date, form.end_date),
+      start_date: toUTC(form.start_date),
+      end_date: toUTC(form.end_date),
+      status: getElectionPhase(toUTC(form.start_date), toUTC(form.end_date)),
       position_ids: selectedPositions.map(Number),
     };
 
@@ -213,6 +230,7 @@ export default function ElectionForm() {
         description="Election form"
       />
       <PageBreadcrumb pageTitle={id ? "Edit Election" : "Add Election"} />
+
       {toast && (
         <Toast
           message={
@@ -263,7 +281,7 @@ export default function ElectionForm() {
               <select
                 id="organization_id"
                 name="organization_id"
-                aria-label="Organization"
+                aria-label="Select organization"
                 value={form.organization_id}
                 onChange={handleChange}
                 disabled={!isEditable}
@@ -290,7 +308,7 @@ export default function ElectionForm() {
               <select
                 id="program_id"
                 name="program_id"
-                aria-label="Program"
+                aria-label="Select program"
                 value={form.program_id}
                 onChange={handleChange}
                 disabled={!isEditable || !form.organization_id}
@@ -406,9 +424,9 @@ export default function ElectionForm() {
               </label>
               <input
                 id="end_date"
+                placeholder="Select end date"
                 type="datetime-local"
                 name="end_date"
-                placeholder="Select end date"
                 value={form.end_date}
                 onChange={handleChange}
                 disabled={!isEditable}

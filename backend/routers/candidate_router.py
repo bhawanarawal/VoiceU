@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from ast import Dict
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
 from sqlmodel import Session, select
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone
@@ -123,6 +124,22 @@ def get_candidate(candidate_id: int, session: Session = Depends(get_session)):
     if not candidate or not candidate.is_active:
         raise HTTPException(status_code=404, detail="Candidate not found")
     return candidate
+
+
+@router.get("/count")
+def get_position_candidates_count(
+    election: int = Query(..., description="Election ID"),
+    position: int = Query(..., description="Position ID"),
+    session: Session = Depends(get_session),
+):
+
+    count = session.exec(
+        select(Candidate)
+        .where(Candidate.election_id == election)
+        .where(Candidate.position_id == position)
+    ).count()
+
+    return {"count": count}
 
 
 @router.put("/{candidate_id}", response_model=CandidateRead)
