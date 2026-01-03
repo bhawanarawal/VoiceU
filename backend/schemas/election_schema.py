@@ -1,9 +1,7 @@
-from pydantic import BaseModel, model_validator, field_serializer
-from datetime import datetime, timezone, timedelta
+from pydantic import BaseModel, model_validator
+from datetime import datetime
 from typing import Optional, List
 from enum import Enum
-
-NPT = timezone(timedelta(hours=5, minutes=45))
 
 
 class ElectionStatus(str, Enum):
@@ -27,6 +25,7 @@ class ElectionCreate(BaseModel):
         end = values.get("end_date")
         if start and end and end <= start:
             raise ValueError("end_date must be after start_date")
+
         return values
 
 
@@ -42,10 +41,6 @@ class ElectionRead(BaseModel):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
-
-    @field_serializer("start_date", "end_date", "created_at", "updated_at")
-    def format_date(self, dt: datetime, _info):
-        return dt.astimezone(NPT).strftime("%Y-%m-%d %H:%M:%S")
 
 
 class ElectionListItem(BaseModel):
@@ -64,10 +59,6 @@ class ElectionListItem(BaseModel):
 
     model_config = {"from_attributes": True}
 
-    @field_serializer("start_date", "end_date", "created_at", "updated_at")
-    def format_date(self, dt: datetime, _info):
-        return dt.astimezone(NPT).strftime("%Y-%m-%d %H:%M:%S")
-
 
 class ElectionDetail(BaseModel):
     election_id: int
@@ -80,9 +71,6 @@ class ElectionDetail(BaseModel):
     end_date: datetime
     status: ElectionStatus
     description: Optional[str] = None
+    positions: Optional[List[dict]] = []
 
     model_config = {"from_attributes": True}
-
-    @field_serializer("start_date", "end_date")
-    def format_date(self, dt: datetime, _info):
-        return dt.astimezone(NPT).strftime("%Y-%m-%d %H:%M:%S")

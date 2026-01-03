@@ -26,6 +26,7 @@ interface VoterFormState {
 interface Organization {
   org_id: number;
   name: string;
+  affiliation_id?: number;
 }
 
 interface Program {
@@ -158,6 +159,17 @@ export default function VoterForm() {
     setErrors((prev) => ({ ...prev, [name]: "" }));
 
     if (name === "org_id") {
+      const selectedOrg = organizations.find((o) => o.org_id === numericValue);
+
+      // Automatically select the organization’s affiliation if exists
+      setForm((prev) => ({
+        ...prev,
+        org_id: numericValue,
+        affiliation_id: selectedOrg?.affiliation_id || 0,
+        program_id: 0,
+        semester_id: 0,
+      }));
+
       getProgramsByOrg(numericValue).then((res) =>
         setFilteredPrograms(res.data)
       );
@@ -165,12 +177,6 @@ export default function VoterForm() {
         setFilteredAffiliations(res.data)
       );
       setFilteredSemesters([]);
-      setForm((prev) => ({
-        ...prev,
-        program_id: 0,
-        semester_id: 0,
-        affiliation_id: 0,
-      }));
     }
 
     if (name === "program_id") {
@@ -198,7 +204,7 @@ export default function VoterForm() {
     try {
       await createVoter(form);
       setToast({ message: "Voter registered successfully", type: "success" });
-      setTimeout(() => navigate("/dashboard"), 1000);
+      setTimeout(() => navigate("/voter"), 1000);
     } catch (err: any) {
       setToast({
         message: err.response?.data?.detail || "Registration failed",
@@ -313,12 +319,13 @@ export default function VoterForm() {
                 disabled={isRegistered}
                 className="w-full border px-4 py-3 rounded"
               >
-                <option value={0}>Select Affiliation</option>
-                {filteredAffiliations.map((a) => (
-                  <option key={a.affiliation_id} value={a.affiliation_id}>
-                    {a.affiliation_name}
+                {form.affiliation_id !== 0 && (
+                  <option value={form.affiliation_id}>
+                    {filteredAffiliations.find(
+                      (a) => a.affiliation_id === form.affiliation_id
+                    )?.affiliation_name || "Affiliation"}
                   </option>
-                ))}
+                )}
               </select>
               {errors.affiliation_id && (
                 <p className="text-red-500 text-sm">{errors.affiliation_id}</p>

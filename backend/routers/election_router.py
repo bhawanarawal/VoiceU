@@ -1,13 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
+from sqlalchemy import delete
 from sqlalchemy.exc import IntegrityError
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 from database import get_session
 from auth import get_current_active_user
 from models.election import Election
 from models.program import Program
 from models.organization import Organization
+from models.candidate import Candidate
 from models.affiliation import Affiliation
 from models.user import User
 from models.position import Position
@@ -20,6 +22,16 @@ from schemas.election_schema import (
     ElectionDetail,
     ElectionStatus,
 )
+
+
+def compute_phase(start: datetime, end: datetime) -> ElectionStatus:
+    now = datetime.now()
+    if now < start:
+        return ElectionStatus.upcoming
+    elif start <= now <= end:
+        return ElectionStatus.ongoing
+    return ElectionStatus.past
+
 
 router = APIRouter(prefix="/elections", tags=["Elections"])
 
@@ -41,8 +53,8 @@ def create_election(
         end_date=data.end_date,
         status=data.status.value,
         description=data.description,
-        created_at=datetime.now(timezone.utc),
-        updated_at=datetime.now(timezone.utc),
+        created_at=datetime.now(),
+        updated_at=datetime.now(),
     )
 
     try:
@@ -83,13 +95,13 @@ def update_election(
     election.end_date = data.end_date
     election.status = data.status.value
     election.description = data.description
-    election.updated_at = datetime.now(timezone.utc)
+    election.updated_at = datetime.now()
 
     session.add(election)
 
-    session.exec(ElectionPosition).filter(
-        ElectionPosition.election_id == election_id
-    ).delete()
+    stmt = delete(ElectionPosition).where(ElectionPosition.election_id == election_id)
+    session.exec(stmt)
+
     for pid in data.position_ids or []:
         if pid:
             session.add(ElectionPosition(election_id=election_id, position_id=pid))
@@ -138,7 +150,7 @@ def get_all_elections(session: Session = Depends(get_session)):
                 election_name=r.election_name,
                 start_date=r.start_date,
                 end_date=r.end_date,
-                status=r.status,
+                status=compute_phase(r.start_date, r.end_date),
                 description=r.description,
                 program_name=r.program_name,
                 organization_name=r.organization_name,
@@ -177,7 +189,6 @@ def get_election(election_id: int, session: Session = Depends(get_session)):
     if not result:
         raise HTTPException(status_code=404, detail="Election not found")
 
-    # Fetch positions
     positions = session.exec(
         select(Position.position_id, Position.position_name)
         .join(ElectionPosition, Position.position_id == ElectionPosition.position_id)
@@ -185,9 +196,45 @@ def get_election(election_id: int, session: Session = Depends(get_session)):
     ).all()
 
     return {
-        **result.model_dump(),
+        **dict(result._mapping),
+        "status": compute_phase(result.start_date, result.end_date),
         "positions": [{"position_id": p[0], "position_name": p[1]} for p in positions],
     }
+
+
+@router.get("/{election_id}/positions-with-count")
+def get_positions_with_candidate_count(
+    election_id: int, session: Session = Depends(get_session)
+):
+
+    election_positions = session.exec(
+        select(ElectionPosition).where(ElectionPosition.election_id == election_id)
+    ).all()
+
+    if not election_positions:
+        raise HTTPException(
+            status_code=404, detail="No positions found for this election"
+        )
+
+    result = []
+
+    for ep in election_positions:
+        position = session.get(Position, ep.position_id)
+        candidate_count = session.exec(
+            select(Candidate)
+            .where(Candidate.election_id == election_id)
+            .where(Candidate.position_id == ep.position_id)
+        ).count()
+
+        result.append(
+            {
+                "position_id": position.position_id,
+                "position_name": position.position_name,
+                "candidate_count": candidate_count,
+            }
+        )
+
+    return {"positions": result}
 
 
 @router.delete("/{election_id}")
@@ -200,12 +247,13 @@ def delete_election(
     if not election:
         raise HTTPException(status_code=404, detail="Election not found")
 
-    session.exec(ElectionPosition).filter(
-        ElectionPosition.election_id == election_id
-    ).delete()
+    stmt = delete(ElectionPosition).where(ElectionPosition.election_id == election_id)
+    session.exec(stmt)
+
     session.delete(election)
     session.commit()
-    return {"message": "Election deleted successfully"}
+
+    return {"message": "Election and related positions deleted successfully"}
 
 
 @router.get("/{election_id}/positions")

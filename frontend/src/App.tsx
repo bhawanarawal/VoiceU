@@ -33,12 +33,18 @@ import VoterList from "./pages/Voter/VoterList";
 import VoterForm from "./pages/Voter/VoterForm";
 import ProgramForm from "./pages/Program/ProgramForm";
 import ProgramList from "./pages/Program/ProgramList";
+import ElectionPage from "./pages/Election/ElectionPage";
 
 export default function App() {
   return (
     <Router>
       <ScrollToTop />
       <Routes>
+        <Route path="/elections" element={<ElectionPage />} />
+
+        <Route path="election/:id/apply" element={<CandidateForm />} />
+        <Route path="election/:id/candidates" element={<CandidateList />} />
+
         {/* Dashboard Layout */}
         <Route element={<AppLayout />}>
           <Route index element={<Home />} />
