@@ -1,18 +1,19 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import ComponentCard from "../../components/common/ComponentCard";
 import Button from "../../components/ui/button/Button";
 import Toast from "../../components/common/Toast";
-import { getElections } from "../Election/electionService";
-import { getPositions } from "../Position/positionService";
-import {
-  getCandidateById,
-  createCandidate,
-  updateCandidate,
-} from "./candidateService";
-import axios from "axios";
+import { createCandidate } from "./candidateService";
+import api from "../../utils/api";
+
+/* ================= TYPES ================= */
+
+interface Position {
+  position_id: number;
+  position_name: string;
+}
 
 interface CandidateFormState {
   user_id: number;
@@ -20,27 +21,19 @@ interface CandidateFormState {
   position_id: number;
   manifesto: string;
   photo_url?: string;
+
+  username?: string;
+  election_name?: string;
+  program_name?: string;
+  organization_name?: string;
+  affiliation_name?: string;
 }
 
-interface User {
-  user_id: number;
-  username: string;
-  full_name?: string;
-}
-
-interface Election {
-  election_id: number;
-  election_name: string;
-}
-
-interface Position {
-  position_id: number;
-  position_name: string;
-}
+/* ================= COMPONENT ================= */
 
 export default function CandidateForm() {
-  const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [form, setForm] = useState<CandidateFormState>({
     user_id: 0,
@@ -50,54 +43,85 @@ export default function CandidateForm() {
     photo_url: "",
   });
 
-  const [users, setUsers] = useState<User[]>([]);
-  const [elections, setElections] = useState<Election[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
-
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [photoName, setPhotoName] = useState("");
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
-
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error";
   } | null>(null);
 
+  /* ================= LOAD USER ================= */
+
   useEffect(() => {
-    const fetchData = async () => {
+    const loadUser = async () => {
       try {
-        const [usersRes, electionsRes, positionsRes] = await Promise.all([
-          axios.get("http://127.0.0.1:8000/auth/users"),
-          getElections(),
-          getPositions(),
-        ]);
+        const res = await api.get("/auth/users/me");
+        const user = res.data;
 
-        setUsers(usersRes.data);
-        setElections(electionsRes.data);
-        setPositions(positionsRes.data);
-
-        if (id) {
-          const res = await getCandidateById(Number(id));
-          setForm(res.data);
-        }
-      } catch (err) {
-        setToast({ message: "Failed to load data", type: "error" });
+        setForm((prev) => ({
+          ...prev,
+          user_id: user.user_id,
+          username: user.full_name || user.username,
+        }));
+      } catch {
+        setToast({ message: "Failed to load user", type: "error" });
       }
     };
 
-    fetchData();
-  }, [id]);
+    loadUser();
+  }, []);
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    setErrors({ ...errors, [e.target.name]: "" });
+  /* ================= LOAD ELECTION ================= */
+
+  useEffect(() => {
+    const loadElection = async () => {
+      const query = new URLSearchParams(location.search);
+      const electionId = query.get("electionId");
+
+      if (!electionId) return;
+
+      try {
+        const res = await api.get(`/elections/${electionId}`);
+        const election = res.data;
+
+        const electionPositions: Position[] = Array.isArray(election.positions)
+          ? election.positions
+          : [];
+
+        setPositions(electionPositions);
+
+        setForm((prev) => ({
+          ...prev,
+          election_id: election.election_id,
+          election_name: election.election_name,
+          program_name: election.program_name || "",
+          organization_name: election.organization_name || "",
+          affiliation_name: election.affiliation_name || "",
+          position_id:
+            electionPositions.length > 0 ? electionPositions[0].position_id : 0,
+        }));
+      } catch (err) {
+        console.error(err);
+        setToast({
+          message: "Failed to load election details",
+          type: "error",
+        });
+      }
+    };
+
+    loadElection();
+  }, [location.search]);
+
+  /* ================= HANDLERS ================= */
+
+  const handleManifestoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setForm({ ...form, manifesto: e.target.value });
+  };
+
+  const handlePositionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setForm({ ...form, position_id: Number(e.target.value) });
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,24 +139,21 @@ export default function CandidateForm() {
     }
 
     setPhotoFile(file);
-    setPhotoName(file.name);
-
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setPhotoPreview(reader.result as string);
-    };
+    reader.onloadend = () => setPhotoPreview(reader.result as string);
     reader.readAsDataURL(file);
   };
 
+  /* ================= SUBMIT ================= */
+
   const handleSubmit = async () => {
-    const newErrors: Record<string, string> = {};
+    if (!form.position_id) {
+      setToast({ message: "Please select a position", type: "error" });
+      return;
+    }
 
-    if (!form.user_id) newErrors.user_id = "User is required";
-    if (!form.election_id) newErrors.election_id = "Election is required";
-    if (!form.position_id) newErrors.position_id = "Position is required";
-
-    if (Object.keys(newErrors).length) {
-      setErrors(newErrors);
+    if (!form.manifesto) {
+      setToast({ message: "Manifesto is required", type: "error" });
       return;
     }
 
@@ -141,26 +162,19 @@ export default function CandidateForm() {
     formData.append("election_id", String(form.election_id));
     formData.append("position_id", String(form.position_id));
     formData.append("manifesto", form.manifesto);
-
-    if (photoFile) {
-      formData.append("photo", photoFile);
-    }
+    if (photoFile) formData.append("photo", photoFile);
 
     setLoading(true);
-
     try {
-      if (id) {
-        await updateCandidate(Number(id), formData);
-        setToast({ message: "Candidate updated", type: "success" });
-      } else {
-        await createCandidate(formData);
-        setToast({ message: "Candidate created", type: "success" });
-      }
-
-      setTimeout(() => navigate("/candidate"), 700);
+      await createCandidate(formData);
+      setToast({
+        message: "Candidate applied successfully",
+        type: "success",
+      });
+      setTimeout(() => navigate("/candidate"), 800);
     } catch (err: any) {
       setToast({
-        message: err.response?.data?.detail || "Failed to save candidate",
+        message: err.response?.data?.detail || "Failed to apply",
         type: "error",
       });
     } finally {
@@ -168,80 +182,35 @@ export default function CandidateForm() {
     }
   };
 
+  /* ================= UI ================= */
+
   return (
     <div>
-      <PageMeta
-        title={id ? "Edit Candidate" : "Add Candidate"}
-        description="Candidate form"
-      />
-      <PageBreadcrumb pageTitle={id ? "Edit Candidate" : "Add Candidate"} />
+      <PageMeta title="Apply as Candidate" description="" />
+      <PageBreadcrumb pageTitle="Apply as Candidate" />
 
       {toast && <Toast {...toast} onClose={() => setToast(null)} />}
 
       <div className="max-w-lg mx-auto mt-6">
-        <ComponentCard title="Candidate Information">
-          <div className="space-y-6">
-            <div>
-              <label htmlFor="user_id" className="block text-sm text-gray-500">
-                User
-              </label>
-              <select
-                id="user_id"
-                name="user_id"
-                value={form.user_id}
-                onChange={handleChange}
-                className="w-full border px-4 py-3 rounded"
-              >
-                <option value={0}>Select user</option>
-                {users.map((u) => (
-                  <option key={u.user_id} value={u.user_id}>
-                    {u.full_name || u.username}
-                  </option>
-                ))}
-              </select>
-              {errors.user_id && (
-                <p className="text-red-500 text-sm">{errors.user_id}</p>
-              )}
-            </div>
+        <ComponentCard title="Candidate Application">
+          <div className="space-y-5">
+            <Input label="Username" value={form.username} />
+            <Input label="Election" value={form.election_name} />
+            <Input label="Program" value={form.program_name} />
+            <Input label="Organization" value={form.organization_name} />
+            <Input label="Affiliation" value={form.affiliation_name} />
 
+            {/* POSITION DROPDOWN */}
             <div>
-              <label
-                htmlFor="election_id"
-                className="block text-sm text-gray-500"
-              >
-                Election
-              </label>
+              <label className="text-sm text-gray-500">Position</label>
               <select
-                id="election_id"
-                name="election_id"
-                value={form.election_id}
-                onChange={handleChange}
-                className="w-full border px-4 py-3 rounded"
-              >
-                <option value={0}>Select election</option>
-                {elections.map((e) => (
-                  <option key={e.election_id} value={e.election_id}>
-                    {e.election_name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label
-                htmlFor="position_id"
-                className="block text-sm text-gray-500"
-              >
-                Position
-              </label>
-              <select
-                id="position_id"
-                name="position_id"
+                id="position"
+                name="position"
+                aria-label="Position"
                 value={form.position_id}
-                onChange={handleChange}
+                onChange={handlePositionChange}
                 className="w-full border px-4 py-3 rounded"
               >
-                <option value={0}>Select position</option>
                 {positions.map((p) => (
                   <option key={p.position_id} value={p.position_id}>
                     {p.position_name}
@@ -250,72 +219,68 @@ export default function CandidateForm() {
               </select>
             </div>
 
+            {/* MANIFESTO */}
             <div>
-              <label
-                htmlFor="manifesto"
-                className="block text-sm text-gray-500"
-              >
-                Manifesto
-              </label>
+              <label className="text-sm text-gray-500">Manifesto</label>
               <textarea
                 id="manifesto"
                 name="manifesto"
-                value={form.manifesto}
-                onChange={handleChange}
-                className="w-full border px-4 py-3 rounded"
+                aria-label="Manifesto"
                 rows={4}
+                value={form.manifesto}
+                onChange={handleManifestoChange}
+                className="w-full border px-4 py-3 rounded"
               />
             </div>
 
+            {/* PHOTO */}
             <div>
-              <label className="block text-sm text-gray-500">
-                Candidate Photo
+              <label className="text-sm text-gray-500">Photo</label>
+              <label className="block mt-1 px-4 py-2 bg-blue-600 text-white rounded cursor-pointer w-fit">
+                Choose Image
+                <input hidden type="file" onChange={handlePhotoChange} />
               </label>
 
-              <div className="flex items-center gap-4 mt-1">
-                <label className="px-4 py-2 bg-blue-600 text-white rounded cursor-pointer">
-                  Choose Image
-                  <input
-                    type="file"
-                    accept="image/*"
-                    hidden
-                    onChange={handlePhotoChange}
-                  />
-                </label>
-
-                <span className="text-sm text-gray-600 truncate max-w-[200px]">
-                  {photoName || "No file selected"}
-                </span>
-              </div>
-
-              {(photoPreview || form.photo_url) && (
+              {photoPreview && (
                 <img
-                  src={photoPreview || form.photo_url}
+                  src={photoPreview}
                   alt="Preview"
-                  className="mt-4 h-32 w-32 object-cover rounded border"
+                  className="mt-3 h-32 w-32 rounded object-cover border"
                 />
               )}
             </div>
 
+            {/* ACTIONS */}
             <div className="flex justify-between">
               <Button variant="outline" onClick={() => navigate("/candidate")}>
                 Back
               </Button>
-              <Button
-                variant="primary"
-                disabled={loading}
-                onClick={handleSubmit}
-              >
-                {loading
-                  ? "Saving..."
-                  : id
-                  ? "Update Candidate"
-                  : "Save Candidate"}
+              <Button onClick={handleSubmit} disabled={loading}>
+                {loading ? "Submitting..." : "Apply"}
               </Button>
             </div>
           </div>
         </ComponentCard>
       </div>
+    </div>
+  );
+}
+
+/* ================= INPUT ================= */
+
+function Input({ label, value }: { label: string; value?: string }) {
+  return (
+    <div>
+      <label className="text-sm text-gray-500">{label}</label>
+      <input
+        id="name"
+        name="name"
+        placeholder="Enter the name"
+        type="text"
+        value={value || ""}
+        disabled
+        className="w-full border px-4 py-3 rounded bg-gray-100"
+      />
     </div>
   );
 }

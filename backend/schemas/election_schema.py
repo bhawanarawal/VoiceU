@@ -64,6 +64,7 @@ class ElectionDetail(BaseModel):
     election_id: int
     election_name: str
     program_id: int
+    program_name: str
     organization_id: int
     organization_name: str
     affiliation_name: str

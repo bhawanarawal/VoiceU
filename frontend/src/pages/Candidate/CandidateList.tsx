@@ -1,5 +1,4 @@
 import { JSX, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import Button from "../../components/ui/button/Button";
 import { Modal } from "../../components/ui/modal";
 import Toast from "../../components/common/Toast";
@@ -28,6 +27,7 @@ export default function CandidateList() {
     message: string;
     type: "success" | "error";
   } | null>(null);
+
   const [confirmDelete, setConfirmDelete] = useState<{
     id: number;
     name: string;
@@ -90,30 +90,47 @@ export default function CandidateList() {
       header: "Approval Status",
       key: "approval_status",
       renderCell: (_key, row) => {
-        const colorClass =
+        const color =
           row.approval_status === "approved"
-            ? "text-green-600 font-semibold"
+            ? "text-green-600"
             : row.approval_status === "rejected"
-            ? "text-red-600 font-semibold"
-            : "text-yellow-600 font-semibold";
+            ? "text-red-600"
+            : "text-yellow-600";
 
         return (
-          <span className={colorClass}>
+          <span className={`font-semibold ${color}`}>
             {row.approval_status.toUpperCase()}
           </span>
         );
       },
     },
-    { header: "Manifesto", key: "manifesto" },
+    {
+      header: "Manifesto",
+      key: "manifesto",
+      renderCell: (_key, row) =>
+        row.manifesto ? (
+          <span title={row.manifesto}>
+            {row.manifesto.length > 40
+              ? row.manifesto.slice(0, 40) + "..."
+              : row.manifesto}
+          </span>
+        ) : (
+          "N/A"
+        ),
+    },
     {
       header: "Photo",
       key: "photo_url",
       renderCell: (_key, row) =>
         row.photo_url ? (
           <img
-            src={row.photo_url}
-            alt={`Candidate ${row.username}`}
-            className="h-10 w-10 object-cover rounded"
+            src={
+              row.photo_url.startsWith("http")
+                ? row.photo_url
+                : `${import.meta.env.VITE_API_BASE_URL}${row.photo_url}`
+            }
+            alt={row.username}
+            className="h-10 w-10 rounded object-cover"
           />
         ) : (
           "N/A"
@@ -125,14 +142,8 @@ export default function CandidateList() {
     <div className="p-5">
       {toast && <Toast {...toast} onClose={() => setToast(null)} />}
 
-      <div className="flex justify-between mb-4">
-        <h2 className="text-xl font-semibold">Candidates</h2>
-        <Link
-          to="/candidate/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-        >
-          Add Candidate
-        </Link>
+      <div className="mb-4">
+        <h2 className="text-xl font-semibold">Candidate Applications</h2>
       </div>
 
       <DataTable
@@ -141,25 +152,24 @@ export default function CandidateList() {
         emptyMessage="No candidates found"
         renderActions={(row: Candidate) => (
           <div className="flex flex-col gap-2">
-            <div className="flex gap-2 flex-wrap">
-              <Link
-                to={`/candidate/edit/${row.candidate_id}`}
-                className="text-blue-600 hover:underline"
-              >
-                Edit
-              </Link>
+            {/* Delete only if pending */}
+            {row.approval_status === "pending" && (
               <button
                 onClick={() =>
-                  setConfirmDelete({ id: row.candidate_id, name: row.username })
+                  setConfirmDelete({
+                    id: row.candidate_id,
+                    name: row.username,
+                  })
                 }
                 className="text-red-600 hover:underline"
               >
                 Delete
               </button>
-            </div>
+            )}
 
-            {row.approval_status === "pending" && (
-              <div className="flex gap-2 flex-col mt-1">
+            {/* Approval controls */}
+            {row.approval_status === "pending" ? (
+              <>
                 <button
                   onClick={() => handleApproval(row.candidate_id, "approved")}
                   className="text-green-600 hover:underline"
@@ -172,7 +182,17 @@ export default function CandidateList() {
                 >
                   Reject
                 </button>
-              </div>
+              </>
+            ) : (
+              <span
+                className={`text-sm font-semibold ${
+                  row.approval_status === "approved"
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {row.approval_status.toUpperCase()}
+              </span>
             )}
           </div>
         )}
@@ -186,7 +206,8 @@ export default function CandidateList() {
         >
           <h3 className="text-lg font-semibold mb-4">Delete Candidate</h3>
           <p className="mb-4">
-            Are you sure you want to delete "{confirmDelete.name}"?
+            Are you sure you want to delete{" "}
+            <strong>{confirmDelete.name}</strong>?
           </p>
           <div className="flex justify-end gap-3">
             <Button variant="outline" onClick={() => setConfirmDelete(null)}>
