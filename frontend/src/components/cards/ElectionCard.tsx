@@ -11,19 +11,13 @@ import {
   Stack,
   Divider,
   useTheme,
-  Paper,
-  Grow,
-  ClickAwayListener,
-  MenuItem,
-  MenuList,
-  Popper,
-  ButtonGroup,
   Button,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import { styled } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
+
+/* ================= TYPES ================= */
 
 interface Position {
   position_id: number;
@@ -42,6 +36,8 @@ interface ElectionCardProps {
   affiliation?: string;
   status: "Upcoming" | "Ongoing" | "Past";
 }
+
+/* ================= STYLES ================= */
 
 const ExpandMore = styled(IconButton, {
   shouldForwardProp: (prop) => prop !== "expand",
@@ -68,113 +64,7 @@ const getStatusColor = (
   }
 };
 
-interface ApplySplitButtonProps {
-  positions: Position[];
-  electionId: number;
-  disabled?: boolean;
-}
-
-const ApplySplitButton: React.FC<ApplySplitButtonProps> = ({
-  positions,
-  electionId,
-  disabled = false,
-}) => {
-  const navigate = useNavigate();
-  const [open, setOpen] = React.useState(false);
-  const anchorRef = React.useRef<HTMLDivElement>(null);
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
-
-  const handleClick = () => {
-    if (disabled) return;
-    navigate(
-      `/candidate/new?electionId=${electionId}&positionId=${positions[selectedIndex].position_id}`
-    );
-  };
-
-  const handleMenuItemClick = (index: number) => {
-    if (disabled) return;
-    setSelectedIndex(index);
-    setOpen(false);
-    navigate(
-      `/candidate/new?electionId=${electionId}&positionId=${positions[index].position_id}`
-    );
-  };
-
-  const handleToggle = () => {
-    if (!disabled) setOpen((prev) => !prev);
-  };
-
-  const handleClose = (event: Event) => {
-    if (
-      anchorRef.current &&
-      anchorRef.current.contains(event.target as HTMLElement)
-    )
-      return;
-    setOpen(false);
-  };
-
-  if (positions.length === 0) return null;
-
-  return (
-    <>
-      <ButtonGroup
-        variant="contained"
-        color="primary"
-        ref={anchorRef}
-        disabled={disabled}
-        sx={{
-          "& .MuiButton-root": { textTransform: "none", fontWeight: 500 },
-          "& .MuiButton-root:hover": { boxShadow: !disabled ? 3 : 0 },
-        }}
-      >
-        <Button onClick={handleClick}>Apply as</Button>
-        <Button size="small" aria-haspopup="menu" onClick={handleToggle}>
-          <ArrowDropDownIcon />
-        </Button>
-      </ButtonGroup>
-
-      <Popper
-        open={open}
-        anchorEl={anchorRef.current}
-        role={undefined}
-        transition
-        disablePortal={false}
-        sx={{
-          zIndex: 1300,
-          minWidth: anchorRef.current
-            ? anchorRef.current.clientWidth
-            : undefined,
-        }}
-      >
-        {({ TransitionProps, placement }) => (
-          <Grow
-            {...TransitionProps}
-            style={{
-              transformOrigin:
-                placement === "bottom" ? "center top" : "center bottom",
-            }}
-          >
-            <Paper>
-              <ClickAwayListener onClickAway={handleClose}>
-                <MenuList id="split-button-menu" autoFocusItem>
-                  {positions.map((p, index) => (
-                    <MenuItem
-                      key={p.position_id}
-                      selected={index === selectedIndex}
-                      onClick={() => handleMenuItemClick(index)}
-                    >
-                      {p.position_name}
-                    </MenuItem>
-                  ))}
-                </MenuList>
-              </ClickAwayListener>
-            </Paper>
-          </Grow>
-        )}
-      </Popper>
-    </>
-  );
-};
+/* ================= COMPONENT ================= */
 
 export default function ElectionCard({
   electionId,
@@ -199,14 +89,11 @@ export default function ElectionCard({
         "&:hover": { boxShadow: 6, transition: "0.3s" },
       }}
     >
+      {/* ===== HEADER ===== */}
       <CardHeader
         title={
           <Stack direction="row" spacing={1} alignItems="center">
-            <Typography
-              variant="h6"
-              fontWeight={700}
-              sx={{ fontFamily: "Roboto, Arial, sans-serif" }}
-            >
+            <Typography variant="h6" fontWeight={700}>
               {title}
             </Typography>
             <Chip
@@ -234,6 +121,7 @@ export default function ElectionCard({
         }
       />
 
+      {/* ===== CONTENT ===== */}
       <CardContent sx={{ pt: 0, pb: 1 }}>
         <Stack spacing={0.5}>
           {organization && (
@@ -277,22 +165,26 @@ export default function ElectionCard({
         )}
       </CardContent>
 
+      {/* ===== ACTIONS ===== */}
       <CardActions sx={{ px: 1.5, pb: 1.5, gap: 1, flexWrap: "wrap" }}>
+        {/* UPCOMING */}
         {status === "Upcoming" && positions.length > 0 && (
           <>
-            <ApplySplitButton
-              positions={positions}
-              electionId={electionId}
-              disabled={false}
-            />
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ textTransform: "none", fontWeight: 500 }}
+              onClick={() =>
+                navigate(`/candidate/new?electionId=${electionId}`)
+              }
+            >
+              Apply as Candidate
+            </Button>
+
             <Button
               variant="outlined"
               color="info"
-              sx={{
-                textTransform: "none",
-                fontWeight: 500,
-                "&:hover": { boxShadow: 3 },
-              }}
+              sx={{ textTransform: "none", fontWeight: 500 }}
               onClick={() => navigate(`/candidate?electionId=${electionId}`)}
             >
               View Candidates
@@ -300,37 +192,24 @@ export default function ElectionCard({
           </>
         )}
 
-        {status === "Ongoing" && positions.length > 0 && (
-          <>
-            <ApplySplitButton
-              positions={positions}
-              electionId={electionId}
-              disabled={true}
-            />
-            <Button
-              variant="outlined"
-              color="success"
-              sx={{
-                textTransform: "none",
-                fontWeight: 500,
-                "&:hover": { boxShadow: 3 },
-              }}
-              onClick={() => navigate(`/candidate?electionId=${electionId}`)}
-            >
-              View Candidates
-            </Button>
-          </>
+        {/* ONGOING */}
+        {status === "Ongoing" && (
+          <Button
+            variant="outlined"
+            color="success"
+            sx={{ textTransform: "none", fontWeight: 500 }}
+            onClick={() => navigate(`/candidate?electionId=${electionId}`)}
+          >
+            View Candidates
+          </Button>
         )}
 
+        {/* PAST */}
         {status === "Past" && (
           <Button
             variant="outlined"
             color="secondary"
-            sx={{
-              textTransform: "none",
-              fontWeight: 500,
-              "&:hover": { boxShadow: 3 },
-            }}
+            sx={{ textTransform: "none", fontWeight: 500 }}
             onClick={() => navigate(`/election/result/${electionId}`)}
           >
             View Result
@@ -346,13 +225,11 @@ export default function ElectionCard({
         </ExpandMore>
       </CardActions>
 
+      {/* ===== DESCRIPTION ===== */}
       <Collapse in={expanded} timeout="auto" unmountOnExit>
         <CardContent>
           <Divider sx={{ mb: 1 }} />
-          <Typography
-            variant="body2"
-            sx={{ whiteSpace: "pre-line", lineHeight: 1.6 }}
-          >
+          <Typography variant="body2" sx={{ whiteSpace: "pre-line" }}>
             {description || "No description provided."}
           </Typography>
         </CardContent>

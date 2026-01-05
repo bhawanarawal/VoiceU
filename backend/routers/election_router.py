@@ -170,6 +170,7 @@ def get_election(election_id: int, session: Session = Depends(get_session)):
             Election.election_id,
             Election.election_name,
             Election.program_id,
+            Program.program_name,
             Program.org_id.label("organization_id"),
             Organization.name.label("organization_name"),
             Affiliation.affiliation_name,
