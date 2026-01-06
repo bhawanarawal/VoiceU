@@ -41,6 +41,7 @@ class CandidateRead(BaseModel):
 
     voter_id: int
     username: str
+    full_name: str
 
     election_id: int
     election_name: str
