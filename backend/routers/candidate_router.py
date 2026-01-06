@@ -3,12 +3,14 @@ from sqlmodel import Session, select
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone
 import os, shutil
+
 from database import get_session
 from models.candidate import Candidate, ApprovalStatus
 from models.user import User
 from models.voter import Voter
 from models.election import Election
 from models.position import Position
+from models.program import Program
 from models.organization import Organization
 from models.affiliation import Affiliation
 from schemas.candidate_schema import (
@@ -16,11 +18,8 @@ from schemas.candidate_schema import (
     CandidateApprovalUpdate,
     CandidateBase,
 )
-from models.program import Program
-
 
 router = APIRouter(prefix="/candidates", tags=["Candidates"])
-
 
 UPLOAD_DIR = "static/uploads/candidates"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -35,7 +34,6 @@ def apply_candidate(
     photo: UploadFile | None = File(None),
     session: Session = Depends(get_session),
 ):
-    # voters validation
     voter = session.exec(select(Voter).where(Voter.user_id == user_id)).first()
     if not voter:
         raise HTTPException(status_code=403, detail="Only voters can apply")
@@ -50,23 +48,17 @@ def apply_candidate(
             detail="You can only apply to elections of your own program",
         )
 
-    if hasattr(election, "organization_id") and voter.org_id != getattr(
-        election, "organization_id", None
-    ):
-        raise HTTPException(
-            status_code=403,
-            detail="You can only apply to elections in your own organization",
-        )
-
     exists = session.exec(
         select(Candidate)
         .where(Candidate.voter_id == voter.voter_id)
         .where(Candidate.election_id == election_id)
         .where(Candidate.is_active == True)
     ).first()
+
     if exists:
         raise HTTPException(
-            status_code=400, detail="You have already applied for this election"
+            status_code=400,
+            detail="You have already applied for this election",
         )
 
     photo_path = None
@@ -99,7 +91,6 @@ def apply_candidate(
 
 @router.get("/", response_model=list[CandidateRead])
 def get_all_candidates(session: Session = Depends(get_session)):
-
     stmt = (
         select(
             Candidate,
@@ -178,14 +169,10 @@ def get_approved_candidates_by_election(
         .join(Election, Election.election_id == Candidate.election_id)
         .join(Program, Program.program_id == Election.program_id)
         .join(Position, Position.position_id == Candidate.position_id)
+        .join(Organization, Organization.org_id == Program.org_id, isouter=True)
         .join(
             Affiliation,
-            Affiliation.affiliation_id == Voter.affiliation_id,
-            isouter=True,
-        )
-        .join(
-            Organization,
-            Organization.affiliation_id == Affiliation.affiliation_id,
+            Affiliation.affiliation_id == Organization.affiliation_id,
             isouter=True,
         )
         .where(Candidate.approval_status == ApprovalStatus.APPROVED)
@@ -213,22 +200,13 @@ def get_approved_candidates_by_election(
 
 @router.get("/{candidate_id}", response_model=CandidateRead)
 def get_candidate(candidate_id: int, session: Session = Depends(get_session)):
-    candidate = session.get(Candidate, candidate_id)
-    if not candidate or not candidate.is_active:
-        raise HTTPException(status_code=404, detail="Candidate not found")
-    return candidate
-
-
-@router.get("/approved")
-def get_approved_candidates(session: Session = Depends(get_session)):
-    statement = (
+    stmt = (
         select(
-            Candidate.candidate_id,
+            Candidate,
             User.username,
-            Candidate.photo_url,
-            Candidate.manifesto,
             Election.election_name,
             Position.position_name,
+            Program.program_name,
             Organization.name.label("organization_name"),
             Affiliation.affiliation_name,
         )
@@ -236,27 +214,48 @@ def get_approved_candidates(session: Session = Depends(get_session)):
         .join(User, User.user_id == Voter.user_id)
         .join(Election, Election.election_id == Candidate.election_id)
         .join(Position, Position.position_id == Candidate.position_id)
-        .join(Affiliation, Affiliation.affiliation_id == Voter.affiliation_id)
-        .join(Organization, Organization.org_id == Affiliation.org_id)
-        .where(Candidate.approval_status == ApprovalStatus.APPROVED)
+        .join(Program, Program.program_id == Election.program_id)
+        .join(Organization, Organization.org_id == Program.org_id, isouter=True)
+        .join(
+            Affiliation,
+            Affiliation.affiliation_id == Organization.affiliation_id,
+            isouter=True,
+        )
+        .where(Candidate.candidate_id == candidate_id)
         .where(Candidate.is_active == True)
     )
 
-    results = session.exec(statement).all()
+    result = session.exec(stmt).first()
+    if not result:
+        raise HTTPException(status_code=404, detail="Candidate not found")
 
-    return [
-        {
-            "candidate_id": r[0],
-            "username": r[1],
-            "photo_url": r[2],
-            "manifesto": r[3],
-            "election_name": r[4],
-            "position_name": r[5],
-            "organization_name": r[6],
-            "affiliation_name": r[7],
-        }
-        for r in results
-    ]
+    (
+        c,
+        username,
+        election_name,
+        position_name,
+        program_name,
+        organization_name,
+        affiliation_name,
+    ) = result
+
+    return CandidateRead(
+        candidate_id=c.candidate_id,
+        voter_id=c.voter_id,
+        username=username,
+        election_id=c.election_id,
+        election_name=election_name,
+        position_id=c.position_id,
+        position_name=position_name,
+        program_name=program_name,
+        organization_name=organization_name,
+        affiliation_name=affiliation_name,
+        approval_status=c.approval_status,
+        manifesto=c.manifesto,
+        photo_url=c.photo_url,
+        created_at=c.created_at,
+        updated_at=c.updated_at,
+    )
 
 
 @router.patch("/{candidate_id}/approval", response_model=CandidateRead)
@@ -272,8 +271,8 @@ def approve_candidate(
     candidate.approval_status = data.approval_status
     candidate.updated_at = datetime.now(timezone.utc)
     session.commit()
-    session.refresh(candidate)
-    return candidate
+
+    return get_candidate(candidate_id, session)
 
 
 @router.put("/{candidate_id}", response_model=CandidateRead)
@@ -288,9 +287,9 @@ def update_candidate(
     if not candidate or not candidate.is_active:
         raise HTTPException(status_code=404, detail="Candidate not found")
 
-    if position_id is not None:
+    if position_id:
         candidate.position_id = position_id
-    if manifesto is not None:
+    if manifesto:
         candidate.manifesto = manifesto
 
     if photo:
@@ -302,8 +301,8 @@ def update_candidate(
 
     candidate.updated_at = datetime.now(timezone.utc)
     session.commit()
-    session.refresh(candidate)
-    return candidate
+
+    return get_candidate(candidate_id, session)
 
 
 @router.delete("/{candidate_id}")
@@ -316,4 +315,4 @@ def delete_candidate(candidate_id: int, session: Session = Depends(get_session))
     candidate.updated_at = datetime.now(timezone.utc)
     session.commit()
 
-    return {"message": "Candidate deactivated successfully"}
+    return {"message": "Candidate deleted successfully"}

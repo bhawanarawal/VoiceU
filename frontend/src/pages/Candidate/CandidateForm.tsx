@@ -8,8 +8,6 @@ import Toast from "../../components/common/Toast";
 import { createCandidate } from "./candidateService";
 import api from "../../utils/api";
 
-/* ================= TYPES ================= */
-
 interface Position {
   position_id: number;
   position_name: string;
@@ -28,8 +26,6 @@ interface CandidateFormState {
   organization_name?: string;
   affiliation_name?: string;
 }
-
-/* ================= COMPONENT ================= */
 
 export default function CandidateForm() {
   const navigate = useNavigate();
@@ -52,8 +48,6 @@ export default function CandidateForm() {
     type: "success" | "error";
   } | null>(null);
 
-  /* ================= LOAD USER ================= */
-
   useEffect(() => {
     const loadUser = async () => {
       try {
@@ -72,8 +66,6 @@ export default function CandidateForm() {
 
     loadUser();
   }, []);
-
-  /* ================= LOAD ELECTION ================= */
 
   useEffect(() => {
     const loadElection = async () => {
@@ -114,8 +106,6 @@ export default function CandidateForm() {
     loadElection();
   }, [location.search]);
 
-  /* ================= HANDLERS ================= */
-
   const handleManifestoChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setForm({ ...form, manifesto: e.target.value });
   };
@@ -143,8 +133,6 @@ export default function CandidateForm() {
     reader.onloadend = () => setPhotoPreview(reader.result as string);
     reader.readAsDataURL(file);
   };
-
-  /* ================= SUBMIT ================= */
 
   const handleSubmit = async () => {
     if (!form.position_id) {
@@ -181,8 +169,6 @@ export default function CandidateForm() {
       setLoading(false);
     }
   };
-
-  /* ================= UI ================= */
 
   return (
     <div>
@@ -265,8 +251,6 @@ export default function CandidateForm() {
     </div>
   );
 }
-
-/* ================= INPUT ================= */
 
 function Input({ label, value }: { label: string; value?: string }) {
   return (
