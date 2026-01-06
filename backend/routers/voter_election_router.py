@@ -8,7 +8,6 @@ from database import get_session
 router = APIRouter(prefix="/voter-elections", tags=["Voter-Elections"])
 
 
-# Assign a voter to an election
 @router.post("/", response_model=VoterElectionRead)
 def assign_voter_to_election(
     data: VoterElectionCreate, session: Session = Depends(get_session)
@@ -28,13 +27,11 @@ def assign_voter_to_election(
         )
 
 
-# List all assignments (optionally you can filter by election)
 @router.get("/", response_model=list[VoterElectionRead])
 def get_all_assignments(session: Session = Depends(get_session)):
     return session.exec(select(VoterElection)).all()
 
 
-# Optional: Get assignments for a specific voter
 @router.get("/voter/{voter_id}", response_model=list[VoterElectionRead])
 def get_assignments_by_voter(voter_id: int, session: Session = Depends(get_session)):
     statement = select(VoterElection).where(VoterElection.voter_id == voter_id)
