@@ -86,7 +86,7 @@ export default function CandidatePage() {
       {Object.keys(candidatesByPosition).map((position) => (
         <Box key={position} sx={{ mb: 5 }}>
           <Typography variant="h5" fontWeight={600} sx={{ mb: 2 }}>
-            Position: {position}
+            Candidate of {position} Position :
           </Typography>
 
           <Stack spacing={3}>
