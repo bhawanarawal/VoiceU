@@ -34,6 +34,7 @@ import VoterForm from "./pages/Voter/VoterForm";
 import ProgramForm from "./pages/Program/ProgramForm";
 import ProgramList from "./pages/Program/ProgramList";
 import ElectionPage from "./pages/Election/ElectionPage";
+import CandidatePage from "./pages/Candidate/CandidatePage";
 
 export default function App() {
   return (
@@ -44,6 +45,7 @@ export default function App() {
 
         <Route path="election/:id/apply" element={<CandidateForm />} />
         <Route path="election/:id/candidates" element={<CandidateList />} />
+        <Route path="/candidates" element={<CandidatePage />} />
 
         {/* Dashboard Layout */}
         <Route element={<AppLayout />}>
