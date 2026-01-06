@@ -55,9 +55,9 @@ export default function ElectionPage() {
     "info"
   );
 
-  const [activeTab, setActiveTab] = useState<"Ongoing" | "Upcoming" | "Past">(
-    "Ongoing"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "All" | "Ongoing" | "Upcoming" | "Past"
+  >("All");
 
   const fetchElections = async () => {
     try {
@@ -88,6 +88,14 @@ export default function ElectionPage() {
         };
       });
 
+      const statusOrder: Record<string, number> = {
+        Ongoing: 0,
+        Upcoming: 1,
+        Past: 2,
+      };
+
+      formatted.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
+
       setElections(formatted);
     } catch (error) {
       setToastMessage("Failed to load elections");
@@ -104,11 +112,17 @@ export default function ElectionPage() {
   if (loading)
     return <div className="text-center mt-10">Loading elections...</div>;
 
-  const phases: ("Ongoing" | "Upcoming" | "Past")[] = [
+  const phases: ("All" | "Ongoing" | "Upcoming" | "Past")[] = [
+    "All",
     "Ongoing",
     "Upcoming",
     "Past",
   ];
+
+  const filteredElections =
+    activeTab === "All"
+      ? elections
+      : elections.filter((e) => e.status === activeTab);
 
   return (
     <div className="p-6 w-full">
@@ -130,10 +144,13 @@ export default function ElectionPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {elections
-          .filter((e) => e.status === activeTab)
-          .map((election) => (
+      {filteredElections.length === 0 ? (
+        <p className="text-center text-gray-500 mt-8">
+          No {activeTab.toLowerCase()} elections available.
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {filteredElections.map((election) => (
             <ElectionCard
               key={election.election_id}
               electionId={election.election_id}
@@ -148,7 +165,8 @@ export default function ElectionPage() {
               status={election.status}
             />
           ))}
-      </div>
+        </div>
+      )}
 
       {toastMessage && (
         <Toast
