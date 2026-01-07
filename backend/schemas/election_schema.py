@@ -15,7 +15,7 @@ class ElectionCreate(BaseModel):
     election_name: str
     start_date: datetime
     end_date: datetime
-    status: ElectionStatus
+    status: Optional[ElectionStatus] = None
     description: Optional[str] = None
     position_ids: Optional[List[int]] = []
 

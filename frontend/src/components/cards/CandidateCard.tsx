@@ -15,6 +15,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useState } from "react";
 
 interface CandidateCardProps {
+  candidate_id: number;
+  election_id: number;
   full_name: string;
   photo_url?: string;
   position_name: string;
@@ -22,10 +24,13 @@ interface CandidateCardProps {
   organization_name?: string;
   affiliation_name?: string;
   manifesto?: string;
-  onVote?: () => void;
+  hasVoted?: boolean;
+  onVote: (candidate_id: number, election_id: number) => void;
 }
 
 export default function CandidateCard({
+  candidate_id,
+  election_id,
   full_name,
   photo_url,
   position_name,
@@ -33,6 +38,7 @@ export default function CandidateCard({
   organization_name,
   affiliation_name,
   manifesto,
+  hasVoted = false,
   onVote,
 }: CandidateCardProps) {
   const [showManifesto, setShowManifesto] = useState(false);
@@ -70,11 +76,9 @@ export default function CandidateCard({
 
       <CardContent>
         <Stack spacing={0.5}>
-          {position_name && (
-            <Typography variant="body1">
-              <strong>Position:</strong> {position_name}
-            </Typography>
-          )}
+          <Typography variant="body1">
+            <strong>Position:</strong> {position_name}
+          </Typography>
           {program_name && (
             <Typography variant="body1">
               <strong>Program:</strong> {program_name}
@@ -131,25 +135,24 @@ export default function CandidateCard({
 
       <Divider />
 
-      {onVote && (
-        <CardActions sx={{ justifyContent: "center", pb: 2 }}>
-          <Button
-            variant="contained"
-            color="success"
-            startIcon={<ThumbUpIcon />}
-            size="medium"
-            onClick={onVote}
-            sx={{
-              textTransform: "none",
-              fontWeight: 700,
-              borderRadius: 2,
-              px: 3,
-            }}
-          >
-            Vote
-          </Button>
-        </CardActions>
-      )}
+      <CardActions sx={{ justifyContent: "center", pb: 2 }}>
+        <Button
+          variant="contained"
+          color="success"
+          startIcon={<ThumbUpIcon />}
+          size="medium"
+          onClick={() => onVote(candidate_id, election_id)}
+          disabled={hasVoted}
+          sx={{
+            textTransform: "none",
+            fontWeight: 700,
+            borderRadius: 2,
+            px: 3,
+          }}
+        >
+          {hasVoted ? "Voted" : "Vote"}
+        </Button>
+      </CardActions>
     </Card>
   );
 }

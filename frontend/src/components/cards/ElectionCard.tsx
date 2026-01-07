@@ -187,7 +187,7 @@ export default function ElectionCard({
             variant="outlined"
             color="success"
             sx={{ textTransform: "none", fontWeight: 500 }}
-            onClick={() => navigate(`/candidate?electionId=${electionId}`)}
+            onClick={() => navigate(`/candidates?electionId=${electionId}`)}
           >
             View Candidates
           </Button>
