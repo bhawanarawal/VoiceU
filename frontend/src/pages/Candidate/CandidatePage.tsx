@@ -8,7 +8,10 @@ import {
 } from "@mui/material";
 import { useSearchParams } from "react-router-dom";
 import CandidateCard from "../../components/cards/CandidateCard";
-import { getApprovedCandidatesByElection } from "./candidateService";
+import {
+  getApprovedCandidatesByElection,
+  voteForCandidate,
+} from "./candidateService";
 
 interface Candidate {
   candidate_id: number;
@@ -19,6 +22,7 @@ interface Candidate {
   program_name?: string;
   organization_name?: string;
   affiliation_name?: string;
+  hasVoted?: boolean;
 }
 
 export default function CandidatePage() {
@@ -35,8 +39,8 @@ export default function CandidatePage() {
     const fetchCandidates = async () => {
       try {
         const res = await getApprovedCandidatesByElection(electionId);
-        console.log("Fetched candidates:", res.data);
-        setCandidates(res.data || []);
+        const data = res.data || [];
+        setCandidates(data);
       } catch (err) {
         console.error("Failed to fetch candidates:", err);
       } finally {
@@ -47,8 +51,19 @@ export default function CandidatePage() {
     fetchCandidates();
   }, [electionId]);
 
-  const handleVote = (candidate_id: number) => {
-    console.log("Vote clicked for candidate", candidate_id);
+  const handleVote = async (candidate_id: number, election_id: number) => {
+    try {
+      await voteForCandidate({ candidate_id, election_id, voter_id: 1 });
+      alert("Vote cast successfully!");
+
+      setCandidates((prev) =>
+        prev.map((c) =>
+          c.candidate_id === candidate_id ? { ...c, hasVoted: true } : c
+        )
+      );
+    } catch (err: any) {
+      alert(err.response?.data?.detail || "Failed to vote.");
+    }
   };
 
   if (loading) {
@@ -93,6 +108,8 @@ export default function CandidatePage() {
             {candidatesByPosition[position].map((c) => (
               <CandidateCard
                 key={c.candidate_id}
+                candidate_id={c.candidate_id}
+                election_id={electionId!}
                 full_name={c.full_name}
                 photo_url={c.photo_url}
                 position_name={c.position_name}
@@ -100,7 +117,8 @@ export default function CandidatePage() {
                 organization_name={c.organization_name}
                 affiliation_name={c.affiliation_name}
                 manifesto={c.manifesto}
-                onVote={() => handleVote(c.candidate_id)}
+                hasVoted={c.hasVoted || false}
+                onVote={handleVote}
               />
             ))}
           </Stack>

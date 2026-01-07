@@ -1,18 +1,48 @@
-// utils/time.ts
+
+const NPT_OFFSET_MS = 5.75 * 60 * 60 * 1000;
+
+
+export function toNepalTime(utcDate: string): Date {
+  return new Date(new Date(utcDate).getTime() + NPT_OFFSET_MS);
+}
+
+
+export function localToUTC(localDate: string): string {
+  const date = new Date(localDate);
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString();
+}
+
+
+export function utcToLocalInput(utcDate: string): string {
+  const date = new Date(utcDate);
+  const tzOffset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
+}
+
+
 export function getElectionPhase(
   start: string,
   end: string
 ): "Upcoming" | "Ongoing" | "Past" {
-  const nptOffset = 5.75 * 60 * 60 * 1000; // +5:45 hours in ms
+  const startNPT = toNepalTime(start);
+  const endNPT = toNepalTime(end);
+  const nowNPT = toNepalTime(new Date().toISOString());
 
-  // Convert UTC strings to NPT
-  const startNPT = new Date(new Date(start).getTime() + nptOffset);
-  const endNPT = new Date(new Date(end).getTime() + nptOffset);
-
-  // Convert current time to NPT
-  const now = new Date(new Date().getTime() + nptOffset);
-
-  if (now < startNPT) return "Upcoming";
-  if (now >= startNPT && now <= endNPT) return "Ongoing";
+  if (nowNPT < startNPT) return "Upcoming";
+  if (nowNPT >= startNPT && nowNPT <= endNPT) return "Ongoing";
   return "Past";
+}
+
+
+export function formatNepalDate(utcDate: string): string {
+  const date = toNepalTime(utcDate);
+
+  return date.toLocaleString("en-NP", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
 }

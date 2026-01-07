@@ -1,6 +1,5 @@
 import { useCallback, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
-
 import {
   ChevronDownIcon,
   GridIcon,
@@ -23,24 +22,12 @@ type NavItem = {
 };
 
 const mainItems: NavItem[] = [
-  {
-    icon: <GridIcon />,
-    name: "Dashboard",
-    path: "/",
-  },
+  { icon: <GridIcon />, name: "Dashboard", path: "/" },
 ];
 
 const adminItems: NavItem[] = [
-  {
-    icon: <UserCircleIcon />,
-    name: "Users",
-    path: "/users",
-  },
-  {
-    icon: <UserCircleIcon />,
-    name: "User Profile",
-    path: "/profile",
-  },
+  { icon: <UserCircleIcon />, name: "Users", path: "/users" },
+  { icon: <UserCircleIcon />, name: "User Profile", path: "/profile" },
 ];
 
 const managementItems: NavItem[] = [
@@ -124,7 +111,6 @@ const AppSidebar: React.FC = () => {
     section: string;
     index: number;
   } | null>(null);
-
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const isActive = useCallback(
@@ -162,7 +148,7 @@ const AppSidebar: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleToggle(sectionKey, index)}
-                  className="menu-item menu-item-inactive"
+                  className="menu-item menu-item-inactive flex items-center w-full"
                 >
                   <span className="menu-item-icon-size">{nav.icon}</span>
                   {(isExpanded || isHovered || isMobileOpen) && (
@@ -186,10 +172,10 @@ const AppSidebar: React.FC = () => {
                   ref={(el: HTMLDivElement | null) => {
                     subMenuRefs.current[`${sectionKey}-${index}`] = el;
                   }}
-                  className={`overflow-hidden transition-all ${
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
                     openSubmenu?.section === sectionKey &&
                     openSubmenu.index === index
-                      ? "max-h-96"
+                      ? "max-h-screen"
                       : "max-h-0"
                   }`}
                 >
@@ -236,7 +222,7 @@ const AppSidebar: React.FC = () => {
 
   return (
     <aside
-      className={`fixed top-0 left-0 h-screen bg-white border-r transition-all ${
+      className={`fixed top-0 left-0 h-screen flex flex-col bg-white border-r transition-all ${
         isExpanded || isHovered ? "w-[290px]" : "w-[90px]"
       }`}
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
@@ -268,7 +254,10 @@ const AppSidebar: React.FC = () => {
         </Link>
       </div>
 
-      <nav className="p-5 space-y-6 overflow-y-auto">
+      <nav
+        className="flex-1 overflow-y-auto p-5 space-y-6
+  scrollbar-thin scrollbar-thumb-white-900 scrollbar-track-gray-700"
+      >
         {renderSection("Main", mainItems, "main")}
         {renderSection("Admin", adminItems, "admin")}
         {renderSection("Management", managementItems, "management")}

@@ -36,3 +36,9 @@ export const updateCandidateApproval = (
 export const getApprovedCandidatesByElection = (electionId: number) => {
   return api.get(`/candidates/approved/by-election/${electionId}`);
 };
+
+export const voteForCandidate = (data: {
+  voter_id: number;
+  candidate_id: number;
+  election_id: number;
+}) => api.post("/api/votes", data);

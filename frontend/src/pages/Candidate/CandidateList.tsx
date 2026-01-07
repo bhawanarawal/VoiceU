@@ -152,7 +152,6 @@ export default function CandidateList() {
         emptyMessage="No candidates found"
         renderActions={(row: Candidate) => (
           <div className="flex flex-col gap-2">
-            {/* Delete only if pending */}
             {row.approval_status === "pending" && (
               <button
                 onClick={() =>
@@ -167,7 +166,6 @@ export default function CandidateList() {
               </button>
             )}
 
-            {/* Approval controls */}
             {row.approval_status === "pending" ? (
               <>
                 <button
