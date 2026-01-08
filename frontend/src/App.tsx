@@ -34,6 +34,7 @@ import VoterForm from "./pages/Voter/VoterForm";
 import ProgramForm from "./pages/Program/ProgramForm";
 import ProgramList from "./pages/Program/ProgramList";
 import ElectionPage from "./pages/Election/ElectionPage";
+import HomeDashboard from "./pages/HomePages/HomeDashboard";
 
 export default function App() {
   return (
@@ -112,6 +113,9 @@ export default function App() {
         {/* Auth Pages */}
         <Route path="signin" element={<SignIn />} />
         <Route path="signup" element={<SignUp />} />
+
+        {/* Home pages */}
+        <Route path="DashboardPage" element={<HomeDashboard/>}/>
 
         {/* Fallback */}
         <Route path="*" element={<NotFound />} />
