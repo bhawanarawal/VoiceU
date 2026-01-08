@@ -1,7 +1,7 @@
 import React from "react";
-import Navbar from "../../layout/Navbar";
+
 import HomeSection from "./HomeSection";
-import Services from "./Services";
+
 import Elections from "./Elections";
 import About from "./About";
 import Contact from "./Contact";

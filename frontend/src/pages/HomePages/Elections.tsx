@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Navigate } from "react-router";
+
 
 
 export type Candidate={
