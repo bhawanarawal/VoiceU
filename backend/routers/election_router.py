@@ -218,13 +218,23 @@ def delete_election(
     if not election:
         raise HTTPException(status_code=404, detail="Election not found")
 
-    stmt = delete(ElectionPosition).where(ElectionPosition.election_id == election_id)
-    session.exec(stmt)
+    try:
 
-    session.delete(election)
-    session.commit()
+        session.exec(delete(Candidate).where(Candidate.election_id == election_id))
 
-    return {"message": "Election and related positions deleted successfully"}
+        session.exec(
+            delete(ElectionPosition).where(ElectionPosition.election_id == election_id)
+        )
+
+        session.delete(election)
+        session.commit()
+        return {"message": "Election and related data deleted successfully"}
+
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(
+            status_code=400, detail="Cannot delete election due to related data"
+        )
 
 
 @router.get("/{election_id}/positions")

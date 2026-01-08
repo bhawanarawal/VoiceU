@@ -1,5 +1,3 @@
-// pages/election/ElectionForm.tsx
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";

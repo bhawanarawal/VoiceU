@@ -94,7 +94,7 @@ export default function CandidatePage() {
 
   return (
     <Box sx={{ px: { xs: 2, md: 4 }, py: 4 }}>
-      <Typography variant="h4" fontWeight={700} gutterBottom textAlign="center">
+      <Typography variant="h4" fontWeight={700} gutterBottom textAlign="left">
         Approved Candidates
       </Typography>
 
@@ -104,7 +104,12 @@ export default function CandidatePage() {
             Candidate of {position} Position :
           </Typography>
 
-          <Stack spacing={3}>
+          <Stack
+            direction="row"
+            spacing={3}
+            flexWrap="wrap"
+            justifyContent="flex-start"
+          >
             {candidatesByPosition[position].map((c) => (
               <CandidateCard
                 key={c.candidate_id}
