@@ -46,7 +46,7 @@ export default function CandidateCard({
   return (
     <Card
       sx={{
-        maxWidth: 360,
+        width: 300,
         margin: "auto",
         boxShadow: 3,
         transition: "0.3s",
@@ -76,21 +76,21 @@ export default function CandidateCard({
 
       <CardContent>
         <Stack spacing={0.5}>
-          <Typography variant="body1">
+          <Typography variant="body2">
             <strong>Position:</strong> {position_name}
           </Typography>
           {program_name && (
-            <Typography variant="body1">
+            <Typography variant="body2">
               <strong>Program:</strong> {program_name}
             </Typography>
           )}
           {organization_name && (
-            <Typography variant="body1">
+            <Typography variant="body2">
               <strong>Organization:</strong> {organization_name}
             </Typography>
           )}
           {affiliation_name && (
-            <Typography variant="body1">
+            <Typography variant="body2">
               <strong>Affiliation:</strong> {affiliation_name}
             </Typography>
           )}
