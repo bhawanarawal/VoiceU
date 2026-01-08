@@ -24,13 +24,11 @@ interface CandidateCardProps {
   organization_name?: string;
   affiliation_name?: string;
   manifesto?: string;
-  hasVoted?: boolean;
-  onVote: (candidate_id: number, election_id: number) => void;
+  hasVoted: boolean;
+  onVote: () => void;
 }
 
 export default function CandidateCard({
-  candidate_id,
-  election_id,
   full_name,
   photo_url,
   position_name,
@@ -38,117 +36,62 @@ export default function CandidateCard({
   organization_name,
   affiliation_name,
   manifesto,
-  hasVoted = false,
+  hasVoted,
   onVote,
 }: CandidateCardProps) {
   const [showManifesto, setShowManifesto] = useState(false);
 
   return (
-    <Card
-      sx={{
-        width: 300,
-        margin: "auto",
-        boxShadow: 3,
-        transition: "0.3s",
-        "&:hover": { boxShadow: 6, transform: "scale(1.0)" },
-        borderRadius: 0,
-      }}
-    >
+    <Card sx={{ width: 300, boxShadow: 3 }}>
       <Stack alignItems="center" spacing={1} sx={{ mt: 2 }}>
         <Avatar
           src={
             photo_url
-              ? `http://localhost:8000${
-                  "/" + photo_url.replace(/\\/g, "/").replace(/^\/+/, "")
-                }`
+              ? `http://localhost:8000/${photo_url
+                  .replace(/\\/g, "/")
+                  .replace(/^\/+/, "")}`
               : undefined
           }
-          alt={full_name}
           sx={{ width: 90, height: 90 }}
         />
-
-        <Typography variant="h6" fontWeight={700} textAlign="center">
-          {full_name}
-        </Typography>
+        <Typography fontWeight={700}>{full_name}</Typography>
       </Stack>
 
       <Divider sx={{ my: 1 }} />
 
       <CardContent>
-        <Stack spacing={0.5}>
-          <Typography variant="body2">
-            <strong>Position:</strong> {position_name}
-          </Typography>
-          {program_name && (
-            <Typography variant="body2">
-              <strong>Program:</strong> {program_name}
-            </Typography>
-          )}
-          {organization_name && (
-            <Typography variant="body2">
-              <strong>Organization:</strong> {organization_name}
-            </Typography>
-          )}
-          {affiliation_name && (
-            <Typography variant="body2">
-              <strong>Affiliation:</strong> {affiliation_name}
-            </Typography>
-          )}
+        <Typography variant="body2">
+          <strong>Position:</strong> {position_name}
+        </Typography>
+        {program_name && <Typography>Program: {program_name}</Typography>}
+        {organization_name && (
+          <Typography>Organization: {organization_name}</Typography>
+        )}
+        {affiliation_name && (
+          <Typography>Affiliation: {affiliation_name}</Typography>
+        )}
 
-          {manifesto && (
-            <>
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-              >
-                <Typography variant="body1">
-                  <strong>Manifesto:</strong>
-                </Typography>
-                <IconButton
-                  size="small"
-                  onClick={() => setShowManifesto((prev) => !prev)}
-                >
-                  <ExpandMoreIcon
-                    sx={{
-                      transform: showManifesto
-                        ? "rotate(180deg)"
-                        : "rotate(0deg)",
-                      transition: "0.3s",
-                    }}
-                  />
-                </IconButton>
-              </Stack>
-
-              <Collapse in={showManifesto} timeout="auto" unmountOnExit>
-                <Typography
-                  variant="body2"
-                  sx={{ mt: 0.5, wordBreak: "break-word" }}
-                >
-                  {manifesto}
-                </Typography>
-              </Collapse>
-            </>
-          )}
-        </Stack>
+        {manifesto && (
+          <>
+            <IconButton onClick={() => setShowManifesto(!showManifesto)}>
+              <ExpandMoreIcon />
+            </IconButton>
+            <Collapse in={showManifesto}>
+              <Typography>{manifesto}</Typography>
+            </Collapse>
+          </>
+        )}
       </CardContent>
 
       <Divider />
 
-      <CardActions sx={{ justifyContent: "center", pb: 2 }}>
+      <CardActions sx={{ justifyContent: "center" }}>
         <Button
           variant="contained"
           color="success"
           startIcon={<ThumbUpIcon />}
-          size="medium"
-          onClick={() => onVote(candidate_id, election_id)}
           disabled={hasVoted}
-          sx={{
-            textTransform: "none",
-            fontWeight: 700,
-            borderRadius: 2,
-            px: 3,
-          }}
+          onClick={onVote}
         >
           {hasVoted ? "Voted" : "Vote"}
         </Button>

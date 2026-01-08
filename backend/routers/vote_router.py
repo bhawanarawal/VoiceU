@@ -1,56 +1,67 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select, func
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone
+
 from models.vote import Vote
-from models.voter_election import VoterElection
+from models.candidate import Candidate
+from models.position import Position
+from models.user import User
+from models.voter import Voter
 from schemas.vote_schema import VoteCreate, VoteRead
 from database import get_session
-from models.position import Position
-from models.candidate import Candidate
+from auth import get_current_active_user
 
 router = APIRouter(prefix="/votes", tags=["Votes"])
 
 
-@router.post("/", response_model=VoteRead)
-def cast_vote(data: VoteCreate, session: Session = Depends(get_session)):
+@router.post("/", status_code=status.HTTP_201_CREATED)
+def cast_vote(
+    data: VoteCreate,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_active_user),
+):
 
-    assignment = session.exec(
-        select(VoterElection).where(
-            (VoterElection.voter_id == data.voter_id)
-            & (VoterElection.election_id == data.election_id)
+    voter = session.exec(
+        select(Voter).where(Voter.user_id == current_user.user_id)
+    ).first()
+
+    if not voter:
+        raise HTTPException(status_code=404, detail="Voter not found")
+
+    candidate = session.get(Candidate, data.candidate_id)
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+
+    if candidate.election_id != data.election_id:
+        raise HTTPException(status_code=400, detail="Invalid election")
+
+    existing_vote = session.exec(
+        select(Vote).where(
+            Vote.voter_id == voter.voter_id,
+            Vote.election_id == data.election_id,
+            Vote.position_id == candidate.position_id,
         )
     ).first()
 
-    if not assignment:
+    if existing_vote:
         raise HTTPException(
-            status_code=400, detail="Voter not assigned to this election"
-        )
-
-    if assignment.has_voted:
-        raise HTTPException(
-            status_code=400, detail="Voter has already voted in this election"
+            status_code=400,
+            detail="You have already voted for this position",
         )
 
     vote = Vote(
-        voter_id=data.voter_id,
-        candidate_id=data.candidate_id,
+        voter_id=voter.voter_id,
         election_id=data.election_id,
-        vote_time=datetime.now(timezone.utc),
+        position_id=candidate.position_id,
+        candidate_id=candidate.candidate_id,
     )
 
-    try:
-        session.add(vote)
-        assignment.has_voted = True
-        session.add(assignment)
+    session.add(vote)
+    session.commit()
+    session.refresh(vote)
 
-        session.commit()
-        session.refresh(vote)
-        return vote
-
-    except IntegrityError:
-        session.rollback()
-        raise HTTPException(status_code=400, detail="Duplicate vote or invalid data")
+    return {"message": "Vote cast successfully"}
 
 
 @router.get("/", response_model=list[VoteRead])

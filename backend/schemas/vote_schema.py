@@ -1,12 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_serializer
 from datetime import datetime, timezone, timedelta
-from pydantic import field_serializer
+
 
 NPT = timezone(timedelta(hours=5, minutes=45))
 
 
 class VoteCreate(BaseModel):
-    voter_id: int
     candidate_id: int
     election_id: int
 
@@ -16,6 +15,7 @@ class VoteRead(BaseModel):
     voter_id: int
     candidate_id: int
     election_id: int
+    position_id: int
     created_at: datetime
 
     model_config = {"from_attributes": True}
