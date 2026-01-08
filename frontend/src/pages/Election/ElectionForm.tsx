@@ -1,3 +1,5 @@
+// pages/election/ElectionForm.tsx
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
@@ -7,6 +9,11 @@ import Button from "../../components/ui/button/Button";
 import Toast from "../../components/common/Toast";
 import Badge from "../../components/ui/badge/Badge";
 import api from "../../utils/api";
+import {
+  getElectionPhase,
+  localToUTC,
+  utcToLocalInput,
+} from "../../utils/time";
 
 interface ElectionFormState {
   election_name: string;
@@ -34,44 +41,6 @@ interface Position {
   position_name: string;
 }
 
-const toLocalInput = (utcDate: string) => {
-  const date = new Date(utcDate);
-  const localISO = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 16);
-  return localISO;
-};
-
-const toUTC = (localDate: string) => {
-  const date = new Date(localDate);
-  const utcISO = new Date(
-    date.getTime() + date.getTimezoneOffset() * 60000
-  ).toISOString();
-  return utcISO;
-};
-
-const getElectionPhase = (startUTC: string, endUTC: string) => {
-  const now = new Date();
-  const start = new Date(startUTC);
-  const end = new Date(endUTC);
-  if (now < start) return "upcoming";
-  if (now >= start && now <= end) return "ongoing";
-  return "past";
-};
-
-const getBadgeColor = (phase: string) => {
-  switch (phase) {
-    case "upcoming":
-      return "info";
-    case "ongoing":
-      return "success";
-    case "past":
-      return "dark";
-    default:
-      return "light";
-  }
-};
-
 export default function ElectionForm() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -92,7 +61,9 @@ export default function ElectionForm() {
   const [selectedPositions, setSelectedPositions] = useState<number[]>([]);
   const [positionsOpen, setPositionsOpen] = useState(false);
 
-  const [phase, setPhase] = useState("upcoming");
+  const [phase, setPhase] = useState<"Upcoming" | "Ongoing" | "Past">(
+    "Upcoming"
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [toast, setToast] = useState<{
     message: string | any[];
@@ -105,9 +76,7 @@ export default function ElectionForm() {
       .get("/organizations/")
       .then((res) => setOrganizations(res.data))
       .catch(console.error);
-  }, []);
 
-  useEffect(() => {
     api
       .get("/positions/")
       .then((res) => setPositions(res.data))
@@ -128,16 +97,14 @@ export default function ElectionForm() {
       .get(`/elections/${id}`)
       .then((res) => {
         const data = res.data;
-        const startLocal = toLocalInput(data.start_date);
-        const endLocal = toLocalInput(data.end_date);
         setForm({
           election_name: data.election_name,
           description: data.description || "",
           organization_id: data.organization_id,
           program_id: data.program_id,
           affiliation_name: data.affiliation_name,
-          start_date: startLocal,
-          end_date: endLocal,
+          start_date: utcToLocalInput(data.start_date),
+          end_date: utcToLocalInput(data.end_date),
         });
         setSelectedPositions(
           data.positions?.map((p: any) => p.position_id) || []
@@ -146,6 +113,13 @@ export default function ElectionForm() {
       })
       .catch(console.error);
   }, [id]);
+
+  useEffect(() => {
+    if (!form.start_date || !form.end_date) return;
+    setPhase(
+      getElectionPhase(localToUTC(form.start_date), localToUTC(form.end_date))
+    );
+  }, [form.start_date, form.end_date]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -187,9 +161,8 @@ export default function ElectionForm() {
       election_name: form.election_name,
       description: form.description,
       program_id: Number(form.program_id),
-      start_date: toUTC(form.start_date),
-      end_date: toUTC(form.end_date),
-      status: getElectionPhase(toUTC(form.start_date), toUTC(form.end_date)),
+      start_date: localToUTC(form.start_date),
+      end_date: localToUTC(form.end_date),
       position_ids: selectedPositions.map(Number),
     };
 
@@ -212,16 +185,15 @@ export default function ElectionForm() {
         errorMessage = err.response.data.detail.map(
           (e: any) => `${e.loc.join(" > ")}: ${e.msg}`
         );
-      } else if (err.response?.data?.detail) {
+      } else if (err.response?.data?.detail)
         errorMessage = err.response.data.detail;
-      }
       setToast({ message: errorMessage, type: "error" });
     } finally {
       setLoading(false);
     }
   };
 
-  const isEditable = phase !== "past";
+  const isEditable = phase !== "Past";
 
   return (
     <div>
@@ -245,7 +217,16 @@ export default function ElectionForm() {
 
       {id && (
         <div className="mb-4">
-          <Badge variant="solid" color={getBadgeColor(phase)}>
+          <Badge
+            variant="solid"
+            color={
+              phase === "Upcoming"
+                ? "info"
+                : phase === "Ongoing"
+                ? "success"
+                : "dark"
+            }
+          >
             {phase}
           </Badge>
         </div>
@@ -280,8 +261,8 @@ export default function ElectionForm() {
               </label>
               <select
                 id="organization_id"
-                name="organization_id"
                 aria-label="Select organization"
+                name="organization_id"
                 value={form.organization_id}
                 onChange={handleChange}
                 disabled={!isEditable}
@@ -307,8 +288,8 @@ export default function ElectionForm() {
               </label>
               <select
                 id="program_id"
-                name="program_id"
                 aria-label="Select program"
+                name="program_id"
                 value={form.program_id}
                 onChange={handleChange}
                 disabled={!isEditable || !form.organization_id}
@@ -332,9 +313,8 @@ export default function ElectionForm() {
               </label>
               <input
                 id="affiliation_name"
+                aria-label="Affiliation"
                 type="text"
-                name="affiliation_name"
-                placeholder="Affiliation"
                 value={form.affiliation_name}
                 disabled
                 className="w-full border px-4 py-3 rounded bg-gray-100"
@@ -349,12 +329,12 @@ export default function ElectionForm() {
                 <button
                   type="button"
                   className="w-full border px-4 py-3 rounded text-left flex justify-between items-center"
-                  onClick={() => setPositionsOpen((prev) => !prev)}
+                  onClick={() => setPositionsOpen(!positionsOpen)}
                 >
                   {selectedPositions.length
                     ? `Selected (${selectedPositions.length})`
                     : "Select positions"}
-                  <span className="ml-2">{positionsOpen ? "▲" : "▼"}</span>
+                  <span>{positionsOpen ? "▲" : "▼"}</span>
                 </button>
                 {positionsOpen && (
                   <div className="absolute z-10 w-full bg-white border rounded mt-1 max-h-60 overflow-y-auto shadow-lg">
@@ -365,7 +345,6 @@ export default function ElectionForm() {
                       >
                         <input
                           type="checkbox"
-                          value={pos.position_id}
                           checked={selectedPositions.includes(pos.position_id)}
                           onChange={(e) => {
                             const checked = e.target.checked;
@@ -393,7 +372,8 @@ export default function ElectionForm() {
                 Description
               </label>
               <textarea
-                placeholder="Enter description"
+                id="description"
+                placeholder="Enter a description"
                 name="description"
                 value={form.description}
                 onChange={handleChange}
@@ -408,9 +388,9 @@ export default function ElectionForm() {
               </label>
               <input
                 id="start_date"
+                placeholder="Enter a start date"
                 type="datetime-local"
                 name="start_date"
-                placeholder="Select start date"
                 value={form.start_date}
                 onChange={handleChange}
                 disabled={!isEditable}
@@ -424,7 +404,7 @@ export default function ElectionForm() {
               </label>
               <input
                 id="end_date"
-                placeholder="Select end date"
+                placeholder="Enter a end date"
                 type="datetime-local"
                 name="end_date"
                 value={form.end_date}

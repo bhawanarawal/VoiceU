@@ -64,9 +64,10 @@ def apply_candidate(
     photo_path = None
     if photo:
         filename = f"{int(datetime.now().timestamp())}_{photo.filename}"
-        photo_path = os.path.join(UPLOAD_DIR, filename)
-        with open(photo_path, "wb") as buffer:
+        path = os.path.join(UPLOAD_DIR, filename)
+        with open(path, "wb") as buffer:
             shutil.copyfileobj(photo.file, buffer)
+        photo_path = f"/static/uploads/candidates/{filename}".replace("\\", "/")
 
     candidate = Candidate(
         voter_id=voter.voter_id,
@@ -95,6 +96,7 @@ def get_all_candidates(session: Session = Depends(get_session)):
         select(
             Candidate,
             User.username,
+            User.full_name,
             Election.election_name,
             Position.position_name,
             Program.program_name,
@@ -122,6 +124,7 @@ def get_all_candidates(session: Session = Depends(get_session)):
             candidate_id=c.candidate_id,
             voter_id=c.voter_id,
             username=username,
+            full_name=full_name,
             election_id=c.election_id,
             election_name=election_name,
             position_id=c.position_id,
@@ -138,6 +141,7 @@ def get_all_candidates(session: Session = Depends(get_session)):
         for (
             c,
             username,
+            full_name,
             election_name,
             position_name,
             program_name,
@@ -156,6 +160,7 @@ def get_approved_candidates_by_election(
         select(
             Candidate.candidate_id,
             User.username,
+            User.full_name,
             Candidate.photo_url,
             Candidate.manifesto,
             Election.election_name,
@@ -186,13 +191,14 @@ def get_approved_candidates_by_election(
         {
             "candidate_id": r[0],
             "username": r[1],
-            "photo_url": r[2],
-            "manifesto": r[3],
-            "election_name": r[4],
-            "program_name": r[5],
-            "position_name": r[6],
-            "organization_name": r[7],
-            "affiliation_name": r[8],
+            "full_name": r[2],
+            "photo_url": r[3],
+            "manifesto": r[4],
+            "election_name": r[5],
+            "program_name": r[6],
+            "position_name": r[7],
+            "organization_name": r[8],
+            "affiliation_name": r[9],
         }
         for r in results
     ]
@@ -204,6 +210,7 @@ def get_candidate(candidate_id: int, session: Session = Depends(get_session)):
         select(
             Candidate,
             User.username,
+            User.full_name,
             Election.election_name,
             Position.position_name,
             Program.program_name,
@@ -232,6 +239,7 @@ def get_candidate(candidate_id: int, session: Session = Depends(get_session)):
     (
         c,
         username,
+        full_name,
         election_name,
         position_name,
         program_name,
@@ -243,6 +251,7 @@ def get_candidate(candidate_id: int, session: Session = Depends(get_session)):
         candidate_id=c.candidate_id,
         voter_id=c.voter_id,
         username=username,
+        full_name=full_name,
         election_id=c.election_id,
         election_name=election_name,
         position_id=c.position_id,
@@ -297,7 +306,9 @@ def update_candidate(
         path = os.path.join(UPLOAD_DIR, filename)
         with open(path, "wb") as buffer:
             shutil.copyfileobj(photo.file, buffer)
-        candidate.photo_url = path
+        candidate.photo_url = f"/static/uploads/candidates/{filename}".replace(
+            "\\", "/"
+        )
 
     candidate.updated_at = datetime.now(timezone.utc)
     session.commit()

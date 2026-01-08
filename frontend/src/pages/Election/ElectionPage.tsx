@@ -21,12 +21,12 @@ interface Election {
   status: "Upcoming" | "Ongoing" | "Past";
 }
 
+const NPT_OFFSET_MS = 5.75 * 60 * 60 * 1000;
+
 const formatNepalDate = (utcDate: string) => {
   const date = new Date(utcDate);
-  const nptOffset = 5.75 * 60;
-  const nptDate = new Date(date.getTime() + nptOffset * 60 * 1000);
-
-  return nptDate.toLocaleString("en-NP", {
+  const nptDate = new Date(date.getTime() + NPT_OFFSET_MS);
+  return nptDate.toLocaleString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -37,10 +37,9 @@ const formatNepalDate = (utcDate: string) => {
 };
 
 const getElectionPhase = (startUTC: string, endUTC: string) => {
-  const nptOffset = 5.75 * 60 * 60 * 1000;
-  const start = new Date(new Date(startUTC).getTime() + nptOffset);
-  const end = new Date(new Date(endUTC).getTime() + nptOffset);
-  const now = new Date(new Date().getTime() + nptOffset);
+  const start = new Date(new Date(startUTC).getTime() + NPT_OFFSET_MS);
+  const end = new Date(new Date(endUTC).getTime() + NPT_OFFSET_MS);
+  const now = new Date(Date.now() + NPT_OFFSET_MS);
 
   if (now < start) return "Upcoming";
   if (now >= start && now <= end) return "Ongoing";
@@ -54,18 +53,18 @@ export default function ElectionPage() {
   const [toastType, setToastType] = useState<"success" | "error" | "info">(
     "info"
   );
-
-  const [activeTab, setActiveTab] = useState<"Ongoing" | "Upcoming" | "Past">(
-    "Ongoing"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "All" | "Ongoing" | "Upcoming" | "Past"
+  >("All");
 
   const fetchElections = async () => {
     try {
       const res = await getElections();
       const formatted: Election[] = res.data.map((e: any) => {
         let positions: Position[] = [];
-        if (Array.isArray(e.positions)) positions = e.positions;
-        else if (typeof e.positions === "string" && e.positions.length > 0) {
+        if (Array.isArray(e.positions)) {
+          positions = e.positions;
+        } else if (typeof e.positions === "string" && e.positions.length > 0) {
           positions = e.positions
             .split(",")
             .map((name: string, index: number) => ({
@@ -88,8 +87,16 @@ export default function ElectionPage() {
         };
       });
 
+      const statusOrder: Record<string, number> = {
+        Ongoing: 0,
+        Upcoming: 1,
+        Past: 2,
+      };
+      formatted.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
+
       setElections(formatted);
     } catch (error) {
+      console.error("Failed to load elections:", error);
       setToastMessage("Failed to load elections");
       setToastType("error");
     } finally {
@@ -104,11 +111,16 @@ export default function ElectionPage() {
   if (loading)
     return <div className="text-center mt-10">Loading elections...</div>;
 
-  const phases: ("Ongoing" | "Upcoming" | "Past")[] = [
+  const phases: ("All" | "Ongoing" | "Upcoming" | "Past")[] = [
+    "All",
     "Ongoing",
     "Upcoming",
     "Past",
   ];
+  const filteredElections =
+    activeTab === "All"
+      ? elections
+      : elections.filter((e) => e.status === activeTab);
 
   return (
     <div className="p-6 w-full">
@@ -130,10 +142,13 @@ export default function ElectionPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {elections
-          .filter((e) => e.status === activeTab)
-          .map((election) => (
+      {filteredElections.length === 0 ? (
+        <p className="text-center text-gray-500 mt-8">
+          No {activeTab.toLowerCase()} elections available.
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {filteredElections.map((election) => (
             <ElectionCard
               key={election.election_id}
               electionId={election.election_id}
@@ -148,7 +163,8 @@ export default function ElectionPage() {
               status={election.status}
             />
           ))}
-      </div>
+        </div>
+      )}
 
       {toastMessage && (
         <Toast

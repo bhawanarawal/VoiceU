@@ -159,7 +159,7 @@ export default function CandidateForm() {
         message: "Candidate applied successfully",
         type: "success",
       });
-      setTimeout(() => navigate("/candidate"), 800);
+      setTimeout(() => navigate("/elections"), 800);
     } catch (err: any) {
       setToast({
         message: err.response?.data?.detail || "Failed to apply",
@@ -186,7 +186,6 @@ export default function CandidateForm() {
             <Input label="Organization" value={form.organization_name} />
             <Input label="Affiliation" value={form.affiliation_name} />
 
-            {/* POSITION DROPDOWN */}
             <div>
               <label className="text-sm text-gray-500">Position</label>
               <select
@@ -205,7 +204,6 @@ export default function CandidateForm() {
               </select>
             </div>
 
-            {/* MANIFESTO */}
             <div>
               <label className="text-sm text-gray-500">Manifesto</label>
               <textarea
@@ -219,7 +217,6 @@ export default function CandidateForm() {
               />
             </div>
 
-            {/* PHOTO */}
             <div>
               <label className="text-sm text-gray-500">Photo</label>
               <label className="block mt-1 px-4 py-2 bg-blue-600 text-white rounded cursor-pointer w-fit">
@@ -236,7 +233,6 @@ export default function CandidateForm() {
               )}
             </div>
 
-            {/* ACTIONS */}
             <div className="flex justify-between">
               <Button variant="outline" onClick={() => navigate("/candidate")}>
                 Back

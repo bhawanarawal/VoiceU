@@ -17,8 +17,6 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { styled } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 
-/* ================= TYPES ================= */
-
 interface Position {
   position_id: number;
   position_name: string;
@@ -36,8 +34,6 @@ interface ElectionCardProps {
   affiliation?: string;
   status: "Upcoming" | "Ongoing" | "Past";
 }
-
-/* ================= STYLES ================= */
 
 const ExpandMore = styled(IconButton, {
   shouldForwardProp: (prop) => prop !== "expand",
@@ -64,8 +60,6 @@ const getStatusColor = (
   }
 };
 
-/* ================= COMPONENT ================= */
-
 export default function ElectionCard({
   electionId,
   title,
@@ -89,7 +83,6 @@ export default function ElectionCard({
         "&:hover": { boxShadow: 6, transition: "0.3s" },
       }}
     >
-      {/* ===== HEADER ===== */}
       <CardHeader
         title={
           <Stack direction="row" spacing={1} alignItems="center">
@@ -121,7 +114,6 @@ export default function ElectionCard({
         }
       />
 
-      {/* ===== CONTENT ===== */}
       <CardContent sx={{ pt: 0, pb: 1 }}>
         <Stack spacing={0.5}>
           {organization && (
@@ -165,9 +157,7 @@ export default function ElectionCard({
         )}
       </CardContent>
 
-      {/* ===== ACTIONS ===== */}
       <CardActions sx={{ px: 1.5, pb: 1.5, gap: 1, flexWrap: "wrap" }}>
-        {/* UPCOMING */}
         {status === "Upcoming" && positions.length > 0 && (
           <>
             <Button
@@ -185,26 +175,24 @@ export default function ElectionCard({
               variant="outlined"
               color="info"
               sx={{ textTransform: "none", fontWeight: 500 }}
-              onClick={() => navigate(`/candidate?electionId=${electionId}`)}
+              onClick={() => navigate(`/candidates?electionId=${electionId}`)}
             >
               View Candidates
             </Button>
           </>
         )}
 
-        {/* ONGOING */}
         {status === "Ongoing" && (
           <Button
             variant="outlined"
             color="success"
             sx={{ textTransform: "none", fontWeight: 500 }}
-            onClick={() => navigate(`/candidate?electionId=${electionId}`)}
+            onClick={() => navigate(`/candidates?electionId=${electionId}`)}
           >
             View Candidates
           </Button>
         )}
 
-        {/* PAST */}
         {status === "Past" && (
           <Button
             variant="outlined"
@@ -225,7 +213,6 @@ export default function ElectionCard({
         </ExpandMore>
       </CardActions>
 
-      {/* ===== DESCRIPTION ===== */}
       <Collapse in={expanded} timeout="auto" unmountOnExit>
         <CardContent>
           <Divider sx={{ mb: 1 }} />

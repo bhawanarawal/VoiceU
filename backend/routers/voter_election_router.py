@@ -36,3 +36,21 @@ def get_all_assignments(session: Session = Depends(get_session)):
 def get_assignments_by_voter(voter_id: int, session: Session = Depends(get_session)):
     statement = select(VoterElection).where(VoterElection.voter_id == voter_id)
     return session.exec(statement).all()
+
+
+@router.get("/status")
+def get_voter_election_status(
+    voter_id: int, election_id: int, session: Session = Depends(get_session)
+):
+    assignment = session.exec(
+        select(VoterElection).where(
+            VoterElection.voter_id == voter_id, VoterElection.election_id == election_id
+        )
+    ).first()
+
+    if not assignment:
+        raise HTTPException(
+            status_code=404, detail="Voter not assigned to this election"
+        )
+
+    return {"has_voted": assignment.has_voted}
