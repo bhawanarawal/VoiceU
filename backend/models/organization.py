@@ -1,9 +1,9 @@
 from typing import Optional, TYPE_CHECKING, List
 from sqlmodel import SQLModel, Field, Relationship
 
+
 if TYPE_CHECKING:
-    from models.affiliation import Affiliation
-    from models.program import Program
+    from backend.models.group import Group
 
 
 class Organization(SQLModel, table=True):
@@ -11,9 +11,5 @@ class Organization(SQLModel, table=True):
     name: str = Field(index=True)
     address: Optional[str] = None
     description: Optional[str] = None
-    affiliation_id: Optional[int] = Field(
-        foreign_key="affiliation.affiliation_id", default=None
-    )
 
-    affiliation: Optional["Affiliation"] = Relationship(back_populates="organizations")
-    programs: list["Program"] = Relationship(back_populates="organization")
+    groups: list["Group"] = Relationship(back_populates="organization")

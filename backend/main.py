@@ -7,15 +7,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from routers.organization_router import router as organization_router
 from routers.position_router import router as position_router
-from routers.affiliation_router import router as affiliation_router
 from routers.election_router import router as election_router
 from routers.candidate_router import router as candidate_router
 from routers.voter_router import router as voter_router
 from routers.vote_router import router as vote_router
 from routers.result_router import router as result_router
 from routers.auth_router import router as auth_router
-from routers.program_router import router as program_router
-from routers.semester_router import router as semester_router
+from routers.group_router import router as group_router
 
 
 @asynccontextmanager
@@ -43,15 +41,13 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(organization_router)
 app.include_router(position_router)
-app.include_router(affiliation_router)
 app.include_router(election_router)
 app.include_router(candidate_router)
 app.include_router(voter_router)
 app.include_router(vote_router)
 app.include_router(result_router)
 app.include_router(auth_router)
-app.include_router(program_router)
-app.include_router(semester_router)
+app.include_router(group_router)
 
 
 @app.get("/")
