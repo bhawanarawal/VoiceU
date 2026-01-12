@@ -10,18 +10,11 @@ import {
   createOrganization,
   updateOrganization,
 } from "./organizationService";
-import { getAffiliations } from "../Affiliation/affiliationService";
 
 interface FormData {
   name: string;
   address?: string;
   description?: string;
-  affiliation_id?: number;
-}
-
-interface Affiliation {
-  affiliation_id: number;
-  affiliation_name: string;
 }
 
 export default function OrganizationForm() {
@@ -32,30 +25,16 @@ export default function OrganizationForm() {
     name: "",
     address: "",
     description: "",
-    affiliation_id: 0,
   });
 
-  const [affiliations, setAffiliations] = useState<Affiliation[]>([]);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error";
   } | null>(null);
+
   const [errors, setErrors] = useState<{
     name?: string;
-    affiliation_id?: string;
   }>({});
-
-  useEffect(() => {
-    const fetchAffiliations = async () => {
-      try {
-        const res = await getAffiliations();
-        setAffiliations(res.data);
-      } catch {
-        setToast({ message: "Failed to fetch affiliations", type: "error" });
-      }
-    };
-    fetchAffiliations();
-  }, []);
 
   useEffect(() => {
     if (id) {
@@ -68,23 +47,21 @@ export default function OrganizationForm() {
   }, [id]);
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: name === "affiliation_id" ? Number(value) : value,
+      [name]: value,
     }));
     setErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
   const handleSubmit = async () => {
     const newErrors: typeof errors = {};
-    if (!form.name.trim()) newErrors.name = "Organization Name is required";
-    if (!form.affiliation_id || form.affiliation_id === 0)
-      newErrors.affiliation_id = "Please select an affiliation";
+    if (!form.name.trim()) {
+      newErrors.name = "Organization Name is required";
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -125,8 +102,9 @@ export default function OrganizationForm() {
         title={
           id ? "Edit Organization | Dashboard" : "Add Organization | Dashboard"
         }
-        description="Add or edit Organization on dashboard"
+        description="Add or edit organization on dashboard"
       />
+
       <PageBreadcrumb
         pageTitle={id ? "Edit Organization" : "Add Organization"}
       />
@@ -134,6 +112,7 @@ export default function OrganizationForm() {
       <div className="max-w-lg mx-auto mt-6">
         <ComponentCard title={id ? "Edit Organization" : "Add Organization"}>
           <div className="space-y-6">
+            {/* Organization Name */}
             <div>
               <label className="block text-gray-500 dark:text-gray-400 text-sm mb-1">
                 Organization Name
@@ -151,34 +130,7 @@ export default function OrganizationForm() {
               )}
             </div>
 
-            <div>
-              <label
-                htmlFor="affiliation_id"
-                className="block text-gray-500 dark:text-gray-400 text-sm mb-1"
-              >
-                Affiliation
-              </label>
-              <select
-                id="affiliation_id"
-                name="affiliation_id"
-                value={form.affiliation_id}
-                onChange={handleChange}
-                className="w-full border border-gray-300 dark:border-gray-700 px-4 py-3 rounded bg-transparent text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              >
-                <option value={0}>Select affiliation</option>
-                {affiliations.map((aff) => (
-                  <option key={aff.affiliation_id} value={aff.affiliation_id}>
-                    {aff.affiliation_name}
-                  </option>
-                ))}
-              </select>
-              {errors.affiliation_id && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.affiliation_id}
-                </p>
-              )}
-            </div>
-
+            {/* Address */}
             <div>
               <label className="block text-gray-500 dark:text-gray-400 text-sm mb-1">
                 Address
@@ -193,6 +145,7 @@ export default function OrganizationForm() {
               />
             </div>
 
+            {/* Description */}
             <div>
               <label className="block text-gray-500 dark:text-gray-400 text-sm mb-1">
                 Description
@@ -206,6 +159,7 @@ export default function OrganizationForm() {
               />
             </div>
 
+            {/* Buttons */}
             <div className="flex justify-between mt-4">
               <Button
                 variant="outline"
