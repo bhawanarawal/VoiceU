@@ -20,7 +20,7 @@ interface CandidateCardProps {
   full_name: string;
   photo_url?: string;
   position_name: string;
-  program_name?: string;
+  group_name?: string;
   organization_name?: string;
   affiliation_name?: string;
   manifesto?: string;
@@ -32,7 +32,7 @@ export default function CandidateCard({
   full_name,
   photo_url,
   position_name,
-  program_name,
+  group_name,
   organization_name,
   affiliation_name,
   manifesto,
@@ -63,7 +63,7 @@ export default function CandidateCard({
         <Typography variant="body2">
           <strong>Position:</strong> {position_name}
         </Typography>
-        {program_name && <Typography>Program: {program_name}</Typography>}
+        {group_name && <Typography>group: {group_name}</Typography>}
         {organization_name && (
           <Typography>Organization: {organization_name}</Typography>
         )}

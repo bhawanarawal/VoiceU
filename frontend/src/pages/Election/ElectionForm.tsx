@@ -17,7 +17,7 @@ interface ElectionFormState {
   election_name: string;
   description?: string;
   organization_id: number;
-  program_id: number;
+  group_id: number;
   affiliation_name: string;
   start_date: string;
   end_date: string;
@@ -29,9 +29,9 @@ interface Organization {
   affiliation_name: string;
 }
 
-interface Program {
-  program_id: number;
-  program_name: string;
+interface group {
+  group_id: number;
+  group_name: string;
 }
 
 interface Position {
@@ -47,14 +47,14 @@ export default function ElectionForm() {
     election_name: "",
     description: "",
     organization_id: 0,
-    program_id: 0,
+    group_id: 0,
     affiliation_name: "",
     start_date: "",
     end_date: "",
   });
 
   const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [programs, setPrograms] = useState<Program[]>([]);
+  const [groups, setgroups] = useState<group[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
   const [selectedPositions, setSelectedPositions] = useState<number[]>([]);
   const [positionsOpen, setPositionsOpen] = useState(false);
@@ -84,9 +84,9 @@ export default function ElectionForm() {
   useEffect(() => {
     if (!form.organization_id) return;
     api
-      .get(`/programs/?org_id=${form.organization_id}`)
-      .then((res) => setPrograms(res.data))
-      .catch(() => setPrograms([]));
+      .get(`/groups/?org_id=${form.organization_id}`)
+      .then((res) => setgroups(res.data))
+      .catch(() => setgroups([]));
   }, [form.organization_id]);
 
   useEffect(() => {
@@ -99,7 +99,7 @@ export default function ElectionForm() {
           election_name: data.election_name,
           description: data.description || "",
           organization_id: data.organization_id,
-          program_id: data.program_id,
+          group_id: data.group_id,
           affiliation_name: data.affiliation_name,
           start_date: utcToLocalInput(data.start_date),
           end_date: utcToLocalInput(data.end_date),
@@ -133,7 +133,7 @@ export default function ElectionForm() {
       setForm((prev) => ({
         ...prev,
         affiliation_name: org?.affiliation_name || "",
-        program_id: 0,
+        group_id: 0,
       }));
     }
   };
@@ -144,7 +144,7 @@ export default function ElectionForm() {
       newErrors.election_name = "Election name is required";
     if (!form.organization_id)
       newErrors.organization_id = "Please select an organization";
-    if (!form.program_id) newErrors.program_id = "Please select a program";
+    if (!form.group_id) newErrors.group_id = "Please select a group";
     if (!form.start_date) newErrors.start_date = "Start date is required";
     if (!form.end_date) newErrors.end_date = "End date is required";
     if (!selectedPositions.length)
@@ -158,7 +158,7 @@ export default function ElectionForm() {
     const payload = {
       election_name: form.election_name,
       description: form.description,
-      program_id: Number(form.program_id),
+      group_id: Number(form.group_id),
       start_date: localToUTC(form.start_date),
       end_date: localToUTC(form.end_date),
       position_ids: selectedPositions.map(Number),
@@ -281,27 +281,25 @@ export default function ElectionForm() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-500 mb-1">
-                Program
-              </label>
+              <label className="block text-sm text-gray-500 mb-1">group</label>
               <select
-                id="program_id"
-                aria-label="Select program"
-                name="program_id"
-                value={form.program_id}
+                id="group_id"
+                aria-label="Select group"
+                name="group_id"
+                value={form.group_id}
                 onChange={handleChange}
                 disabled={!isEditable || !form.organization_id}
                 className="w-full border px-4 py-3 rounded"
               >
-                <option value={0}>Select program</option>
-                {programs.map((p) => (
-                  <option key={p.program_id} value={p.program_id}>
-                    {p.program_name}
+                <option value={0}>Select group</option>
+                {groups.map((p) => (
+                  <option key={p.group_id} value={p.group_id}>
+                    {p.group_name}
                   </option>
                 ))}
               </select>
-              {errors.program_id && (
-                <p className="text-red-500 text-sm mt-1">{errors.program_id}</p>
+              {errors.group_id && (
+                <p className="text-red-500 text-sm mt-1">{errors.group_id}</p>
               )}
             </div>
 

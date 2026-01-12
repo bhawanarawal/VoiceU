@@ -1,3 +1,4 @@
+from tokenize import group
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from sqlalchemy import delete
@@ -7,10 +8,9 @@ from typing import List
 from database import get_session
 from auth import get_current_active_user
 from models.election import Election
-from models.program import Program
+from models.group import Group
 from models.organization import Organization
 from models.candidate import Candidate
-from models.affiliation import Affiliation
 from models.user import User
 from models.position import Position
 from models.election_position import ElectionPosition
@@ -47,12 +47,12 @@ def create_election(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_active_user),
 ):
-    program = session.get(Program, data.program_id)
-    if not program:
-        raise HTTPException(status_code=404, detail="Program not found")
+    group = session.get(group, data.group_id)
+    if not group:
+        raise HTTPException(status_code=404, detail="group not found")
 
     election = Election(
-        program_id=data.program_id,
+        group_id=data.group_id,
         election_name=data.election_name,
         start_date=data.start_date,
         end_date=data.end_date,
@@ -90,11 +90,11 @@ def update_election(
     if not election:
         raise HTTPException(status_code=404, detail="Election not found")
 
-    program = session.get(Program, data.program_id)
-    if not program:
-        raise HTTPException(status_code=404, detail="Program not found")
+    group = session.get(group, data.group_id)
+    if not group:
+        raise HTTPException(status_code=404, detail="group not found")
 
-    election.program_id = data.program_id
+    election.group_id = data.group_id
     election.election_name = data.election_name
     election.start_date = data.start_date
     election.end_date = data.end_date
@@ -122,9 +122,8 @@ def get_all_elections(session: Session = Depends(get_session)):
         select(
             Election.election_id,
             Election.election_name,
-            Program.program_name,
+            Group.group_name,
             Organization.name.label("organization_name"),
-            Affiliation.affiliation_name,
             Election.start_date,
             Election.end_date,
             Election.status,
@@ -132,9 +131,8 @@ def get_all_elections(session: Session = Depends(get_session)):
             Election.created_at,
             Election.updated_at,
         )
-        .join(Program, Program.program_id == Election.program_id)
-        .join(Organization, Organization.org_id == Program.org_id)
-        .join(Affiliation, Affiliation.affiliation_id == Organization.affiliation_id)
+        .join(Group, Group.group_id == Election.group_id)
+        .join(Organization, Organization.org_id == Group.org_id)
     )
 
     results = session.exec(query).all()
@@ -157,9 +155,8 @@ def get_all_elections(session: Session = Depends(get_session)):
                 end_date=r.end_date,
                 status=compute_phase(r.start_date, r.end_date),
                 description=r.description,
-                program_name=r.program_name,
+                group_name=r.group_name,
                 organization_name=r.organization_name,
-                affiliation_name=r.affiliation_name,
                 positions=", ".join([p[1] for p in positions]) if positions else "",
                 created_at=r.created_at,
                 updated_at=r.updated_at,
@@ -175,20 +172,18 @@ def get_election(election_id: int, session: Session = Depends(get_session)):
         select(
             Election.election_id,
             Election.election_name,
-            Election.program_id,
-            Program.program_name,
-            Program.org_id.label("organization_id"),
+            Election.group_id,
+            Group.group_name,
+            Group.org_id.label("organization_id"),
             Organization.name.label("organization_name"),
-            Affiliation.affiliation_name,
             Election.start_date,
             Election.end_date,
             Election.description,
             Election.created_at,
             Election.updated_at,
         )
-        .join(Program, Program.program_id == Election.program_id)
-        .join(Organization, Organization.org_id == Program.org_id)
-        .join(Affiliation, Affiliation.affiliation_id == Organization.affiliation_id)
+        .join(Group, Group.group_id == Election.group_id)
+        .join(Organization, Organization.org_id == Group.org_id)
         .where(Election.election_id == election_id)
     ).first()
 

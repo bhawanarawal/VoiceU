@@ -8,14 +8,14 @@ NPT = timezone(timedelta(hours=5, minutes=45))
 class VoterCreate(BaseModel):
     user_id: int
     org_id: int
-    program_id: int
+    group_id: int
     semester_id: int
     affiliation_id: int
 
 
 class VoterUpdate(BaseModel):
     org_id: Optional[int] = None
-    program_id: Optional[int] = None
+    group_id: Optional[int] = None
     semester_id: Optional[int] = None
 
 
@@ -26,8 +26,8 @@ class VoterRead(BaseModel):
     full_name: str
     org_id: int
     org_name: str
-    program_id: int
-    program_name: str
+    group_id: int
+    group_name: str
     semester_id: int
     semester_number: int
     affiliation_id: Optional[int] = None

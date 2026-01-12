@@ -19,7 +19,7 @@ interface Candidate {
   photo_url?: string;
   manifesto?: string;
   position_name: string;
-  program_name?: string;
+  group_name?: string;
   organization_name?: string;
   affiliation_name?: string;
 }
@@ -89,7 +89,7 @@ export default function CandidatePage() {
                 full_name={c.full_name}
                 photo_url={c.photo_url}
                 position_name={c.position_name}
-                program_name={c.program_name}
+                group_name={c.group_name}
                 organization_name={c.organization_name}
                 affiliation_name={c.affiliation_name}
                 manifesto={c.manifesto}

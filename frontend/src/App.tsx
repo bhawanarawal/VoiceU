@@ -23,16 +23,14 @@ import OrganizationForm from "./pages/Organization/OrganizationForm";
 import OrganizationList from "./pages/Organization/OrganizationList";
 import PositionForm from "./pages/Position/PositionForm";
 import PositionList from "./pages/Position/PositionList";
-import AffiliationList from "./pages/Affiliation/AffiliationList";
-import AffiliationForm from "./pages/Affiliation/AffiliationForm";
 import ElectionList from "./pages/Election/ElectionList";
 import ElectionForm from "./pages/Election/ElectionForm";
 import CandidateList from "./pages/Candidate/CandidateList";
 import CandidateForm from "./pages/Candidate/CandidateForm";
 import VoterList from "./pages/Voter/VoterList";
 import VoterForm from "./pages/Voter/VoterForm";
-import ProgramForm from "./pages/Program/ProgramForm";
-import ProgramList from "./pages/Program/ProgramList";
+import GroupForm from "./pages/Group/GroupForm";
+import GroupList from "./pages/Group/GroupList";
 import ElectionPage from "./pages/Election/ElectionPage";
 import HomeDashboard from "./pages/HomePages/HomeDashboard";
 import CandidatePage from "./pages/Candidate/CandidatePage";
@@ -64,14 +62,10 @@ export default function App() {
           <Route path="position/new" element={<PositionForm />} />
           <Route path="position/edit/:id" element={<PositionForm />} />
 
-          <Route path="affiliation" element={<AffiliationList />} />
-          <Route path="affiliation/new" element={<AffiliationForm />} />
-          <Route path="affiliation/edit/:id" element={<AffiliationForm />} />
-
-          {/* Program Pages */}
-          <Route path="program" element={<ProgramList />} />
-          <Route path="program/new" element={<ProgramForm />} />
-          <Route path="program/edit/:id" element={<ProgramForm />} />
+          {/* group Pages */}
+          <Route path="group" element={<GroupList />} />
+          <Route path="group/new" element={<GroupForm />} />
+          <Route path="group/edit/:id" element={<GroupForm />} />
 
           {/*  Election Pages */}
           <Route path="election" element={<ElectionList />} />

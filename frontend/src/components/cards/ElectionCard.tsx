@@ -29,7 +29,7 @@ interface ElectionCardProps {
   startDateTime: string;
   endDateTime: string;
   positions?: Position[];
-  program?: string;
+  group?: string;
   organization?: string;
   affiliation?: string;
   status: "Upcoming" | "Ongoing" | "Past";
@@ -67,7 +67,7 @@ export default function ElectionCard({
   startDateTime,
   endDateTime,
   positions = [],
-  program,
+  group,
   organization,
   affiliation,
   status,
@@ -121,9 +121,9 @@ export default function ElectionCard({
               <strong>Organization:</strong> {organization}
             </Typography>
           )}
-          {program && (
+          {group && (
             <Typography variant="body2">
-              <strong>Program:</strong> {program}
+              <strong>group:</strong> {group}
             </Typography>
           )}
           {affiliation && (

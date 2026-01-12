@@ -10,9 +10,8 @@ from models.user import User
 from models.voter import Voter
 from models.election import Election
 from models.position import Position
-from models.program import Program
+from models.group import Group
 from models.organization import Organization
-from models.affiliation import Affiliation
 from schemas.candidate_schema import (
     CandidateRead,
     CandidateApprovalUpdate,
@@ -42,10 +41,10 @@ def apply_candidate(
     if not election:
         raise HTTPException(status_code=404, detail="Election not found")
 
-    if election.program_id != voter.program_id:
+    if election.group_id != voter.group_id:
         raise HTTPException(
             status_code=403,
-            detail="You can only apply to elections of your own program",
+            detail="You can only apply to elections of your own group",
         )
 
     exists = session.exec(
@@ -99,22 +98,15 @@ def get_all_candidates(session: Session = Depends(get_session)):
             User.full_name,
             Election.election_name,
             Position.position_name,
-            Program.program_name,
+            Group.group_name,
             Organization.name.label("organization_name"),
-            Affiliation.affiliation_name,
         )
         .join(Voter, Voter.voter_id == Candidate.voter_id)
         .join(User, User.user_id == Voter.user_id)
         .join(Election, Election.election_id == Candidate.election_id)
         .join(Position, Position.position_id == Candidate.position_id)
-        .join(Program, Program.program_id == Election.program_id)
-        .join(Organization, Organization.org_id == Program.org_id, isouter=True)
-        .join(
-            Affiliation,
-            Affiliation.affiliation_id == Organization.affiliation_id,
-            isouter=True,
-        )
-        .where(Candidate.is_active == True)
+        .join(Group, Group.group_id == Election.group_id)
+        .join(Organization, Organization.org_id == Group.org_id, isouter=True)
     )
 
     results = session.exec(stmt).all()
@@ -129,9 +121,8 @@ def get_all_candidates(session: Session = Depends(get_session)):
             election_name=election_name,
             position_id=c.position_id,
             position_name=position_name,
-            program_name=program_name,
+            group_name=group_name,
             organization_name=organization_name,
-            affiliation_name=affiliation_name,
             approval_status=c.approval_status,
             manifesto=c.manifesto,
             photo_url=c.photo_url,
@@ -144,9 +135,8 @@ def get_all_candidates(session: Session = Depends(get_session)):
             full_name,
             election_name,
             position_name,
-            program_name,
+            group_name,
             organization_name,
-            affiliation_name,
         ) in results
     ]
 
@@ -164,22 +154,16 @@ def get_approved_candidates_by_election(
             Candidate.photo_url,
             Candidate.manifesto,
             Election.election_name,
-            Program.program_name,
+            Group.group_name,
             Position.position_name,
             Organization.name.label("organization_name"),
-            Affiliation.affiliation_name,
         )
         .join(Voter, Voter.voter_id == Candidate.voter_id)
         .join(User, User.user_id == Voter.user_id)
         .join(Election, Election.election_id == Candidate.election_id)
-        .join(Program, Program.program_id == Election.program_id)
+        .join(Group, Group.group_id == Election.group_id)
         .join(Position, Position.position_id == Candidate.position_id)
-        .join(Organization, Organization.org_id == Program.org_id, isouter=True)
-        .join(
-            Affiliation,
-            Affiliation.affiliation_id == Organization.affiliation_id,
-            isouter=True,
-        )
+        .join(Organization, Organization.org_id == Group.org_id, isouter=True)
         .where(Candidate.approval_status == ApprovalStatus.APPROVED)
         .where(Candidate.election_id == election_id)
         .where(Candidate.is_active == True)
@@ -195,10 +179,9 @@ def get_approved_candidates_by_election(
             "photo_url": r[3],
             "manifesto": r[4],
             "election_name": r[5],
-            "program_name": r[6],
+            "group_name": r[6],
             "position_name": r[7],
             "organization_name": r[8],
-            "affiliation_name": r[9],
         }
         for r in results
     ]
@@ -213,21 +196,15 @@ def get_candidate(candidate_id: int, session: Session = Depends(get_session)):
             User.full_name,
             Election.election_name,
             Position.position_name,
-            Program.program_name,
+            Group.group_name,
             Organization.name.label("organization_name"),
-            Affiliation.affiliation_name,
         )
         .join(Voter, Voter.voter_id == Candidate.voter_id)
         .join(User, User.user_id == Voter.user_id)
         .join(Election, Election.election_id == Candidate.election_id)
         .join(Position, Position.position_id == Candidate.position_id)
-        .join(Program, Program.program_id == Election.program_id)
-        .join(Organization, Organization.org_id == Program.org_id, isouter=True)
-        .join(
-            Affiliation,
-            Affiliation.affiliation_id == Organization.affiliation_id,
-            isouter=True,
-        )
+        .join(Group, Group.group_id == Election.group_id)
+        .join(Organization, Organization.org_id == Group.org_id, isouter=True)
         .where(Candidate.candidate_id == candidate_id)
         .where(Candidate.is_active == True)
     )
@@ -242,9 +219,8 @@ def get_candidate(candidate_id: int, session: Session = Depends(get_session)):
         full_name,
         election_name,
         position_name,
-        program_name,
+        group_name,
         organization_name,
-        affiliation_name,
     ) = result
 
     return CandidateRead(
@@ -256,9 +232,8 @@ def get_candidate(candidate_id: int, session: Session = Depends(get_session)):
         election_name=election_name,
         position_id=c.position_id,
         position_name=position_name,
-        program_name=program_name,
+        group_name=group_name,
         organization_name=organization_name,
-        affiliation_name=affiliation_name,
         approval_status=c.approval_status,
         manifesto=c.manifesto,
         photo_url=c.photo_url,

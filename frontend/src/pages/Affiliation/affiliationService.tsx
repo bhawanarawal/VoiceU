@@ -5,7 +5,7 @@ export const getAffiliations = () => api.get("/affiliations");
 export const getAffiliationById = (id: number) =>
   api.get(`/affiliations/${id}`);
 
-export const getAffiliationWithPrograms = (id: number) =>
+export const getAffiliationWithgroups = (id: number) =>
   api.get(`/affiliations/${id}/with-details`);
 
 export const createAffiliation = (data: any) => api.post("/affiliations", data);

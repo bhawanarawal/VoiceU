@@ -9,8 +9,8 @@ import {
   getMyVoter,
   createVoter,
   getOrganizations,
-  getProgramsByOrg,
-  getSemestersByProgram,
+  getgroupsByOrg,
+  getSemestersBygroup,
   getAffiliationsByOrg,
 } from "./voterService";
 
@@ -18,7 +18,7 @@ interface VoterFormState {
   user_id: number;
   full_name: string;
   org_id: number;
-  program_id: number;
+  group_id: number;
   semester_id: number;
   affiliation_id: number;
 }
@@ -29,9 +29,9 @@ interface Organization {
   affiliation_id?: number;
 }
 
-interface Program {
-  program_id: number;
-  program_name: string;
+interface group {
+  group_id: number;
+  group_name: string;
 }
 
 interface Semester {
@@ -46,7 +46,7 @@ interface Affiliation {
 
 type FormErrors = {
   org_id?: string;
-  program_id?: string;
+  group_id?: string;
   semester_id?: string;
   affiliation_id?: string;
 };
@@ -58,13 +58,13 @@ export default function VoterForm() {
     user_id: 0,
     full_name: "",
     org_id: 0,
-    program_id: 0,
+    group_id: 0,
     semester_id: 0,
     affiliation_id: 0,
   });
 
   const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [filteredPrograms, setFilteredPrograms] = useState<Program[]>([]);
+  const [filteredgroups, setFilteredgroups] = useState<group[]>([]);
   const [filteredSemesters, setFilteredSemesters] = useState<Semester[]>([]);
   const [filteredAffiliations, setFilteredAffiliations] = useState<
     Affiliation[]
@@ -91,8 +91,8 @@ export default function VoterForm() {
           });
 
           const [progRes, semRes, affRes, orgRes] = await Promise.all([
-            getProgramsByOrg(currentUser.org_id),
-            getSemestersByProgram(currentUser.program_id),
+            getgroupsByOrg(currentUser.org_id),
+            getSemestersBygroup(currentUser.group_id),
             getAffiliationsByOrg(currentUser.org_id),
             getOrganizations(),
           ]);
@@ -114,7 +114,7 @@ export default function VoterForm() {
           }
 
           setOrganizations(orgRes.data);
-          setFilteredPrograms(progRes.data);
+          setFilteredgroups(progRes.data);
           setFilteredSemesters(semRes.data);
           setFilteredAffiliations(affiliations);
 
@@ -122,7 +122,7 @@ export default function VoterForm() {
             user_id: currentUser.user_id,
             full_name: currentUser.full_name,
             org_id: currentUser.org_id,
-            program_id: currentUser.program_id,
+            group_id: currentUser.group_id,
             semester_id: currentUser.semester_id,
             affiliation_id: currentUser.affiliation_id || 0,
           });
@@ -136,7 +136,7 @@ export default function VoterForm() {
           user_id: currentUser.user_id,
           full_name: currentUser.full_name,
           org_id: 0,
-          program_id: 0,
+          group_id: 0,
           semester_id: 0,
           affiliation_id: 0,
         });
@@ -166,21 +166,19 @@ export default function VoterForm() {
         ...prev,
         org_id: numericValue,
         affiliation_id: selectedOrg?.affiliation_id || 0,
-        program_id: 0,
+        group_id: 0,
         semester_id: 0,
       }));
 
-      getProgramsByOrg(numericValue).then((res) =>
-        setFilteredPrograms(res.data)
-      );
+      getgroupsByOrg(numericValue).then((res) => setFilteredgroups(res.data));
       getAffiliationsByOrg(numericValue).then((res) =>
         setFilteredAffiliations(res.data)
       );
       setFilteredSemesters([]);
     }
 
-    if (name === "program_id") {
-      getSemestersByProgram(numericValue).then((res) =>
+    if (name === "group_id") {
+      getSemestersBygroup(numericValue).then((res) =>
         setFilteredSemesters(res.data)
       );
       setForm((prev) => ({ ...prev, semester_id: 0 }));
@@ -190,7 +188,7 @@ export default function VoterForm() {
   const handleSubmit = async () => {
     const newErrors: FormErrors = {};
     if (!form.org_id) newErrors.org_id = "Organization is required";
-    if (!form.program_id) newErrors.program_id = "Program is required";
+    if (!form.group_id) newErrors.group_id = "group is required";
     if (!form.semester_id) newErrors.semester_id = "Semester is required";
     if (!form.affiliation_id)
       newErrors.affiliation_id = "Affiliation is required";
@@ -263,25 +261,25 @@ export default function VoterForm() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-500">Program</label>
+              <label className="block text-sm text-gray-500">group</label>
               <select
-                id="program"
-                aria-label="Program"
-                name="program_id"
-                value={form.program_id}
+                id="group"
+                aria-label="group"
+                name="group_id"
+                value={form.group_id}
                 onChange={handleChange}
                 disabled={isRegistered}
                 className="w-full border px-4 py-3 rounded"
               >
-                <option value={0}>Select Program</option>
-                {filteredPrograms.map((p) => (
-                  <option key={p.program_id} value={p.program_id}>
-                    {p.program_name}
+                <option value={0}>Select group</option>
+                {filteredgroups.map((p) => (
+                  <option key={p.group_id} value={p.group_id}>
+                    {p.group_name}
                   </option>
                 ))}
               </select>
-              {errors.program_id && (
-                <p className="text-red-500 text-sm">{errors.program_id}</p>
+              {errors.group_id && (
+                <p className="text-red-500 text-sm">{errors.group_id}</p>
               )}
             </div>
 

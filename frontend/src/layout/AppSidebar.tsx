@@ -8,7 +8,6 @@ import {
   PlugInIcon,
   TableIcon,
   UserCircleIcon,
-  FolderIcon,
   BoxIconLine,
   GroupIcon,
 } from "../icons";
@@ -40,19 +39,11 @@ const managementItems: NavItem[] = [
     ],
   },
   {
-    name: "Program",
-    icon: <FolderIcon />,
-    subItems: [
-      { name: "Add Program", path: "/program/new" },
-      { name: "View Programs", path: "/program" },
-    ],
-  },
-  {
-    name: "Affiliation",
+    name: "group",
     icon: <BoxIconLine />,
     subItems: [
-      { name: "Add Affiliation", path: "/affiliation/new" },
-      { name: "View Affiliations", path: "/affiliation" },
+      { name: "Add group", path: "/group/new" },
+      { name: "View groups", path: "/group" },
     ],
   },
 ];

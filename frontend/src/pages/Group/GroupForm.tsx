@@ -5,41 +5,38 @@ import ComponentCard from "../../components/common/ComponentCard";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import Toast from "../../components/common/Toast";
-import { getPrograms, createProgram, updateProgram } from "./programService";
+import { getgroups, creategroup, updategroup } from "./groupService";
 import { getOrganizations } from "../Organization/organizationService";
 
 interface FormData {
-  program_name: string;
-  total_semesters: number;
+  group_name: string;
   org_id?: number;
+  description?: string;
 }
 
 interface Organization {
   org_id: number;
   name: string;
-  affiliation_name?: string;
 }
 
-export default function ProgramForm() {
+export default function GroupForm() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [form, setForm] = useState<FormData>({
-    program_name: "",
-    total_semesters: 0,
+    group_name: "",
     org_id: undefined,
+    description: "",
   });
 
   const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [affiliationName, setAffiliationName] = useState<string>("N/A");
-
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error";
   } | null>(null);
+
   const [errors, setErrors] = useState<{
-    program_name?: string;
-    total_semesters?: string;
+    group_name?: string;
     org_id?: string;
   }>({});
 
@@ -57,20 +54,19 @@ export default function ProgramForm() {
 
   useEffect(() => {
     if (id) {
-      getPrograms()
+      getgroups()
         .then((res) => {
-          const prog = res.data.find((p: any) => p.program_id === Number(id));
-          if (prog) {
+          const grp = res.data.find((g: any) => g.group_id === Number(id));
+          if (grp) {
             setForm({
-              program_name: prog.program_name,
-              total_semesters: prog.total_semesters,
-              org_id: prog.org_id,
+              group_name: grp.group_name,
+              org_id: grp.org_id,
+              description: grp.description || "",
             });
-            setAffiliationName(prog.affiliation_name || "N/A");
           }
         })
         .catch(() =>
-          setToast({ message: "Failed to fetch program", type: "error" })
+          setToast({ message: "Failed to fetch group", type: "error" })
         );
     }
   }, [id]);
@@ -83,23 +79,13 @@ export default function ProgramForm() {
       ...prev,
       [name]: name === "org_id" ? Number(value) : value,
     }));
-
-    if (name === "org_id") {
-      const selectedOrg = organizations.find(
-        (org) => org.org_id === Number(value)
-      );
-      setAffiliationName(selectedOrg?.affiliation_name || "N/A");
-    }
-
     setErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
   const handleSubmit = async () => {
     const newErrors: typeof errors = {};
-    if (!form.program_name.trim())
-      newErrors.program_name = "Program Name is required";
-    if (!form.total_semesters || form.total_semesters <= 0)
-      newErrors.total_semesters = "Total Semesters must be greater than 0";
+    if (!form.group_name.trim())
+      newErrors.group_name = "Group Name is required";
     if (!form.org_id) newErrors.org_id = "Please select an organization";
 
     if (Object.keys(newErrors).length > 0) {
@@ -109,15 +95,15 @@ export default function ProgramForm() {
 
     try {
       if (id) {
-        await updateProgram(Number(id), form);
-        setToast({ message: "Program updated successfully", type: "success" });
+        await updategroup(Number(id), form);
+        setToast({ message: "Group updated successfully", type: "success" });
       } else {
-        await createProgram(form);
-        setToast({ message: "Program created successfully", type: "success" });
+        await creategroup(form);
+        setToast({ message: "Group created successfully", type: "success" });
       }
-      setTimeout(() => navigate("/program"), 1000);
+      setTimeout(() => navigate("/group"), 1000);
     } catch {
-      setToast({ message: "Failed to save program", type: "error" });
+      setToast({ message: "Failed to save group", type: "error" });
     }
   };
 
@@ -132,49 +118,28 @@ export default function ProgramForm() {
       )}
 
       <PageMeta
-        title={id ? "Edit Program | Dashboard" : "Add Program | Dashboard"}
-        description="Add or edit Program on dashboard"
+        title={id ? "Edit Group | Dashboard" : "Add Group | Dashboard"}
+        description="Add or edit group on dashboard"
       />
-      <PageBreadcrumb pageTitle={id ? "Edit Program" : "Add Program"} />
+      <PageBreadcrumb pageTitle={id ? "Edit Group" : "Add Group"} />
 
       <div className="max-w-lg mx-auto mt-6">
-        <ComponentCard title={id ? "Edit Program" : "Add Program"}>
+        <ComponentCard title={id ? "Edit Group" : "Add Group"}>
           <div className="space-y-6">
             <div>
               <label className="block text-gray-500 dark:text-gray-400 text-sm mb-1">
-                Program Name
+                Group Name
               </label>
               <input
                 type="text"
-                name="program_name"
-                value={form.program_name}
+                name="group_name"
+                value={form.group_name}
                 onChange={handleChange}
-                placeholder="Enter program name"
+                placeholder="Enter group name"
                 className="w-full border border-gray-300 dark:border-gray-700 px-4 py-3 rounded bg-transparent text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
-              {errors.program_name && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.program_name}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-gray-500 dark:text-gray-400 text-sm mb-1">
-                Total Semesters
-              </label>
-              <input
-                type="number"
-                name="total_semesters"
-                value={form.total_semesters}
-                onChange={handleChange}
-                placeholder="Enter total semesters"
-                className="w-full border border-gray-300 dark:border-gray-700 px-4 py-3 rounded bg-transparent text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-              {errors.total_semesters && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.total_semesters}
-                </p>
+              {errors.group_name && (
+                <p className="text-red-500 text-sm mt-1">{errors.group_name}</p>
               )}
             </div>
 
@@ -202,27 +167,25 @@ export default function ProgramForm() {
             </div>
 
             <div>
-              <label
-                htmlFor="affiliation_name"
-                className="block text-gray-500 dark:text-gray-400 text-sm mb-1"
-              >
-                Affiliation
+              <label className="block text-gray-500 dark:text-gray-400 text-sm mb-1">
+                Description
               </label>
               <input
-                id="affiliation_name"
                 type="text"
-                value={affiliationName}
-                readOnly
-                className="w-full border border-gray-300 dark:border-gray-700 px-4 py-3 rounded bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200"
+                name="description"
+                value={form.description || ""}
+                onChange={handleChange}
+                placeholder="Enter description"
+                className="w-full border border-gray-300 dark:border-gray-700 px-4 py-3 rounded bg-transparent text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
             <div className="flex justify-between mt-4">
-              <Button variant="outline" onClick={() => navigate("/program")}>
+              <Button variant="outline" onClick={() => navigate("/group")}>
                 Back
               </Button>
               <Button variant="primary" onClick={handleSubmit}>
-                {id ? "Update Program" : "Save Program"}
+                {id ? "Update Group" : "Save Group"}
               </Button>
             </div>
           </div>

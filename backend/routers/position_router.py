@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from models.position import Position
-from schemas.position_schema import PositionCreate, PositionRead
+from schemas.position_schema import PositionCreate, PositionRead, PositionUpdate
 from database import get_session
 
 router = APIRouter(prefix="/positions", tags=["Positions"])
@@ -32,21 +32,24 @@ def get_position(position_id: int, session: Session = Depends(get_session)):
 @router.put("/{position_id}", response_model=PositionRead)
 def update_position(
     position_id: int,
-    updated_pos: PositionCreate,
+    updated_position: PositionUpdate,
     session: Session = Depends(get_session),
 ):
-    pos = session.get(Position, position_id)
-    if not pos:
+    position = session.get(Position, position_id)
+    if not position:
         raise HTTPException(status_code=404, detail="Position not found")
 
-    pos.position_name = updated_pos.position_name
-    pos.description = updated_pos.description
-    pos.max_candidates = updated_pos.max_candidates
+    if updated_position.position_name is not None:
+        position.position_name = updated_position.position_name
+    if updated_position.description is not None:
+        position.description = updated_position.description
+    if updated_position.max_candidates is not None:
+        position.max_candidates = updated_position.max_candidates
 
-    session.add(pos)
+    session.add(position)
     session.commit()
-    session.refresh(pos)
-    return pos
+    session.refresh(position)
+    return position
 
 
 @router.delete("/{position_id}")
