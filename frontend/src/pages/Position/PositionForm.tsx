@@ -11,22 +11,29 @@ import {
   updatePosition,
 } from "./positionService";
 
+interface PositionFormData {
+  position_name: string;
+  description: string;
+  max_candidates: number;
+}
+
+interface PositionFormErrors {
+  position_name?: string;
+  description?: string;
+  max_candidates?: string;
+}
+
 export default function PositionForm() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<PositionFormData>({
     position_name: "",
     description: "",
-    max_candidates: "",
+    max_candidates: 1,
   });
 
-  const [errors, setErrors] = useState<{
-    position_name?: string;
-    max_candidates?: string;
-    description?: string;
-  }>({});
-
+  const [errors, setErrors] = useState<PositionFormErrors>({});
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error";
@@ -34,44 +41,40 @@ export default function PositionForm() {
 
   useEffect(() => {
     if (id) {
-      async function fetchData() {
-        try {
-          const res = await getPositionById(Number(id));
-          setForm(res.data);
-        } catch (err) {
-          setToast({ message: "Failed to fetch position data", type: "error" });
-        }
-      }
-      fetchData();
-    } else {
-      setForm({
-        position_name: "",
-        description: "",
-        max_candidates: "",
-      });
+      getPositionById(Number(id))
+        .then((res) => {
+          setForm({
+            position_name: res.data.position_name,
+            description: res.data.description || "",
+            max_candidates: res.data.max_candidates,
+          });
+        })
+        .catch(() =>
+          setToast({ message: "Failed to fetch position", type: "error" })
+        );
     }
   }, [id]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: name === "max_candidates" ? Number(value) : value,
+    }));
+
+    setErrors((prev) => ({ ...prev, [name]: undefined }));
   };
 
   const validateForm = () => {
-    const newErrors: typeof errors = {};
+    const newErrors: PositionFormErrors = {};
 
-    if (!form.position_name.trim()) {
+    if (!form.position_name.trim())
       newErrors.position_name = "Position name is required";
-    }
-    if (!form.max_candidates.trim()) {
-      newErrors.max_candidates = "Maximum candidates is required";
-    } else if (
-      isNaN(Number(form.max_candidates)) ||
-      Number(form.max_candidates) <= 0
-    ) {
+    if (!form.max_candidates || form.max_candidates <= 0)
       newErrors.max_candidates = "Enter a valid positive number";
-    }
 
     setErrors(newErrors);
 
@@ -91,7 +94,7 @@ export default function PositionForm() {
       }
 
       setTimeout(() => navigate("/position"), 1000);
-    } catch (err) {
+    } catch {
       setToast({ message: "Failed to save position", type: "error" });
     }
   };
@@ -126,8 +129,8 @@ export default function PositionForm() {
                 value={form.position_name}
                 onChange={handleChange}
                 placeholder="Enter position name"
-                className={`w-full border border-gray-300 dark:border-gray-700 bg-transparent px-4 py-3 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                  errors.position_name ? "border-red-500" : ""
+                className={`w-full border px-4 py-3 rounded bg-transparent text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                  errors.position_name ? "border-red-500" : "border-gray-300"
                 }`}
               />
               {errors.position_name && (
@@ -146,9 +149,10 @@ export default function PositionForm() {
                 name="max_candidates"
                 value={form.max_candidates}
                 onChange={handleChange}
+                min={1}
                 placeholder="Enter maximum candidates"
-                className={`w-full border border-gray-300 dark:border-gray-700 bg-transparent px-4 py-3 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-                  errors.max_candidates ? "border-red-500" : ""
+                className={`w-full border px-4 py-3 rounded bg-transparent text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+                  errors.max_candidates ? "border-red-500" : "border-gray-300"
                 }`}
               />
               {errors.max_candidates && (
@@ -167,26 +171,17 @@ export default function PositionForm() {
                 value={form.description}
                 onChange={handleChange}
                 placeholder="Enter description"
-                className={`w-full border border-gray-300 dark:border-gray-700 bg-transparent px-4 py-3 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 h-32 resize-none ${
-                  errors.description ? "border-red-500" : ""
+                className={`w-full border px-4 py-3 rounded bg-transparent text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 h-32 resize-none ${
+                  errors.description ? "border-red-500" : "border-gray-300"
                 }`}
               />
-              {errors.description && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.description}
-                </p>
-              )}
             </div>
 
             <div className="flex justify-between mt-4">
-              <Button
-                variant="outline"
-                size="md"
-                onClick={() => navigate("/position")}
-              >
+              <Button variant="outline" onClick={() => navigate("/position")}>
                 Back
               </Button>
-              <Button variant="primary" size="md" onClick={handleSubmit}>
+              <Button variant="primary" onClick={handleSubmit}>
                 {id ? "Update Position" : "Save Position"}
               </Button>
             </div>
