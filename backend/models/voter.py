@@ -1,10 +1,11 @@
-from typing import Optional
+from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import datetime, timezone
 from models.user import User
 from models.group import Group
 
 from models.organization import Organization
+from models.voter_group import VoterGroup
 
 
 class Voter(SQLModel, table=True):
@@ -18,3 +19,4 @@ class Voter(SQLModel, table=True):
     user: Optional[User] = Relationship()
     organization: Optional[Organization] = Relationship()
     group: Optional[Group] = Relationship()
+    groups: List["VoterGroup"] = Relationship(back_populates="voter")
