@@ -4,27 +4,25 @@ import Button from "../../components/ui/button/Button";
 import { Modal } from "../../components/ui/modal";
 import Toast from "../../components/common/Toast";
 import { DataTable } from "../../components/ui/table";
-import { getPrograms, deleteProgram } from "./programService";
+import { getgroups, deletegroup } from "./groupService";
 import { getOrganizations } from "../Organization/organizationService";
 
-interface Program {
-  program_id: number;
-  program_name: string;
-  total_semesters: number;
+interface Group {
+  group_id: number;
+  group_name: string;
   is_active: boolean;
   org_id: number;
   organization_name?: string;
-  affiliation_name?: string;
+  description?: string;
 }
 
 interface Organization {
   org_id: number;
   name: string;
-  affiliation_name?: string;
 }
 
-export default function ProgramList() {
-  const [data, setData] = useState<Program[]>([]);
+export default function GroupList() {
+  const [data, setData] = useState<Group[]>([]);
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "error";
@@ -36,8 +34,8 @@ export default function ProgramList() {
 
   const fetchData = async () => {
     try {
-      const [programRes, orgRes] = await Promise.all([
-        getPrograms(),
+      const [groupRes, orgRes] = await Promise.all([
+        getgroups(),
         getOrganizations(),
       ]);
 
@@ -46,16 +44,15 @@ export default function ProgramList() {
         orgMap[org.org_id] = org;
       });
 
-      const enriched: Program[] = programRes.data.map((program: Program) => ({
-        ...program,
-        organization_name: orgMap[program.org_id]?.name || "N/A",
-        affiliation_name: orgMap[program.org_id]?.affiliation_name || "N/A",
+      const enriched: Group[] = groupRes.data.map((grp: Group) => ({
+        ...grp,
+        organization_name: orgMap[grp.org_id]?.name || "N/A",
       }));
 
       setData(enriched);
     } catch {
       setToast({
-        message: "Failed to fetch programs or organizations",
+        message: "Failed to fetch groups or organizations",
         type: "error",
       });
     }
@@ -67,21 +64,19 @@ export default function ProgramList() {
 
   const handleDelete = async (id: number) => {
     try {
-      await deleteProgram(id);
-      setToast({ message: "Program deleted successfully", type: "success" });
+      await deletegroup(id);
+      setToast({ message: "Group deleted successfully", type: "success" });
       fetchData();
     } catch {
-      setToast({ message: "Failed to delete program", type: "error" });
+      setToast({ message: "Failed to delete group", type: "error" });
     } finally {
       setConfirmDelete(null);
     }
   };
 
-  const columns: { header: string; key: keyof Program }[] = [
-    { header: "Program Name", key: "program_name" },
-    { header: "Total Semesters", key: "total_semesters" },
+  const columns: { header: string; key: keyof Group }[] = [
+    { header: "Group Name", key: "group_name" },
     { header: "Organization", key: "organization_name" },
-    { header: "Affiliation", key: "affiliation_name" },
   ];
 
   return (
@@ -95,33 +90,30 @@ export default function ProgramList() {
       )}
 
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Programs</h2>
+        <h2 className="text-xl font-semibold">Groups</h2>
         <Link
-          to="/program/new"
+          to="/group/new"
           className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition"
         >
-          Add Program
+          Add Group
         </Link>
       </div>
 
       <DataTable
         columns={columns}
         data={data}
-        emptyMessage="No programs found"
-        renderActions={(program) => (
+        emptyMessage="No groups found"
+        renderActions={(group) => (
           <div className="flex gap-3">
             <Link
-              to={`/program/edit/${program.program_id}`}
+              to={`/group/edit/${group.group_id}`}
               className="text-blue-600 hover:underline"
             >
               Edit
             </Link>
             <button
               onClick={() =>
-                setConfirmDelete({
-                  id: program.program_id,
-                  name: program.program_name,
-                })
+                setConfirmDelete({ id: group.group_id, name: group.group_name })
               }
               className="text-red-600 hover:underline"
             >
@@ -137,7 +129,7 @@ export default function ProgramList() {
           onClose={() => setConfirmDelete(null)}
           className="max-w-md p-6"
         >
-          <h3 className="text-lg font-semibold mb-4">Delete Program</h3>
+          <h3 className="text-lg font-semibold mb-4">Delete Group</h3>
           <p className="mb-4">
             Are you sure you want to delete "{confirmDelete.name}"?
           </p>

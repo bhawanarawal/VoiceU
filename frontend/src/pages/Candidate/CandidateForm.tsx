@@ -22,7 +22,7 @@ interface CandidateFormState {
 
   username?: string;
   election_name?: string;
-  program_name?: string;
+  group_name?: string;
   organization_name?: string;
   affiliation_name?: string;
 }
@@ -88,7 +88,7 @@ export default function CandidateForm() {
           ...prev,
           election_id: election.election_id,
           election_name: election.election_name,
-          program_name: election.program_name || "",
+          group_name: election.group_name || "",
           organization_name: election.organization_name || "",
           affiliation_name: election.affiliation_name || "",
           position_id:
@@ -182,7 +182,7 @@ export default function CandidateForm() {
           <div className="space-y-5">
             <Input label="Username" value={form.username} />
             <Input label="Election" value={form.election_name} />
-            <Input label="Program" value={form.program_name} />
+            <Input label="group" value={form.group_name} />
             <Input label="Organization" value={form.organization_name} />
             <Input label="Affiliation" value={form.affiliation_name} />
 

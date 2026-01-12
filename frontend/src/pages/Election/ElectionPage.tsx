@@ -15,7 +15,7 @@ interface Election {
   start_date: string;
   end_date: string;
   positions: Position[];
-  program_name?: string;
+  group_name?: string;
   organization_name?: string;
   affiliation_name?: string;
   status: "Upcoming" | "Ongoing" | "Past";
@@ -80,7 +80,7 @@ export default function ElectionPage() {
           start_date: formatNepalDate(e.start_date),
           end_date: formatNepalDate(e.end_date),
           positions,
-          program_name: e.program_name,
+          group_name: e.group_name,
           organization_name: e.organization_name,
           affiliation_name: e.affiliation_name,
           status: getElectionPhase(e.start_date, e.end_date),
@@ -157,7 +157,7 @@ export default function ElectionPage() {
               startDateTime={election.start_date}
               endDateTime={election.end_date}
               positions={election.positions}
-              program={election.program_name}
+              group={election.group_name}
               organization={election.organization_name}
               affiliation={election.affiliation_name}
               status={election.status}

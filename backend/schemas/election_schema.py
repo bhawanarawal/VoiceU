@@ -11,7 +11,7 @@ class ElectionStatus(str, Enum):
 
 
 class ElectionCreate(BaseModel):
-    program_id: int
+    group_id: int
     election_name: str
     start_date: datetime
     end_date: datetime
@@ -31,7 +31,7 @@ class ElectionCreate(BaseModel):
 
 class ElectionRead(BaseModel):
     election_id: int
-    program_id: int
+    group_id: int
     election_name: str
     start_date: datetime
     end_date: datetime
@@ -50,9 +50,8 @@ class ElectionListItem(BaseModel):
     end_date: datetime
     status: ElectionStatus
     description: Optional[str] = None
-    program_name: str
+    group_name: str
     organization_name: str
-    affiliation_name: str
     positions: Optional[str] = None
     created_at: datetime
     updated_at: datetime
@@ -63,11 +62,10 @@ class ElectionListItem(BaseModel):
 class ElectionDetail(BaseModel):
     election_id: int
     election_name: str
-    program_id: int
-    program_name: str
+    group_id: int
+    group_name: str
     organization_id: int
     organization_name: str
-    affiliation_name: str
     start_date: datetime
     end_date: datetime
     status: ElectionStatus

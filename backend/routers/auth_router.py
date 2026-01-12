@@ -136,7 +136,7 @@ def read_users_me(
         "full_name": current_user.full_name,
         "roles": [role.name for role in current_user.roles],
         "org_id": voter.org_id if voter else None,
-        "program_id": voter.program_id if voter else None,
+        "group_id": voter.group_id if voter else None,
         "semester_id": voter.semester_id if voter else None,
         "affiliation_id": getattr(voter, "affiliation_id", None) if voter else None,
     }

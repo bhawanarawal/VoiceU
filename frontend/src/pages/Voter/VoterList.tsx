@@ -12,7 +12,7 @@ interface Voter {
   full_name: string;
   username: string;
   org_name: string;
-  program_name: string;
+  group_name: string;
   semester_number: number;
   affiliation_name: string;
   registered_at: string;
@@ -65,7 +65,7 @@ export default function VoterList() {
     { header: "Full Name", key: "full_name" },
     { header: "Username", key: "username" },
     { header: "Organization", key: "org_name" },
-    { header: "Program", key: "program_name" },
+    { header: "group", key: "group_name" },
     { header: "Semester", key: "semester_number" },
     { header: "Affiliation", key: "affiliation_name" },
     { header: "Registered At", key: "registered_at" },

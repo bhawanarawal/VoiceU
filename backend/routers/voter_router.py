@@ -6,9 +6,7 @@ from database import get_session
 from models.voter import Voter
 from models.user import User
 from models.organization import Organization
-from models.affiliation import Affiliation
-from models.program import Program
-from models.semester import Semester
+from models.group import Group
 from schemas.voter_schema import VoterCreate, VoterRead
 from auth import get_current_active_user
 
@@ -32,21 +30,14 @@ def register_voter(
     if not org:
         raise HTTPException(status_code=404, detail="Organization not found")
 
-    program = session.get(Program, data.program_id)
-    if not program:
-        raise HTTPException(status_code=404, detail="Program not found")
-
-    semester = session.get(Semester, data.semester_id)
-    if not semester or semester.program_id != program.program_id:
-        raise HTTPException(
-            status_code=404,
-            detail="Semester not found or does not belong to selected program",
-        )
+    group = session.get(group, data.group_id)
+    if not group:
+        raise HTTPException(status_code=404, detail="group not found")
 
     voter = Voter(
         user_id=data.user_id,
         org_id=data.org_id,
-        program_id=data.program_id,
+        group_id=data.group_id,
         semester_id=data.semester_id,
         affiliation_id=data.affiliation_id,
     )
@@ -62,10 +53,8 @@ def register_voter(
             full_name=current_user.full_name,
             org_id=org.org_id,
             org_name=org.name,
-            program_id=program.program_id,
-            program_name=program.program_name,
-            semester_id=semester.semester_id,
-            semester_number=semester.semester_number,
+            group_id=group.group_id,
+            group_name=group.group_name,
             registered_at=voter.registered_at,
         )
     except IntegrityError:
@@ -83,9 +72,7 @@ def get_my_voter_info(
     ).first()
 
     org = session.get(Organization, voter.org_id) if voter else None
-    program = session.get(Program, voter.program_id) if voter else None
-    semester = session.get(Semester, voter.semester_id) if voter else None
-    affiliation = session.get(Affiliation, voter.affiliation_id) if voter else None
+    group = session.get(Group, voter.group_id) if voter else None
 
     return VoterRead(
         voter_id=voter.voter_id if voter else 0,
@@ -94,12 +81,8 @@ def get_my_voter_info(
         full_name=current_user.full_name,
         org_id=org.org_id if org else 0,
         org_name=org.name if org else "",
-        program_id=program.program_id if program else 0,
-        program_name=program.program_name if program else "",
-        semester_id=semester.semester_id if semester else 0,
-        semester_number=semester.semester_number if semester else 0,
-        affiliation_id=affiliation.affiliation_id if affiliation else 0,
-        affiliation_name=affiliation.affiliation_name if affiliation else "",
+        group_id=group.group_id if group else 0,
+        group_name=group.group_name if group else "",
         registered_at=voter.registered_at if voter else None,
     )
 
@@ -115,9 +98,7 @@ def list_all_voters(
     for voter in voters:
         user = session.get(User, voter.user_id)
         org = session.get(Organization, voter.org_id)
-        program = session.get(Program, voter.program_id)
-        semester = session.get(Semester, voter.semester_id)
-        affiliation = session.get(Affiliation, voter.affiliation_id)
+        group = session.get(Group, voter.group_id)
 
         result.append(
             VoterRead(
@@ -127,12 +108,8 @@ def list_all_voters(
                 full_name=user.full_name,
                 org_id=org.org_id,
                 org_name=org.name,
-                program_id=program.program_id,
-                program_name=program.program_name,
-                semester_id=semester.semester_id,
-                semester_number=semester.semester_number,
-                affiliation_id=affiliation.affiliation_id if affiliation else 0,
-                affiliation_name=affiliation.affiliation_name if affiliation else "",
+                group_id=group.group_id,
+                group_name=group.group_name,
                 registered_at=voter.registered_at,
             )
         )

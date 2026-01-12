@@ -5,7 +5,7 @@ from enum import Enum
 
 if TYPE_CHECKING:
     from models.election_position import ElectionPosition
-    from models.program import Program
+    from models.group import Group
 
 
 def utc_now():
@@ -20,7 +20,7 @@ class ElectionStatus(str, Enum):
 
 class Election(SQLModel, table=True):
     election_id: Optional[int] = Field(default=None, primary_key=True)
-    program_id: int = Field(foreign_key="program.program_id", nullable=False)
+    group_id: int = Field(foreign_key="group.group_id", nullable=False)
     election_name: str = Field(nullable=False)
     start_date: datetime = Field(nullable=False)
     end_date: datetime = Field(nullable=False)
@@ -29,7 +29,7 @@ class Election(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
 
-    program: Optional["Program"] = Relationship(back_populates="elections")
+    group: Optional["Group"] = Relationship(back_populates="elections")
     election_positions: List["ElectionPosition"] = Relationship(
         back_populates="election"
     )

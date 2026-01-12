@@ -49,7 +49,7 @@ class CandidateRead(BaseModel):
     position_id: int
     position_name: str
 
-    program_name: str
+    group_name: str
     organization_name: str
     affiliation_name: str
 
