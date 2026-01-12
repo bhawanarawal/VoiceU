@@ -28,12 +28,12 @@ export const getOrganizations = () => {
   return api.get("/organizations/");
 };
 
-export const getProgramsByOrg = (org_id: number) => {
-  return api.get(`/programs?org_id=${org_id}`);
+export const getgroupsByOrg = (org_id: number) => {
+  return api.get(`/groups?org_id=${org_id}`);
 };
 
-export const getSemestersByProgram = (program_id: number) => {
-  return api.get(`/semesters/program/${program_id}`);
+export const getSemestersBygroup = (group_id: number) => {
+  return api.get(`/semesters/group/${group_id}`);
 };
 
 export const getAffiliations = () => {
