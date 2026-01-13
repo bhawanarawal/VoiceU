@@ -11,3 +11,4 @@ from .user_role_link import UserRoleLink
 from .vote import Vote
 from .voter import Voter
 from .voter_election import VoterElection
+from .voter_group import VoterGroup

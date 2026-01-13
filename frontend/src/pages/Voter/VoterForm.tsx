@@ -10,65 +10,40 @@ import {
   createVoter,
   getOrganizations,
   getgroupsByOrg,
-  getSemestersBygroup,
-  getAffiliationsByOrg,
 } from "./voterService";
 
 interface VoterFormState {
-  user_id: number;
-  full_name: string;
   org_id: number;
-  group_id: number;
-  semester_id: number;
-  affiliation_id: number;
+  group_ids: number[];
 }
 
 interface Organization {
   org_id: number;
   name: string;
-  affiliation_id?: number;
 }
 
-interface group {
+interface Group {
   group_id: number;
   group_name: string;
 }
 
-interface Semester {
-  semester_id: number;
-  semester_number: number;
-}
-
-interface Affiliation {
-  affiliation_id: number;
-  affiliation_name: string;
-}
-
 type FormErrors = {
   org_id?: string;
-  group_id?: string;
-  semester_id?: string;
-  affiliation_id?: string;
+  group_ids?: string;
 };
 
 export default function VoterForm() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState<VoterFormState>({
-    user_id: 0,
-    full_name: "",
     org_id: 0,
-    group_id: 0,
-    semester_id: 0,
-    affiliation_id: 0,
+    group_ids: [],
   });
 
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
   const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [filteredgroups, setFilteredgroups] = useState<group[]>([]);
-  const [filteredSemesters, setFilteredSemesters] = useState<Semester[]>([]);
-  const [filteredAffiliations, setFilteredAffiliations] = useState<
-    Affiliation[]
-  >([]);
+  const [filteredGroups, setFilteredGroups] = useState<Group[]>([]);
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{
@@ -76,12 +51,17 @@ export default function VoterForm() {
     type: "success" | "error";
   } | null>(null);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [fullName, setFullName] = useState<string>("");
+  const [username, setUsername] = useState<string>("");
 
   useEffect(() => {
     const loadData = async () => {
       try {
         const userRes = await getMyVoter();
         const currentUser = userRes.data;
+
+        setFullName(currentUser.full_name || "");
+        setUsername(currentUser.username || "");
 
         if (currentUser.voter_id) {
           setIsRegistered(true);
@@ -90,41 +70,15 @@ export default function VoterForm() {
             type: "success",
           });
 
-          const [progRes, semRes, affRes, orgRes] = await Promise.all([
-            getgroupsByOrg(currentUser.org_id),
-            getSemestersBygroup(currentUser.group_id),
-            getAffiliationsByOrg(currentUser.org_id),
-            getOrganizations(),
-          ]);
-
-          let affiliations: Affiliation[] = affRes.data;
-
-          if (
-            currentUser.affiliation_id &&
-            !affiliations.find(
-              (a: Affiliation) =>
-                a.affiliation_id === currentUser.affiliation_id
-            )
-          ) {
-            affiliations.push({
-              affiliation_id: currentUser.affiliation_id,
-              affiliation_name:
-                currentUser.affiliation_name || "Registered Affiliation",
-            });
-          }
+          const orgRes = await getOrganizations();
+          const groupRes = await getgroupsByOrg(currentUser.org_id);
 
           setOrganizations(orgRes.data);
-          setFilteredgroups(progRes.data);
-          setFilteredSemesters(semRes.data);
-          setFilteredAffiliations(affiliations);
+          setFilteredGroups(groupRes.data);
 
           setForm({
-            user_id: currentUser.user_id,
-            full_name: currentUser.full_name,
             org_id: currentUser.org_id,
-            group_id: currentUser.group_id,
-            semester_id: currentUser.semester_id,
-            affiliation_id: currentUser.affiliation_id || 0,
+            group_ids: currentUser.groups?.map((g: any) => g.group_id) || [],
           });
 
           return;
@@ -132,14 +86,6 @@ export default function VoterForm() {
 
         const orgRes = await getOrganizations();
         setOrganizations(orgRes.data);
-        setForm({
-          user_id: currentUser.user_id,
-          full_name: currentUser.full_name,
-          org_id: 0,
-          group_id: 0,
-          semester_id: 0,
-          affiliation_id: 0,
-        });
       } catch (err: any) {
         setToast({
           message: err.response?.data?.detail || "Failed to load data",
@@ -151,47 +97,29 @@ export default function VoterForm() {
     loadData();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    const numericValue = Number(value);
+  const handleOrgChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const orgId = Number(e.target.value);
+    setForm({ org_id: orgId, group_ids: [] });
+    setErrors((prev) => ({ ...prev, org_id: "" }));
 
-    setForm((prev) => ({ ...prev, [name]: numericValue }));
-    setErrors((prev) => ({ ...prev, [name]: "" }));
+    getgroupsByOrg(orgId).then((res) => setFilteredGroups(res.data));
+  };
 
-    if (name === "org_id") {
-      const selectedOrg = organizations.find((o) => o.org_id === numericValue);
-
-      // Automatically select the organization’s affiliation if exists
-      setForm((prev) => ({
-        ...prev,
-        org_id: numericValue,
-        affiliation_id: selectedOrg?.affiliation_id || 0,
-        group_id: 0,
-        semester_id: 0,
-      }));
-
-      getgroupsByOrg(numericValue).then((res) => setFilteredgroups(res.data));
-      getAffiliationsByOrg(numericValue).then((res) =>
-        setFilteredAffiliations(res.data)
-      );
-      setFilteredSemesters([]);
-    }
-
-    if (name === "group_id") {
-      getSemestersBygroup(numericValue).then((res) =>
-        setFilteredSemesters(res.data)
-      );
-      setForm((prev) => ({ ...prev, semester_id: 0 }));
-    }
+  const handleGroupCheckbox = (groupId: number, checked: boolean) => {
+    setForm((prev) => ({
+      ...prev,
+      group_ids: checked
+        ? [...prev.group_ids, groupId]
+        : prev.group_ids.filter((id) => id !== groupId),
+    }));
+    setErrors((prev) => ({ ...prev, group_ids: "" }));
   };
 
   const handleSubmit = async () => {
     const newErrors: FormErrors = {};
     if (!form.org_id) newErrors.org_id = "Organization is required";
-    if (!form.group_id) newErrors.group_id = "group is required";
-    if (!form.semester_id) newErrors.semester_id = "Semester is required";
-    if (!form.affiliation_id)
-      newErrors.affiliation_id = "Affiliation is required";
+    if (form.group_ids.length === 0)
+      newErrors.group_ids = "Select at least one group";
 
     if (Object.keys(newErrors).length) {
       setErrors(newErrors);
@@ -201,7 +129,7 @@ export default function VoterForm() {
     setLoading(true);
     try {
       await createVoter(form);
-      setToast({ message: "Voter registered successfully", type: "success" });
+      setToast({ message: "Applied for voter registration", type: "success" });
       setTimeout(() => navigate("/voter"), 1000);
     } catch (err: any) {
       setToast({
@@ -223,13 +151,23 @@ export default function VoterForm() {
         <ComponentCard title="Voter Registration">
           <div className="space-y-6">
             <div>
+              <label className="block text-sm text-gray-500">Email</label>
+              <input
+                id="username"
+                placeholder="Email"
+                type="text"
+                value={username}
+                readOnly
+                className="w-full border px-4 py-3 rounded bg-gray-100"
+              />
+            </div>
+            <div>
               <label className="block text-sm text-gray-500">Full Name</label>
               <input
                 id="full_name"
-                aria-label="Full Name"
+                placeholder="Full Name"
                 type="text"
-                name="full_name"
-                value={form.full_name}
+                value={fullName}
                 readOnly
                 className="w-full border px-4 py-3 rounded bg-gray-100"
               />
@@ -240,11 +178,10 @@ export default function VoterForm() {
                 Organization
               </label>
               <select
-                id="organization"
-                aria-label="Organization"
                 name="org_id"
+                aria-label="Select Organization"
                 value={form.org_id}
-                onChange={handleChange}
+                onChange={handleOrgChange}
                 disabled={isRegistered}
                 className="w-full border px-4 py-3 rounded"
               >
@@ -261,72 +198,44 @@ export default function VoterForm() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-500">group</label>
-              <select
-                id="group"
-                aria-label="group"
-                name="group_id"
-                value={form.group_id}
-                onChange={handleChange}
-                disabled={isRegistered}
-                className="w-full border px-4 py-3 rounded"
-              >
-                <option value={0}>Select group</option>
-                {filteredgroups.map((p) => (
-                  <option key={p.group_id} value={p.group_id}>
-                    {p.group_name}
-                  </option>
-                ))}
-              </select>
-              {errors.group_id && (
-                <p className="text-red-500 text-sm">{errors.group_id}</p>
-              )}
-            </div>
+              <label className="block text-sm text-gray-500">Groups</label>
+              <div className="relative">
+                <button
+                  type="button"
+                  className="w-full border px-4 py-3 rounded flex justify-between items-center bg-white"
+                  onClick={() => setDropdownOpen((prev) => !prev)}
+                  disabled={isRegistered}
+                >
+                  {form.group_ids.length
+                    ? `${form.group_ids.length} selected`
+                    : "Select Groups"}
+                  <span className="ml-2">&#9662;</span>
+                </button>
 
-            <div>
-              <label className="block text-sm text-gray-500">Semester</label>
-              <select
-                id="semester"
-                aria-label="Semester"
-                name="semester_id"
-                value={form.semester_id}
-                onChange={handleChange}
-                disabled={isRegistered}
-                className="w-full border px-4 py-3 rounded"
-              >
-                <option value={0}>Select Semester</option>
-                {filteredSemesters.map((s) => (
-                  <option key={s.semester_id} value={s.semester_id}>
-                    {s.semester_number}
-                  </option>
-                ))}
-              </select>
-              {errors.semester_id && (
-                <p className="text-red-500 text-sm">{errors.semester_id}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-500">Affiliation</label>
-              <select
-                id="affiliation"
-                aria-label="Affiliation"
-                name="affiliation_id"
-                value={form.affiliation_id}
-                onChange={handleChange}
-                disabled={isRegistered}
-                className="w-full border px-4 py-3 rounded"
-              >
-                {form.affiliation_id !== 0 && (
-                  <option value={form.affiliation_id}>
-                    {filteredAffiliations.find(
-                      (a) => a.affiliation_id === form.affiliation_id
-                    )?.affiliation_name || "Affiliation"}
-                  </option>
+                {dropdownOpen && (
+                  <div className="absolute z-10 w-full mt-1 border rounded bg-white max-h-60 overflow-y-auto shadow-lg">
+                    {filteredGroups.map((g) => (
+                      <label
+                        key={g.group_id}
+                        className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          className="mr-2"
+                          checked={form.group_ids.includes(g.group_id)}
+                          onChange={(e) =>
+                            handleGroupCheckbox(g.group_id, e.target.checked)
+                          }
+                          disabled={isRegistered}
+                        />
+                        {g.group_name}
+                      </label>
+                    ))}
+                  </div>
                 )}
-              </select>
-              {errors.affiliation_id && (
-                <p className="text-red-500 text-sm">{errors.affiliation_id}</p>
+              </div>
+              {errors.group_ids && (
+                <p className="text-red-500 text-sm mt-1">{errors.group_ids}</p>
               )}
             </div>
 

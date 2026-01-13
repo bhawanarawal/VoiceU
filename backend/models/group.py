@@ -4,6 +4,7 @@ from sqlmodel import SQLModel, Field, Relationship
 if TYPE_CHECKING:
     from models.organization import Organization
     from models.election import Election
+    from models.voter_group import VoterGroup
 
 
 class Group(SQLModel, table=True):
@@ -15,3 +16,4 @@ class Group(SQLModel, table=True):
 
     organization: Optional["Organization"] = Relationship(back_populates="groups")
     elections: List["Election"] = Relationship(back_populates="group")
+    voters: List["VoterGroup"] = Relationship(back_populates="group")
