@@ -1,8 +1,10 @@
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from datetime import datetime
 from sqlmodel import SQLModel, Field, Relationship
-from models.voter import Voter
-from models.group import Group
+
+if TYPE_CHECKING:
+    from models.voter import Voter
+    from models.group import Group
 
 
 class VoterGroup(SQLModel, table=True):

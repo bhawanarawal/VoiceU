@@ -42,3 +42,11 @@ export const getAffiliations = () => {
 export const getAffiliationsByOrg = (orgId: number) => {
   return api.get(`/affiliations?org_id=${orgId}`);
 };
+
+export const approveVoterGroup = (voterGroupId: number) => {
+  return api.put(`/voters/group/${voterGroupId}/approve`);
+};
+
+export const rejectVoterGroup = (voterGroupId: number) => {
+  return api.put(`/voters/group/${voterGroupId}/reject`);
+};

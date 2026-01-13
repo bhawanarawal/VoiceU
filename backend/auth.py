@@ -16,11 +16,15 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
+
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
-    expire = datetime.now(timezone.utc) + (expires_delta if expires_delta else timedelta(minutes=15))
+    expire = datetime.now(timezone.utc) + (
+        expires_delta if expires_delta else timedelta(minutes=15)
+    )
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
 
 def convert_db_user_to_user(db_user: User) -> UserRead:
     return UserRead(
@@ -29,12 +33,12 @@ def convert_db_user_to_user(db_user: User) -> UserRead:
         email=db_user.email,
         full_name=db_user.full_name,
         disabled=not db_user.is_active,
-        roles=[role.name for role in db_user.roles]
+        roles=[role.name for role in db_user.roles],
     )
 
+
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_session)
+    token: str = Depends(oauth2_scheme), db: Session = Depends(get_session)
 ) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -55,6 +59,7 @@ async def get_current_user(
         raise credentials_exception
 
     return user
+
 
 async def get_current_active_user(
     current_user: User = Depends(get_current_user),

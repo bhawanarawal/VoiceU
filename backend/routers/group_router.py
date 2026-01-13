@@ -10,6 +10,8 @@ from schemas.group_schema import (
     GroupUpdate,
     GroupReadWithOrganization,
 )
+from schemas.voter_schema import GroupMembershipRead
+from models.user import User
 
 router = APIRouter(prefix="/groups", tags=["groups"])
 

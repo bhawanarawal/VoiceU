@@ -111,7 +111,7 @@ export default function App() {
         <Route path="signup" element={<SignUp />} />
 
         {/* Home pages */}
-        <Route path="DashboardPage" element={<HomeDashboard/>}/>
+        <Route path="DashboardPage" element={<HomeDashboard />} />
 
         {/* Fallback */}
         <Route path="*" element={<NotFound />} />
