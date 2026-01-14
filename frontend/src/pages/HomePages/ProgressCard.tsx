@@ -13,10 +13,20 @@ const ProgressCard: React.FC<ProgressCardProps> = ({
   description,
 }) => {
   return (
-    <div className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center gap-4">
-      <h3 className="text-xl font-semibold">{title}</h3>
-      {description && <p className="text-gray-600">{description}</p>}
-      <HalfCircleProgress percentage={percentage} size={150} strokeWidth={15} />
+    <div className="bg-white/80 backdrop-blur-md shadow-xl  p-6 flex flex-col items-center gap-5 ">
+      <h3 className="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+        {title}
+      </h3>
+
+      {description && (
+        <p className="text-gray-600 text-center text-sm md:text-base">
+          {description}
+        </p>
+      )}
+
+      <HalfCircleProgress percentage={percentage} size={160} strokeWidth={18} />
+
+      <div className="mt-2 text-gray-800 font-semibold text-lg md:text-xl"></div>
     </div>
   );
 };

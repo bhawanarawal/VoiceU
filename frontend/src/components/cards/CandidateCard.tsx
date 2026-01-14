@@ -52,7 +52,9 @@ export default function CandidateCard({
           }
           sx={{ width: 90, height: 90 }}
         />
-        <Typography fontWeight={700}>{full_name}</Typography>
+        <Typography variant="h6" fontWeight={700}>
+          {full_name}
+        </Typography>
       </Stack>
 
       <Divider sx={{ my: 1 }} />

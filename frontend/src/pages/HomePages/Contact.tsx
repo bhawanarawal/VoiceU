@@ -1,84 +1,92 @@
 import React from "react";
-import map from "./../../assets/map.jpg";
-
 
 const Contact: React.FC = () => {
   return (
-        
-    <section id="contact" className="relative min-h-screen bg-gray-100 py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row gap-10">
+    <section id="contact" className="relative w-full bg-gray-100 py-16">
+      {/* Contact Info Boxes */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 flex flex-col md:flex-row gap-6 mb-12">
+        {/* Info 1 */}
+        <div className="flex-1 bg-white/20 backdrop-blur-md  p-6 text-center shadow-lg">
+          <i className="fa fa-th fa-3x text-blue-600 mb-4"></i>
+          <h3 className="text-xl font-bold mb-2">Get In Touch</h3>
+          <p>
+            <abbr title="Phone">P:</abbr> 123456789
+          </p>
+          <p>
+            E:{" "}
+            <a href="mailto:email@email.com" className="text-blue-600">
+              email@email.com
+            </a>
+          </p>
+        </div>
 
-        {/* Left Section - Contact Form */}
-        <div className="md:w-1/2 w-full bg-white p-8 rounded-2xl shadow-lg">
-          <h2 className="text-3xl font-extrabold text-gray-900 mb-6">Send Us a Message</h2>
+        {/* Info 2 */}
+        <div className="flex-1 bg-white/20 backdrop-blur-md p-6 text-center shadow-lg">
+          <i className="fa fa-map-marker fa-3x text-blue-600 mb-4"></i>
+          <h3 className="text-xl font-bold mb-2">Our Location</h3>
+          <p>Kathmandu, Nepal</p>
+        </div>
+
+        {/* Info 3 */}
+        <div className="flex-1 bg-white/20 backdrop-blur-md  p-6 text-center shadow-lg">
+          <i className="fa fa-book fa-3x text-blue-600 mb-4"></i>
+          <h3 className="text-xl font-bold mb-2">24x7 Support</h3>
+          <p>Call Us: 1234 567 890</p>
+        </div>
+      </div>
+
+      {/* Map + Contact Form */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 flex flex-col md:flex-row gap-8">
+        {/* Left - Map */}
+        <div className="md:w-1/2 w-full overflow-hidden shadow-lg h-[700px]">
+          <iframe
+            title="VoiceU Location"
+            src="https://www.google.com/maps/embed/v1/place?q=Nepal+kathmandu&key=AIzaSyBSFRN6WWGYwmFi498qXXsD2UwkbmD74v4"
+            className="w-full h-full border-0"
+            allowFullScreen={false}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+          ></iframe>
+        </div>
+
+        {/* Right - Contact Form */}
+        <div className="md:w-1/2 w-full bg-white/20 backdrop-blur-md p-8  shadow-lg h-[700px] flex flex-col justify-center">
+          <h2 className="text-3xl font-extrabold text-gray-600 mb-6 text-center">
+            Get In Touch With Us
+          </h2>
           <form className="flex flex-col gap-4">
+            <label className="text-gray-700 font-medium">Name</label>
             <input
               type="text"
-              placeholder="Your Name"
-              className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label="Name"
+              placeholder="Enter Your Name"
+              className="p-3  border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            <label className="text-gray-700 font-medium">Email</label>
             <input
               type="email"
-              placeholder="Your Email"
-              className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter Your Email"
+              className="p-3  border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            <label className="text-gray-700 font-medium">Subject</label>
             <input
               type="text"
               placeholder="Subject"
-              className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="p-3  border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            <label className="text-gray-700 font-medium">Message</label>
             <textarea
               placeholder="Message"
               rows={5}
-              className="p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="p-3  border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1"
             ></textarea>
             <button
               type="submit"
-              className="mt-2 w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition-colors"
+              className="mt-2 w-67 bg-gradient-to-r bg-blue-500 text-white font-semibold py-3 hover:bg-blue-600 transition-colors"
             >
-              Send Message
+              Submit
             </button>
           </form>
-        </div>
-
-        {/* Right Section - Info Card + Image */}
-        <div className="md:w-1/2 w-full flex flex-col gap-6">
-          
-          {/* Organization Info Card */}
-          <div className="bg-white/30 backdrop-blur-md p-6 rounded-2xl shadow-lg flex flex-col gap-6">
-            <h3 className="text-3xl font-bold text-gray-900 mb-2">Contact Information</h3>
-            <div className="flex items-start gap-4">
-              <span className="text-blue-600 text-2xl">📧</span>
-              <div>
-                <h4 className="font-semibold text-gray-900">Email</h4>
-                <p className="text-gray-700">support@voiceu.com</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4">
-              <span className="text-blue-600 text-2xl">⏰</span>
-              <div>
-                <h4 className="font-semibold text-gray-900">Office Hours</h4>
-                <p className="text-gray-700">Mon - Fri: 9:00 AM - 6:00 PM</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4">
-              <span className="text-blue-600 text-2xl">📍</span>
-              <div>
-                <h4 className="font-semibold text-gray-900">Location</h4>
-                <p className="text-gray-700">123 College Road, City, Country</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Image */}
-          <div className="rounded-2xl overflow-hidden shadow-lg">
-            <img
-              src={map}
-              alt="Contact"
-              className="w-full h-64 object-cover"
-            />
-          </div>
-
         </div>
       </div>
     </section>

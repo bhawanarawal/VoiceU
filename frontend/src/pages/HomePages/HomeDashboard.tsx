@@ -1,59 +1,25 @@
 import React from "react";
 
+import Nav from "../../layout/Nav";
 import HomeSection from "./HomeSection";
-
-import Elections from "./Elections";
+import ServiceSection from "./ServiceSection";
 import About from "./About";
 import Contact from "./Contact";
-import Nav from "../../layout/Nav";
-import ServiceSection from "./ServiceSection";
-import background from "./../../assets/HomeBackground.jpg"
 import Footer from "../../layout/Footer";
-import Overlay from "./Overlay";
 
-const HomeDashboard: React.FC = ()=> {
-    
-     return (
-        
-
-    <div className="relative z-10">
-      {/* Fixed Background Image */}
-      <div
-        className="fixed inset-0 bg-cover bg-center z-[-1]"
-       style={{ backgroundImage: `url(${background})` }}
-      ></div>
+const HomeDashboard: React.FC = () => {
+  return (
+    <div>
       <Nav />
-     <main className="pt-16">
-        {/* You can make sections semi-transparent if you want */}
-        <div className="bg-white bg-opacity-80">
-          <HomeSection />
-        </div>
-
-        <div className="bg-white/30  rounded-lg shadow-lg">
-          <ServiceSection />
-        </div>
-
-
-        <div className="bg-white bg-opacity-80">
-          <Elections />
-        </div>
-
-        <div className="bg-white bg-opacity-80">
-          <About />
-        </div>
-        <div className="bg-white/30  rounded-lg shadow-lg">
-          <Overlay />
-        </div>
-
-        <div className="bg-white bg-opacity-80">
-          <Contact />
-        </div>
-         <div className="bg-white bg-opacity-80">
-          <Footer />
-        </div>
+      <main className="pt-16">
+        <HomeSection /> {/* Hero section */}
+        <ServiceSection /> {/* Services section */}
+        <About /> {/* About section */}
+        <Contact /> {/* Contact section */}
+        <Footer /> {/* Footer */}
       </main>
     </div>
   );
+};
 
-}
 export default HomeDashboard;
