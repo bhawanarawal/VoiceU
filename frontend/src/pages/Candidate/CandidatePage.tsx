@@ -21,7 +21,6 @@ interface Candidate {
   position_name: string;
   group_name?: string;
   organization_name?: string;
-  affiliation_name?: string;
 }
 
 export default function CandidatePage() {
@@ -76,8 +75,8 @@ export default function CandidatePage() {
 
       {Object.entries(grouped).map(([position, list]) => (
         <Box key={position} sx={{ mt: 5 }}>
-          <Typography variant="h5" fontWeight={600}>
-            {position}
+          <Typography variant="h5" fontWeight={600} mb={2}>
+            Candidate for {position} Position:
           </Typography>
 
           <Stack direction="row" spacing={3} flexWrap="wrap">
@@ -91,7 +90,6 @@ export default function CandidatePage() {
                 position_name={c.position_name}
                 group_name={c.group_name}
                 organization_name={c.organization_name}
-                affiliation_name={c.affiliation_name}
                 manifesto={c.manifesto}
                 hasVoted={votedPositions.includes(position)}
                 onVote={() => handleVote(c)}

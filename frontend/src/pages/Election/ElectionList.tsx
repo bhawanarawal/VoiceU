@@ -18,7 +18,6 @@ interface Election {
   election_name: string;
   group_name: string;
   description?: string;
-  affiliation_name: string;
   organization_name: string;
   start_date: string;
   end_date: string;
@@ -91,9 +90,8 @@ export default function ElectionList() {
     key: keyof Election;
     renderCell?: (_columnKey: keyof Election, row: Election) => JSX.Element;
   }[] = [
-    { header: "Election", key: "election_name" },
-    { header: "group", key: "group_name" },
-    { header: "Affiliation", key: "affiliation_name" },
+    { header: "Election Name", key: "election_name" },
+    { header: "Group", key: "group_name" },
     { header: "Organization", key: "organization_name" },
     {
       header: "Positions",

@@ -22,7 +22,6 @@ interface CandidateCardProps {
   position_name: string;
   group_name?: string;
   organization_name?: string;
-  affiliation_name?: string;
   manifesto?: string;
   hasVoted: boolean;
   onVote: () => void;
@@ -34,7 +33,6 @@ export default function CandidateCard({
   position_name,
   group_name,
   organization_name,
-  affiliation_name,
   manifesto,
   hasVoted,
   onVote,
@@ -42,7 +40,7 @@ export default function CandidateCard({
   const [showManifesto, setShowManifesto] = useState(false);
 
   return (
-    <Card sx={{ width: 300, boxShadow: 3 }}>
+    <Card sx={{ width: 280, boxShadow: 3 }}>
       <Stack alignItems="center" spacing={1} sx={{ mt: 2 }}>
         <Avatar
           src={
@@ -63,14 +61,20 @@ export default function CandidateCard({
         <Typography variant="body2">
           <strong>Position:</strong> {position_name}
         </Typography>
-        {group_name && <Typography>group: {group_name}</Typography>}
+        {group_name && (
+          <Typography variant="body2">
+            <strong>Group: </strong>
+            {group_name}
+          </Typography>
+        )}
         {organization_name && (
-          <Typography>Organization: {organization_name}</Typography>
+          <Typography variant="body2">
+            <strong> Organization Name:</strong> {organization_name}
+          </Typography>
         )}
-        {affiliation_name && (
-          <Typography>Affiliation: {affiliation_name}</Typography>
-        )}
-
+        <Typography variant="body2">
+          <strong>Manifesto:</strong>
+        </Typography>
         {manifesto && (
           <>
             <IconButton onClick={() => setShowManifesto(!showManifesto)}>

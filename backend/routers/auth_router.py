@@ -12,6 +12,8 @@ from crud.auth_crud import (
     get_all_roles,
 )
 from models.user import User
+from models.voter_group import VoterGroup
+from sqlmodel import select
 from models.role import Role
 from schemas.user_schema import UserCreate, UserRead
 from schemas.role_schema import RoleCreate, AssignRole, RoleRead
@@ -126,8 +128,15 @@ def read_users_me(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_session),
 ):
-
     voter = db.exec(select(Voter).where(Voter.user_id == current_user.user_id)).first()
+
+    # Fetch all groups this voter belongs to
+    voter_groups = []
+    if voter:
+        groups = db.exec(
+            select(VoterGroup).where(VoterGroup.voter_id == voter.voter_id)
+        ).all()
+        voter_groups = [{"group_id": vg.group_id, "status": vg.status} for vg in groups]
 
     user_data = {
         "user_id": current_user.user_id,
@@ -136,13 +145,6 @@ def read_users_me(
         "full_name": current_user.full_name,
         "roles": [role.name for role in current_user.roles],
         "org_id": voter.org_id if voter else None,
-        "group_id": voter.group_id if voter else None,
-        "semester_id": voter.semester_id if voter else None,
-        "affiliation_id": getattr(voter, "affiliation_id", None) if voter else None,
+        "groups": voter_groups,  # replace single group_id with a list
     }
     return user_data
-
-
-@router.get("/protected")
-async def protected_route(current_user: User = Depends(get_current_active_user)):
-    return {"message": f"Hello {current_user.full_name}, this is a protected route!"}

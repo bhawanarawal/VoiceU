@@ -47,7 +47,7 @@ def create_election(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_active_user),
 ):
-    group = session.get(group, data.group_id)
+    group = session.get(Group, data.group_id)
     if not group:
         raise HTTPException(status_code=404, detail="group not found")
 
@@ -90,7 +90,7 @@ def update_election(
     if not election:
         raise HTTPException(status_code=404, detail="Election not found")
 
-    group = session.get(group, data.group_id)
+    group = session.get(Group, data.group_id)
     if not group:
         raise HTTPException(status_code=404, detail="group not found")
 

@@ -10,6 +10,7 @@ from models.user import User
 from models.voter import Voter
 from models.election import Election
 from models.position import Position
+from models.voter_group import VoterGroup
 from models.group import Group
 from models.organization import Organization
 from schemas.candidate_schema import (
@@ -33,33 +34,40 @@ def apply_candidate(
     photo: UploadFile | None = File(None),
     session: Session = Depends(get_session),
 ):
+    # Get the voter
     voter = session.exec(select(Voter).where(Voter.user_id == user_id)).first()
     if not voter:
         raise HTTPException(status_code=403, detail="Only voters can apply")
 
+    # Get the election
     election = session.get(Election, election_id)
     if not election:
         raise HTTPException(status_code=404, detail="Election not found")
 
-    if election.group_id != voter.group_id:
+    # Get all groups the voter belongs to
+    voter_groups = session.exec(
+        select(VoterGroup.group_id).where(VoterGroup.voter_id == voter.voter_id)
+    ).all()  # Returns list of ints
+    if election.group_id not in voter_groups:
         raise HTTPException(
             status_code=403,
             detail="You can only apply to elections of your own group",
         )
 
+    # Check if already applied
     exists = session.exec(
         select(Candidate)
         .where(Candidate.voter_id == voter.voter_id)
         .where(Candidate.election_id == election_id)
         .where(Candidate.is_active == True)
     ).first()
-
     if exists:
         raise HTTPException(
             status_code=400,
             detail="You have already applied for this election",
         )
 
+    # Handle photo upload
     photo_path = None
     if photo:
         filename = f"{int(datetime.now().timestamp())}_{photo.filename}"
@@ -68,6 +76,7 @@ def apply_candidate(
             shutil.copyfileobj(photo.file, buffer)
         photo_path = f"/static/uploads/candidates/{filename}".replace("\\", "/")
 
+    # Create candidate
     candidate = Candidate(
         voter_id=voter.voter_id,
         election_id=election_id,
