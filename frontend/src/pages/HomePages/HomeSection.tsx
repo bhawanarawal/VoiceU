@@ -1,4 +1,3 @@
-
 import React from "react";
 import BackgroundImage from "./../../assets/HomeBackground.jpg";
 import ProgressCard from "./ProgressCard";
@@ -7,57 +6,77 @@ const HomeSection: React.FC = () => {
   const features = [
     { title: "Total Voters", percentage: 70, description: "Registered voters" },
     { title: "Votes Cast", percentage: 55, description: "Votes completed" },
-    { title: "Election Progress", percentage: 40, description: "Ongoing elections" },
+    {
+      title: "Election Progress",
+      percentage: 40,
+      description: "Ongoing elections",
+    },
   ];
+
   return (
-    <section id="home" className="h-screen flex-row bg-blue-100"  >
-   
-   <div className=" flex md:flex-row flex-col px-8 bg-center">
-      <div className="flex-1  text-2xl max-w-lg mt-15 " 
-       style={{
-    animation: "fadeInUp 1s ease-out forwards",
-  }}>
+    <section id="home" className="relative w-full overflow-hidden">
+      {/* Hero Section with Image Background */}
+      <div
+        className="relative w-full h-[550px] md:h-[650px] flex items-center justify-center"
+        style={{
+          backgroundImage: `url(${BackgroundImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        {/* Dark blur overlay */}
+        <div className="absolute inset-0 bg-black/70 backdrop-sm"></div>
+
+        {/* Text & Button */}
+        <div className="relative z-10 flex flex-col items-center justify-center text-center max-w-3xl px-6 space-y-6 animate-hero">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight">
+            Click <span className="text-blue-400">• Vote •</span> Change
+          </h1>
+          <p className="text-white text-lg md:text-xl">
+            Every voice matters. Every story deserves a stage. At VoiceU, we
+            make your words count.
+          </p>
+          <button className="px-8 py-3 bg-gradient-to-r from-blue-400 to-blue-500 text-gray-900 font-semibold rounded-lg shadow-lg hover:scale-105 transition-transform duration-300">
+            Share Your Voice
+          </button>
+        </div>
+      </div>
+
+      {/* Stats Section */}
+      <div className="bg-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+            {features.map((feature, i) => (
+              <ProgressCard
+                key={i}
+                title={feature.title}
+                percentage={feature.percentage}
+                description={feature.description}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Custom Animation */}
       <style>
-    {`
-      @keyframes fadeInUp {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-    `}
-  </style>
+        {`
+          @keyframes heroSlide {
+            0% {
+              opacity: 0;
+              transform: translateY(30px) scale(0.95);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0) scale(1);
+            }
+          }
 
-      <div className="text-black text-6xl  mt-2 font-bold p-4  ">
-        <h1>Your Voice,</h1>
-        <span className="text-blue-500"><h1>Your Vote</h1></span>
-        
-      </div>
-      <p>Empowering students to shape the future <br/> of our college throughsecure,<br/> transparent and  accessible digital voting.</p>
-      <button className="px-6 py-2 bg-blue-500 mt-3 text-white font-semibold rounded hover:bg-blue-600 transition-colors duration-300 ">Get started</button>
-     
-      </div>    
-       <div className="flex-1 flex justify-end mt-8 " >
-        <img src={BackgroundImage} className="max-w-xl  h-auto object-contain rounded-2xl self-start"></img>
-      </div>
-      </div>
-      <div className=" h-screen ml-2 mt-3 flex md:flex-row flex-col ">
-         <div className="container mx-auto h-55 grid grid-cols-1 md:grid-cols-3 gap-8">
-        {features.map((f, i) => (
-          <ProgressCard
-            key={i}
-            title={f.title}
-            percentage={f.percentage}
-            description={f.description}
-          />
-        ))}
-      </div>
-
-      </div>
+          .animate-hero {
+            animation: heroSlide 2s ease-out forwards;
+          }
+        `}
+      </style>
     </section>
   );
 };

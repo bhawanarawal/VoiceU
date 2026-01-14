@@ -1,41 +1,57 @@
 import React from "react";
-import votepic from "./../../assets/vote.png"
-
+import votepic from "./../../assets/vote.png";
 
 const About: React.FC = () => {
   return (
-      <section id="about" className="min-h-screen bg-gray-100 py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center gap-10">
-        
+    <section
+      id="about"
+      className="w-full bg-gradient-to-b from-gray-50 to-gray-100 py-16"
+    >
+      <div className="w-full flex flex-col-reverse md:flex-row items-center justify-between max-w-[1440px] mx-auto gap-6 md:gap-12 px-4 md:px-8">
         {/* Left Side - Image */}
-        <div className="md:w-1/2 w-full flex justify-center">
+        <div className="w-full md:w-1/2 flex justify-center">
           <img
             src={votepic}
             alt="About VoiceU"
-            className="rounded-2xl shadow-lg object-cover w-full h-80 md:h-[400px]"
+            className="rounded-3xl shadow-xl object-cover w-4/5 md:w-3/4 h-64 md:h-[350px]"
           />
         </div>
 
         {/* Right Side - Text */}
-        <div className="md:w-1/2 w-full flex flex-col justify-center">
-          <h2 className="text-4xl font-extrabold text-gray-900 mb-4">
-            About VoiceU
+        <div className="w-full md:w-1/2 flex flex-col justify-center space-y-4 md:space-y-6">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900">
+            About <span className="text-blue-500">VoiceU</span>
           </h2>
-          <p className="text-gray-700 text-lg mb-4">
-            VoiceU is a comprehensive digital voting system designed for college elections. 
-            It ensures secure, fair, and transparent elections by leveraging modern technologies 
-            and blockchain verification.
+
+          <p className="text-gray-700 text-base md:text-lg leading-relaxed">
+            VoiceU is a comprehensive digital voting system designed for college
+            elections. It ensures{" "}
+            <span className="font-semibold text-blue-500">
+              secure, fair, and transparent
+            </span>{" "}
+            elections by leveraging modern technologies and blockchain
+            verification.
           </p>
-          <p className="text-gray-700 text-lg mb-4">
-            With real-time voting statistics, interactive candidate profiles, and automated results, 
-            VoiceU makes it easier for students and administrators to participate in a seamless election process.
+
+          <p className="text-gray-700 text-base md:text-lg leading-relaxed">
+            With real-time voting statistics, interactive candidate profiles,
+            and automated results, VoiceU makes it easier for students and
+            administrators to participate in a{" "}
+            <span className="font-semibold text-blue-500">
+              seamless election process
+            </span>
+            .
           </p>
-          <p className="text-gray-700 text-lg">
-            Our platform prioritizes security, engagement, and transparency, empowering students to 
-            make their voices heard and ensuring fair elections every time.
+
+          <p className="text-gray-700 text-base md:text-lg leading-relaxed">
+            Our platform prioritizes{" "}
+            <span className="font-semibold text-blue-500">
+              security, engagement, and transparency
+            </span>
+            , empowering students to make their voices heard and ensuring fair
+            elections every time.
           </p>
         </div>
-
       </div>
     </section>
   );
