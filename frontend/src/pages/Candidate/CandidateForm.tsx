@@ -19,12 +19,10 @@ interface CandidateFormState {
   position_id: number;
   manifesto: string;
   photo_url?: string;
-
   username?: string;
   election_name?: string;
   group_name?: string;
   organization_name?: string;
-  affiliation_name?: string;
 }
 
 export default function CandidateForm() {
@@ -90,7 +88,6 @@ export default function CandidateForm() {
           election_name: election.election_name,
           group_name: election.group_name || "",
           organization_name: election.organization_name || "",
-          affiliation_name: election.affiliation_name || "",
           position_id:
             electionPositions.length > 0 ? electionPositions[0].position_id : 0,
         }));
@@ -184,7 +181,6 @@ export default function CandidateForm() {
             <Input label="Election" value={form.election_name} />
             <Input label="group" value={form.group_name} />
             <Input label="Organization" value={form.organization_name} />
-            <Input label="Affiliation" value={form.affiliation_name} />
 
             <div>
               <label className="text-sm text-gray-500">Position</label>

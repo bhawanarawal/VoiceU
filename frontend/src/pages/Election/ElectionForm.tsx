@@ -18,7 +18,6 @@ interface ElectionFormState {
   description?: string;
   organization_id: number;
   group_id: number;
-  affiliation_name: string;
   start_date: string;
   end_date: string;
 }
@@ -26,7 +25,6 @@ interface ElectionFormState {
 interface Organization {
   org_id: number;
   name: string;
-  affiliation_name: string;
 }
 
 interface group {
@@ -48,7 +46,6 @@ export default function ElectionForm() {
     description: "",
     organization_id: 0,
     group_id: 0,
-    affiliation_name: "",
     start_date: "",
     end_date: "",
   });
@@ -100,7 +97,6 @@ export default function ElectionForm() {
           description: data.description || "",
           organization_id: data.organization_id,
           group_id: data.group_id,
-          affiliation_name: data.affiliation_name,
           start_date: utcToLocalInput(data.start_date),
           end_date: utcToLocalInput(data.end_date),
         });
@@ -129,10 +125,8 @@ export default function ElectionForm() {
     setErrors((prev) => ({ ...prev, [name]: "" }));
 
     if (name === "organization_id") {
-      const org = organizations.find((o) => o.org_id === Number(value));
       setForm((prev) => ({
         ...prev,
-        affiliation_name: org?.affiliation_name || "",
         group_id: 0,
       }));
     }
@@ -281,7 +275,7 @@ export default function ElectionForm() {
             </div>
 
             <div>
-              <label className="block text-sm text-gray-500 mb-1">group</label>
+              <label className="block text-sm text-gray-500 mb-1">Group</label>
               <select
                 id="group_id"
                 aria-label="Select group"
@@ -291,7 +285,7 @@ export default function ElectionForm() {
                 disabled={!isEditable || !form.organization_id}
                 className="w-full border px-4 py-3 rounded"
               >
-                <option value={0}>Select group</option>
+                <option value={0}>Select Group</option>
                 {groups.map((p) => (
                   <option key={p.group_id} value={p.group_id}>
                     {p.group_name}
@@ -301,20 +295,6 @@ export default function ElectionForm() {
               {errors.group_id && (
                 <p className="text-red-500 text-sm mt-1">{errors.group_id}</p>
               )}
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-500 mb-1">
-                Affiliation
-              </label>
-              <input
-                id="affiliation_name"
-                aria-label="Affiliation"
-                type="text"
-                value={form.affiliation_name}
-                disabled
-                className="w-full border px-4 py-3 rounded bg-gray-100"
-              />
             </div>
 
             <div>

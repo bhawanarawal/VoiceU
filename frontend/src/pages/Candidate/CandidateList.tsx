@@ -13,9 +13,9 @@ interface Candidate {
   candidate_id: number;
   username: string;
   organization_name: string;
-  affiliation_name: string;
   election_name: string;
   position_name: string;
+  group_name: string;
   approval_status: "pending" | "approved" | "rejected";
   manifesto?: string;
   photo_url?: string;
@@ -83,7 +83,7 @@ export default function CandidateList() {
   }[] = [
     { header: "Username", key: "username" },
     { header: "Organization", key: "organization_name" },
-    { header: "Affiliation", key: "affiliation_name" },
+    { header: "Group", key: "group_name" },
     { header: "Election", key: "election_name" },
     { header: "Position", key: "position_name" },
     {

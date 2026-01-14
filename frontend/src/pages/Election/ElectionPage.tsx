@@ -17,7 +17,6 @@ interface Election {
   positions: Position[];
   group_name?: string;
   organization_name?: string;
-  affiliation_name?: string;
   status: "Upcoming" | "Ongoing" | "Past";
 }
 
@@ -159,7 +158,6 @@ export default function ElectionPage() {
               positions={election.positions}
               group={election.group_name}
               organization={election.organization_name}
-              affiliation={election.affiliation_name}
               status={election.status}
             />
           ))}

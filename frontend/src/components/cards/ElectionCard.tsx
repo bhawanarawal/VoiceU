@@ -31,7 +31,6 @@ interface ElectionCardProps {
   positions?: Position[];
   group?: string;
   organization?: string;
-  affiliation?: string;
   status: "Upcoming" | "Ongoing" | "Past";
 }
 
@@ -69,7 +68,6 @@ export default function ElectionCard({
   positions = [],
   group,
   organization,
-  affiliation,
   status,
 }: ElectionCardProps) {
   const [expanded, setExpanded] = React.useState(false);
@@ -118,17 +116,12 @@ export default function ElectionCard({
         <Stack spacing={0.5}>
           {organization && (
             <Typography variant="body2">
-              <strong>Organization:</strong> {organization}
+              <strong>Organization Name:</strong> {organization}
             </Typography>
           )}
           {group && (
             <Typography variant="body2">
-              <strong>group:</strong> {group}
-            </Typography>
-          )}
-          {affiliation && (
-            <Typography variant="body2">
-              <strong>Affiliation:</strong> {affiliation}
+              <strong>Group:</strong> {group}
             </Typography>
           )}
         </Stack>
@@ -136,7 +129,7 @@ export default function ElectionCard({
         <Divider sx={{ my: 1.5 }} />
 
         <Typography variant="subtitle2" gutterBottom>
-          Available Positions
+          Available Positions:
         </Typography>
 
         {positions.length > 0 ? (

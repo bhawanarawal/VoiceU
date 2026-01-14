@@ -51,7 +51,6 @@ class CandidateRead(BaseModel):
 
     group_name: str
     organization_name: str
-    affiliation_name: str
 
     approval_status: ApprovalStatus
     manifesto: Optional[str]
