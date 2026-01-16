@@ -130,7 +130,6 @@ def read_users_me(
 ):
     voter = db.exec(select(Voter).where(Voter.user_id == current_user.user_id)).first()
 
-    # Fetch all groups this voter belongs to
     voter_groups = []
     if voter:
         groups = db.exec(
@@ -145,6 +144,6 @@ def read_users_me(
         "full_name": current_user.full_name,
         "roles": [role.name for role in current_user.roles],
         "org_id": voter.org_id if voter else None,
-        "groups": voter_groups,  # replace single group_id with a list
+        "groups": voter_groups,
     }
     return user_data
