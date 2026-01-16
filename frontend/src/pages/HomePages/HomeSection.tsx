@@ -15,7 +15,6 @@ const HomeSection: React.FC = () => {
 
   return (
     <section id="home" className="relative w-full overflow-hidden">
-      {/* Hero Section with Image Background */}
       <div
         className="relative w-full h-[550px] md:h-[650px] flex items-center justify-center"
         style={{
@@ -24,10 +23,8 @@ const HomeSection: React.FC = () => {
           backgroundPosition: "center",
         }}
       >
-        {/* Dark blur overlay */}
         <div className="absolute inset-0 bg-black/70 backdrop-sm"></div>
 
-        {/* Text & Button */}
         <div className="relative z-10 flex flex-col items-center justify-center text-center max-w-3xl px-6 space-y-6 animate-hero">
           <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight">
             Click <span className="text-blue-400">• Vote •</span> Change
@@ -42,7 +39,6 @@ const HomeSection: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats Section */}
       <div className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
@@ -58,7 +54,6 @@ const HomeSection: React.FC = () => {
         </div>
       </div>
 
-      {/* Custom Animation */}
       <style>
         {`
           @keyframes heroSlide {

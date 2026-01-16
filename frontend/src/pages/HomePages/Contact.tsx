@@ -3,9 +3,7 @@ import React from "react";
 const Contact: React.FC = () => {
   return (
     <section id="contact" className="relative w-full bg-gray-100 py-16">
-      {/* Contact Info Boxes */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 flex flex-col md:flex-row gap-6 mb-12">
-        {/* Info 1 */}
         <div className="flex-1 bg-white/20 backdrop-blur-md  p-6 text-center shadow-lg">
           <i className="fa fa-th fa-3x text-blue-600 mb-4"></i>
           <h3 className="text-xl font-bold mb-2">Get In Touch</h3>
@@ -20,14 +18,12 @@ const Contact: React.FC = () => {
           </p>
         </div>
 
-        {/* Info 2 */}
         <div className="flex-1 bg-white/20 backdrop-blur-md p-6 text-center shadow-lg">
           <i className="fa fa-map-marker fa-3x text-blue-600 mb-4"></i>
           <h3 className="text-xl font-bold mb-2">Our Location</h3>
           <p>Kathmandu, Nepal</p>
         </div>
 
-        {/* Info 3 */}
         <div className="flex-1 bg-white/20 backdrop-blur-md  p-6 text-center shadow-lg">
           <i className="fa fa-book fa-3x text-blue-600 mb-4"></i>
           <h3 className="text-xl font-bold mb-2">24x7 Support</h3>
@@ -35,9 +31,7 @@ const Contact: React.FC = () => {
         </div>
       </div>
 
-      {/* Map + Contact Form */}
       <div className="max-w-7xl mx-auto px-4 md:px-8 flex flex-col md:flex-row gap-8">
-        {/* Left - Map */}
         <div className="md:w-1/2 w-full overflow-hidden shadow-lg h-[700px]">
           <iframe
             title="VoiceU Location"
@@ -49,7 +43,6 @@ const Contact: React.FC = () => {
           ></iframe>
         </div>
 
-        {/* Right - Contact Form */}
         <div className="md:w-1/2 w-full bg-white/20 backdrop-blur-md p-8  shadow-lg h-[700px] flex flex-col justify-center">
           <h2 className="text-3xl font-extrabold text-gray-600 mb-6 text-center">
             Get In Touch With Us

@@ -8,7 +8,6 @@ const About: React.FC = () => {
       className="w-full bg-gradient-to-b from-gray-50 to-gray-100 py-16"
     >
       <div className="w-full flex flex-col-reverse md:flex-row items-center justify-between max-w-[1440px] mx-auto gap-6 md:gap-12 px-4 md:px-8">
-        {/* Left Side - Image */}
         <div className="w-full md:w-1/2 flex justify-center">
           <img
             src={votepic}
@@ -17,7 +16,6 @@ const About: React.FC = () => {
           />
         </div>
 
-        {/* Right Side - Text */}
         <div className="w-full md:w-1/2 flex flex-col justify-center space-y-4 md:space-y-6">
           <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900">
             About <span className="text-blue-500">VoiceU</span>

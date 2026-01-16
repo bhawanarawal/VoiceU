@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 
 interface HalfCircleProgressProps {
-  percentage: number; // 0 - 100
-  size?: number; // width/height of SVG
+  percentage: number;
+  size?: number;
   strokeWidth?: number;
-  colorStart?: string; // gradient start
-  colorEnd?: string; // gradient end
+  colorStart?: string;
+  colorEnd?: string;
   bgColor?: string;
 }
 
@@ -13,17 +13,17 @@ const HalfCircleProgress: React.FC<HalfCircleProgressProps> = ({
   percentage,
   size = 150,
   strokeWidth = 15,
-  colorStart = "#3b82f6", // Tailwind blue-500
-  colorEnd = "#8b5cf6", // Tailwind purple-500
-  bgColor = "#e5e7eb", // Tailwind gray-200
+  colorStart = "#3b82f6",
+  colorEnd = "#8b5cf6",
+  bgColor = "#e5e7eb",
 }) => {
   const radius = (size - strokeWidth) / 2;
-  const circumference = Math.PI * radius; // half-circle
+  const circumference = Math.PI * radius;
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     let start = 0;
-    const increment = percentage / 60; // animate in ~1 second
+    const increment = percentage / 60;
     const interval = setInterval(() => {
       start += increment;
       if (start >= percentage) {
@@ -31,7 +31,7 @@ const HalfCircleProgress: React.FC<HalfCircleProgressProps> = ({
         clearInterval(interval);
       }
       setProgress(start);
-    }, 16); // ~60fps
+    }, 16);
     return () => clearInterval(interval);
   }, [percentage]);
 
@@ -49,7 +49,6 @@ const HalfCircleProgress: React.FC<HalfCircleProgressProps> = ({
         </filter>
       </defs>
 
-      {/* Background half circle */}
       <path
         d={`
           M ${strokeWidth / 2},${size / 2}
@@ -61,7 +60,6 @@ const HalfCircleProgress: React.FC<HalfCircleProgressProps> = ({
         strokeLinecap="round"
       />
 
-      {/* Gradient progress half circle */}
       <path
         d={`
           M ${strokeWidth / 2},${size / 2}
@@ -76,7 +74,6 @@ const HalfCircleProgress: React.FC<HalfCircleProgressProps> = ({
         filter="url(#glow)"
       />
 
-      {/* Percentage text */}
       <text
         x="50%"
         y="80%"

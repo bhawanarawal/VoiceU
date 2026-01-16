@@ -12,11 +12,11 @@ const HomeDashboard: React.FC = () => {
     <div>
       <Nav />
       <main className="pt-16">
-        <HomeSection /> {/* Hero section */}
-        <ServiceSection /> {/* Services section */}
-        <About /> {/* About section */}
-        <Contact /> {/* Contact section */}
-        <Footer /> {/* Footer */}
+        <HomeSection />
+        <ServiceSection />
+        <About />
+        <Contact />
+        <Footer />
       </main>
     </div>
   );
