@@ -24,6 +24,7 @@ interface CandidateCardProps {
   organization_name?: string;
   manifesto?: string;
   hasVoted: boolean;
+  isElectionOver: boolean;
   onVote: () => void;
 }
 
@@ -35,9 +36,13 @@ export default function CandidateCard({
   organization_name,
   manifesto,
   hasVoted,
+  isElectionOver,
   onVote,
 }: CandidateCardProps) {
   const [showManifesto, setShowManifesto] = useState(false);
+
+  const isDisabled = hasVoted || isElectionOver;
+  const buttonText = hasVoted ? "Voted" : isElectionOver ? "Ended" : "Vote";
 
   return (
     <Card sx={{ width: 280, boxShadow: 3 }}>
@@ -65,25 +70,29 @@ export default function CandidateCard({
         </Typography>
         {group_name && (
           <Typography variant="body2">
-            <strong>Group: </strong>
-            {group_name}
+            <strong>Group:</strong> {group_name}
           </Typography>
         )}
         {organization_name && (
           <Typography variant="body2">
-            <strong> Organization Name:</strong> {organization_name}
+            <strong>Organization Name:</strong> {organization_name}
           </Typography>
         )}
-        <Typography variant="body2">
-          <strong>Manifesto:</strong>
-        </Typography>
         {manifesto && (
           <>
-            <IconButton onClick={() => setShowManifesto(!showManifesto)}>
+            <Typography variant="body2">
+              <strong>Manifesto:</strong>
+            </Typography>
+            <IconButton
+              onClick={() => setShowManifesto(!showManifesto)}
+              size="small"
+            >
               <ExpandMoreIcon />
             </IconButton>
             <Collapse in={showManifesto}>
-              <Typography>{manifesto}</Typography>
+              <Typography variant="body2" sx={{ mt: 1 }}>
+                {manifesto}
+              </Typography>
             </Collapse>
           </>
         )}
@@ -94,12 +103,14 @@ export default function CandidateCard({
       <CardActions sx={{ justifyContent: "center" }}>
         <Button
           variant="contained"
-          color="success"
+          color={hasVoted ? "secondary" : "success"}
           startIcon={<ThumbUpIcon />}
-          disabled={hasVoted}
-          onClick={onVote}
+          disabled={isDisabled}
+          onClick={() => {
+            if (!isDisabled) onVote();
+          }}
         >
-          {hasVoted ? "Voted" : "Vote"}
+          {buttonText}
         </Button>
       </CardActions>
     </Card>

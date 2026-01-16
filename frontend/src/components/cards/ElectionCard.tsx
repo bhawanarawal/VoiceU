@@ -31,7 +31,7 @@ interface ElectionCardProps {
   positions?: Position[];
   group?: string;
   organization?: string;
-  status: "Upcoming" | "Ongoing" | "Past";
+  status: "upcoming" | "ongoing" | "past";
 }
 
 const ExpandMore = styled(IconButton, {
@@ -45,15 +45,15 @@ const ExpandMore = styled(IconButton, {
 }));
 
 const getStatusColor = (
-  status: "Upcoming" | "Ongoing" | "Past",
+  status: "upcoming" | "ongoing" | "past",
   theme: any
 ) => {
   switch (status) {
-    case "Upcoming":
+    case "upcoming":
       return theme.palette.info.main;
-    case "Ongoing":
+    case "ongoing":
       return theme.palette.success.main;
-    case "Past":
+    case "past":
     default:
       return theme.palette.grey[700];
   }
@@ -151,7 +151,7 @@ export default function ElectionCard({
       </CardContent>
 
       <CardActions sx={{ px: 1.5, pb: 1.5, gap: 1, flexWrap: "wrap" }}>
-        {status === "Upcoming" && positions.length > 0 && (
+        {status === "upcoming" && positions.length > 0 && (
           <>
             <Button
               variant="contained"
@@ -175,7 +175,7 @@ export default function ElectionCard({
           </>
         )}
 
-        {status === "Ongoing" && (
+        {status === "ongoing" && (
           <Button
             variant="outlined"
             color="success"
@@ -186,7 +186,7 @@ export default function ElectionCard({
           </Button>
         )}
 
-        {status === "Past" && (
+        {status === "past" && (
           <Button
             variant="outlined"
             color="secondary"

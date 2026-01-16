@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react";
-import Logo from "../assets/background.png"; // Make sure path is correct
+import Logo from "../assets/background.png";
 
 const sections = ["home", "services", "elections", "about", "contact"];
 
 const Nav = () => {
   const [active, setActive] = useState("home");
 
-  // Update active menu while scrolling
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPos = window.scrollY + 100; // offset for header
+      const scrollPos = window.scrollY + 100;
       for (let section of sections) {
         const el = document.getElementById(section);
         if (el) {
@@ -35,7 +34,6 @@ const Nav = () => {
   return (
     <header className="fixed top-0 w-full bg-white bg-opacity-80 backdrop-blur-md shadow-md z-50">
       <div className="flex justify-between items-center w-full px-6 py-3">
-        {/* Left side: Brand + Logo */}
         <div className="flex items-center gap-3">
           <h1 className="text-4xl font-extrabold">
             <span className="text-blue-600">Voice</span>
@@ -44,7 +42,6 @@ const Nav = () => {
           <img src={Logo} alt="Logo" className="w-14 h-14 object-contain" />
         </div>
 
-        {/* Right side: Menu */}
         <nav className="hidden md:flex items-center gap-8 font-medium">
           {sections.map((sec) => (
             <div
@@ -61,7 +58,7 @@ const Nav = () => {
               >
                 {sec}
               </span>
-              {/* Underline */}
+
               <span
                 className={`absolute left-0 -bottom-1 h-1 w-full bg-blue-600 transition-transform duration-300 ${
                   active === sec ? "scale-x-100" : "scale-x-0"

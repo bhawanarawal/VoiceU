@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select, func
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone
-
 from models.vote import Vote
 from models.candidate import Candidate
 from models.position import Position
@@ -11,6 +10,7 @@ from models.voter import Voter
 from schemas.vote_schema import VoteCreate, VoteRead
 from database import get_session
 from auth import get_current_active_user
+from models.voter_election import VoterElection
 
 router = APIRouter(prefix="/votes", tags=["Votes"])
 
@@ -25,7 +25,6 @@ def cast_vote(
     voter = session.exec(
         select(Voter).where(Voter.user_id == current_user.user_id)
     ).first()
-
     if not voter:
         raise HTTPException(status_code=404, detail="Voter not found")
 
@@ -38,12 +37,11 @@ def cast_vote(
 
     existing_vote = session.exec(
         select(Vote).where(
-            Vote.voter_id == voter.voter_id,
-            Vote.election_id == data.election_id,
-            Vote.position_id == candidate.position_id,
+            (Vote.voter_id == voter.voter_id)
+            & (Vote.election_id == data.election_id)
+            & (Vote.position_id == candidate.position_id)
         )
     ).first()
-
     if existing_vote:
         raise HTTPException(
             status_code=400,
@@ -56,12 +54,40 @@ def cast_vote(
         position_id=candidate.position_id,
         candidate_id=candidate.candidate_id,
     )
-
     session.add(vote)
+
+    voter_election = session.exec(
+        select(VoterElection).where(
+            (VoterElection.voter_id == voter.voter_id)
+            & (VoterElection.election_id == data.election_id)
+            & (VoterElection.position_id == candidate.position_id)
+        )
+    ).first()
+
+    if voter_election:
+        voter_election.has_voted = True
+        session.add(voter_election)
+    else:
+
+        voter_election = VoterElection(
+            voter_id=voter.voter_id,
+            election_id=data.election_id,
+            position_id=candidate.position_id,
+            has_voted=True,
+        )
+        session.add(voter_election)
+
     session.commit()
     session.refresh(vote)
 
-    return {"message": "Vote cast successfully"}
+    position = session.get(Position, candidate.position_id)
+
+    return {
+        "message": "Vote cast successfully",
+        "vote_id": vote.vote_id,
+        "position_id": candidate.position_id,
+        "position_name": position.position_name if position else "",
+    }
 
 
 @router.get("/", response_model=list[VoteRead])
@@ -97,4 +123,14 @@ def get_vote_counts(election_id: int, session: Session = Depends(get_session)):
         .group_by(Vote.candidate_id, Position.position_id)
     ).all()
 
-    return results
+    vote_counts = [
+        {
+            "candidate_id": r[0],
+            "position_id": r[1],
+            "position_name": r[2],
+            "count": r[3],
+        }
+        for r in results
+    ]
+
+    return vote_counts

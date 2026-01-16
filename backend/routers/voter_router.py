@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List, Optional
 from datetime import datetime
-
 from database import get_session
 from models.voter import Voter
 from models.user import User

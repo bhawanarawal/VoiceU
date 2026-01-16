@@ -5,13 +5,15 @@ import {
   Stack,
   CircularProgress,
   Divider,
+  Button,
 } from "@mui/material";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import CandidateCard from "../../components/cards/CandidateCard";
 import {
   getApprovedCandidatesByElection,
   voteForCandidate,
 } from "./candidateService";
+import api from "../../utils/api";
 
 interface Candidate {
   candidate_id: number;
@@ -26,18 +28,66 @@ interface Candidate {
 export default function CandidatePage() {
   const [searchParams] = useSearchParams();
   const electionId = Number(searchParams.get("electionId"));
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [votedPositions, setVotedPositions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [electionStatus, setElectionStatus] = useState<
+    "upcoming" | "ongoing" | "past"
+  >("ongoing");
+  const [hasVotedAll, setHasVotedAll] = useState(false);
+
+  const computeHasVotedAll = (
+    allCandidates: Candidate[],
+    votedPos: string[]
+  ) => {
+    const positionsWithCandidates = [
+      ...new Set(allCandidates.map((c) => c.position_name.trim())),
+    ];
+    return (
+      positionsWithCandidates.length > 0 &&
+      positionsWithCandidates.every((pos) => votedPos.includes(pos))
+    );
+  };
+
+  const grouped: Record<string, Candidate[]> = {};
+  candidates.forEach((c) => {
+    const pos = c.position_name.trim();
+    grouped[pos] ||= [];
+    grouped[pos].push(c);
+  });
 
   useEffect(() => {
     if (!electionId) return;
 
-    getApprovedCandidatesByElection(electionId)
-      .then((res) => setCandidates(res.data || []))
-      .finally(() => setLoading(false));
-  }, [electionId]);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const electionRes = await api.get(`/elections/${electionId}`);
+        setElectionStatus(electionRes.data.status);
+
+        const candidatesRes = await getApprovedCandidatesByElection(electionId);
+        const candidatesData: Candidate[] = candidatesRes.data || [];
+        setCandidates(candidatesData);
+
+        const voteRes = await api.get(
+          `/voter-elections/voted-positions/${electionId}`
+        );
+        const votedPosFromBackend: string[] = voteRes.data || [];
+        setVotedPositions(votedPosFromBackend);
+
+        setHasVotedAll(computeHasVotedAll(candidatesData, votedPosFromBackend));
+      } catch (err) {
+        console.error("Error fetching candidate data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [electionId, location.key]);
 
   const handleVote = async (candidate: Candidate) => {
     try {
@@ -46,37 +96,46 @@ export default function CandidatePage() {
         election_id: electionId,
       });
 
-      alert("Vote cast successfully");
-
-      setVotedPositions((prev) => [...prev, candidate.position_name]);
+      setVotedPositions((prev) => {
+        const newPositions = [...prev, candidate.position_name.trim()];
+        setHasVotedAll(computeHasVotedAll(candidates, newPositions));
+        return newPositions;
+      });
     } catch (err: any) {
-      alert(err.response?.data?.detail || "Failed to vote");
+      alert(err.response?.data?.detail || "Vote failed");
     }
   };
 
-  if (loading)
+  if (loading) {
     return (
-      <Box sx={{ textAlign: "center", mt: 6 }}>
+      <Box textAlign="center" mt={6}>
         <CircularProgress />
       </Box>
     );
-
-  const grouped: Record<string, Candidate[]> = {};
-  candidates.forEach((c) => {
-    grouped[c.position_name] ||= [];
-    grouped[c.position_name].push(c);
-  });
+  }
 
   return (
-    <Box sx={{ px: 3, py: 4 }}>
-      <Typography variant="h4" textAlign="center" fontWeight={700}>
+    <Box px={3} py={4}>
+      <Typography variant="h4" textAlign="center" fontWeight={700} mb={3}>
         Approved Candidates
       </Typography>
 
+      {hasVotedAll && (
+        <Box textAlign="center" mb={4}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => navigate(`/election/${electionId}/voting`)}
+          >
+            View Live Voting / Results
+          </Button>
+        </Box>
+      )}
+
       {Object.entries(grouped).map(([position, list]) => (
-        <Box key={position} sx={{ mt: 5 }}>
-          <Typography variant="h5" fontWeight={600} mb={2}>
-            Candidate for {position} Position:
+        <Box key={position} mt={5}>
+          <Typography variant="h5" mb={2}>
+            {position}
           </Typography>
 
           <Stack direction="row" spacing={3} flexWrap="wrap">
@@ -91,7 +150,8 @@ export default function CandidatePage() {
                 group_name={c.group_name}
                 organization_name={c.organization_name}
                 manifesto={c.manifesto}
-                hasVoted={votedPositions.includes(position)}
+                hasVoted={votedPositions.includes(c.position_name.trim())}
+                isElectionOver={electionStatus === "past"}
                 onVote={() => handleVote(c)}
               />
             ))}

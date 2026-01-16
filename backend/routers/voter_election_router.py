@@ -4,6 +4,11 @@ from sqlalchemy.exc import IntegrityError
 from models.voter_election import VoterElection
 from schemas.voter_election_schema import VoterElectionCreate, VoterElectionRead
 from database import get_session
+from models.user import User
+from auth import get_current_active_user
+from models.voter import Voter
+from models.position import Position
+from models.candidate import Candidate
 
 router = APIRouter(prefix="/voter-elections", tags=["Voter-Elections"])
 
@@ -44,7 +49,8 @@ def get_voter_election_status(
 ):
     assignment = session.exec(
         select(VoterElection).where(
-            VoterElection.voter_id == voter_id, VoterElection.election_id == election_id
+            (VoterElection.voter_id == voter_id)
+            & (VoterElection.election_id == election_id)
         )
     ).first()
 
@@ -54,3 +60,52 @@ def get_voter_election_status(
         )
 
     return {"has_voted": assignment.has_voted}
+
+
+@router.get("/status/{election_id}")
+def get_my_vote_status(
+    election_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_active_user),
+):
+
+    voter = session.exec(
+        select(Voter).where(Voter.user_id == current_user.user_id)
+    ).first()
+    if not voter:
+        return {"has_voted": False}
+
+    assignment = session.exec(
+        select(VoterElection).where(
+            (VoterElection.voter_id == voter.voter_id)
+            & (VoterElection.election_id == election_id)
+        )
+    ).first()
+
+    return {"has_voted": assignment.has_voted if assignment else False}
+
+
+@router.get("/voted-positions/{election_id}")
+def get_voted_positions(
+    election_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_active_user),
+):
+
+    voter = session.exec(
+        select(Voter).where(Voter.user_id == current_user.user_id)
+    ).first()
+    if not voter:
+        return []
+
+    results = session.exec(
+        select(Position.position_name)
+        .join(VoterElection, VoterElection.position_id == Position.position_id)
+        .where(
+            (VoterElection.voter_id == voter.voter_id)
+            & (VoterElection.election_id == election_id)
+            & (VoterElection.has_voted == True)
+        )
+    ).all()
+
+    return results

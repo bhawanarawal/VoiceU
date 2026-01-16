@@ -146,7 +146,7 @@ const Footer = () => {
       </div>
 
       <div className="border-t border-white/20 py-5 text-center text-sm text-gray-200 flex flex-col md:flex-row justify-center items-center gap-2">
-        <span>© 2026 VoiceU. All rights reserved.</span>
+        <span>@ 2026 VoiceU. All rights reserved.</span>
         <span className="hidden md:inline">| Made with ❤️</span>
       </div>
     </footer>
