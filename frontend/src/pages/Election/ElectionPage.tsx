@@ -17,7 +17,7 @@ interface Election {
   positions: Position[];
   group_name?: string;
   organization_name?: string;
-  status: "Upcoming" | "Ongoing" | "Past";
+  status: "upcoming" | "ongoing" | "past";
 }
 
 const NPT_OFFSET_MS = 5.75 * 60 * 60 * 1000;
@@ -40,9 +40,9 @@ const getElectionPhase = (startUTC: string, endUTC: string) => {
   const end = new Date(new Date(endUTC).getTime() + NPT_OFFSET_MS);
   const now = new Date(Date.now() + NPT_OFFSET_MS);
 
-  if (now < start) return "Upcoming";
-  if (now >= start && now <= end) return "Ongoing";
-  return "Past";
+  if (now < start) return "upcoming";
+  if (now >= start && now <= end) return "ongoing";
+  return "past";
 };
 
 export default function ElectionPage() {
@@ -53,7 +53,7 @@ export default function ElectionPage() {
     "info"
   );
   const [activeTab, setActiveTab] = useState<
-    "All" | "Ongoing" | "Upcoming" | "Past"
+    "All" | "ongoing" | "upcoming" | "past"
   >("All");
 
   const fetchElections = async () => {
@@ -110,11 +110,11 @@ export default function ElectionPage() {
   if (loading)
     return <div className="text-center mt-10">Loading elections...</div>;
 
-  const phases: ("All" | "Ongoing" | "Upcoming" | "Past")[] = [
+  const phases: ("All" | "ongoing" | "upcoming" | "past")[] = [
     "All",
-    "Ongoing",
-    "Upcoming",
-    "Past",
+    "ongoing",
+    "upcoming",
+    "past",
   ];
   const filteredElections =
     activeTab === "All"
