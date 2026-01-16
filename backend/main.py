@@ -14,6 +14,7 @@ from routers.vote_router import router as vote_router
 from routers.result_router import router as result_router
 from routers.auth_router import router as auth_router
 from routers.group_router import router as group_router
+from routers.voter_election_router import router as voter_election_router
 
 
 @asynccontextmanager
@@ -48,6 +49,7 @@ app.include_router(vote_router)
 app.include_router(result_router)
 app.include_router(auth_router)
 app.include_router(group_router)
+app.include_router(voter_election_router)
 
 
 @app.get("/")
