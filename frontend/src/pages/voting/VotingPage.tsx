@@ -5,6 +5,7 @@ import api from "../../utils/api";
 
 interface CandidateCount {
   candidate_id: number;
+  candidate_name: string;
   position_id: number;
   position_name: string;
   count: number;
@@ -16,7 +17,7 @@ interface Position {
   candidates: CandidateCount[];
 }
 
-const MAX_BAR_HEIGHT = 160;
+const MAX_BAR_HEIGHT = 200;
 
 export default function VotingPage() {
   const { electionId } = useParams<{ electionId: string }>();
@@ -121,10 +122,15 @@ export default function VotingPage() {
   }, [electionId, electionEndTime]);
 
   return (
-    <Box sx={{ px: 3, py: 4, maxWidth: 1000, mx: "auto" }}>
+    <Box sx={{ px: 1, py: 4, maxWidth: 1250, mx: "auto" }}>
       <Box sx={{ mb: 2 }}>
         <Button
           variant="outlined"
+          sx={{
+            position: "absolute",
+            top: 20,
+            left: 20,
+          }}
           onClick={() => navigate(`/candidates?electionId=${electionId}`)}
         >
           ← Back to Candidates
@@ -147,9 +153,9 @@ export default function VotingPage() {
         const totalVotes = pos.candidates.reduce((s, c) => s + c.count, 0);
 
         return (
-          <Box key={pos.id} sx={{ mb: 5 }}>
+          <Box key={pos.id} sx={{ mb: 9 }}>
             <Typography variant="h5" fontWeight={600} mb={2}>
-              {pos.name}
+              Candidate of {pos.name} Position
             </Typography>
 
             <Box
@@ -178,7 +184,7 @@ export default function VotingPage() {
                     }}
                   />
                   <Typography variant="body2" mt={0.5}>
-                    {c.candidate_id}
+                    {c.candidate_name}
                   </Typography>
                   <Typography variant="caption">
                     {totalVotes === 0
@@ -192,7 +198,11 @@ export default function VotingPage() {
 
             <Box
               component="table"
-              sx={{ width: "100%", borderCollapse: "collapse" }}
+              sx={{
+                width: "100%",
+                borderCollapse: "collapse",
+                textAlign: "center",
+              }}
             >
               <Box component="thead" sx={{ bgcolor: "grey.100" }}>
                 <Box component="tr">
@@ -209,9 +219,9 @@ export default function VotingPage() {
               </Box>
               <Box component="tbody">
                 {pos.candidates.map((c) => (
-                  <Box component="tr" key={c.candidate_id}>
+                  <Box component="tr" key={c.candidate_name}>
                     <Box component="td" sx={{ border: 1, p: 1 }}>
-                      {c.candidate_id}
+                      {c.candidate_name}
                     </Box>
                     <Box component="td" sx={{ border: 1, p: 1 }}>
                       {c.count}
