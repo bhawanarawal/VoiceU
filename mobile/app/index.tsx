@@ -1,13 +1,17 @@
 import { useEffect } from "react";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Index() {
+  const router = useRouter();
+
   useEffect(() => {
-    AsyncStorage.getItem("access_token").then((token) => {
+    const checkAuth = async () => {
+      const token = await AsyncStorage.getItem("access_token");
       if (token) router.replace("/(tabs)");
       else router.replace("../(auth)/signin");
-    });
+    };
+    checkAuth();
   }, []);
 
   return null;

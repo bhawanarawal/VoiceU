@@ -14,6 +14,8 @@ import {
   voteForCandidate,
 } from "./candidateService";
 import api from "../../utils/api";
+import Nav from "../../layout/Nav";
+import Footer from "../../layout/Footer";
 
 interface Candidate {
   candidate_id: number;
@@ -115,51 +117,55 @@ export default function CandidatePage() {
   }
 
   return (
-    <Box px={3} py={4}>
-      <Typography variant="h4" textAlign="center" fontWeight={700} mb={3}>
-        Approved Candidates
-      </Typography>
+    <>
+      <Nav />
+      <Box px={3} py={4} mt="80px">
+        <Typography variant="h4" textAlign="center" fontWeight={700} mb={3}>
+          Approved Candidates
+        </Typography>
 
-      {hasVotedAll && (
-        <Box textAlign="center" mb={4}>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => navigate(`/election/${electionId}/voting`)}
-          >
-            View Live Voting / Results
-          </Button>
-        </Box>
-      )}
+        {hasVotedAll && (
+          <Box textAlign="center" mb={4}>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => navigate(`/election/${electionId}/voting`)}
+            >
+              View Live Voting
+            </Button>
+          </Box>
+        )}
 
-      {Object.entries(grouped).map(([position, list]) => (
-        <Box key={position} mt={5}>
-          <Typography variant="h5" mb={2}>
-            {position}
-          </Typography>
+        {Object.entries(grouped).map(([position, list]) => (
+          <Box key={position} mt={5}>
+            <Typography variant="h5" mb={2}>
+              {position}
+            </Typography>
 
-          <Stack direction="row" spacing={3} flexWrap="wrap">
-            {list.map((c) => (
-              <CandidateCard
-                key={c.candidate_id}
-                candidate_id={c.candidate_id}
-                election_id={electionId}
-                full_name={c.full_name}
-                photo_url={c.photo_url}
-                position_name={c.position_name}
-                group_name={c.group_name}
-                organization_name={c.organization_name}
-                manifesto={c.manifesto}
-                hasVoted={votedPositions.includes(c.position_name.trim())}
-                isElectionOver={electionStatus === "past"}
-                onVote={() => handleVote(c)}
-              />
-            ))}
-          </Stack>
+            <Stack direction="row" spacing={3} flexWrap="wrap">
+              {list.map((c) => (
+                <CandidateCard
+                  key={c.candidate_id}
+                  candidate_id={c.candidate_id}
+                  election_id={electionId}
+                  full_name={c.full_name}
+                  photo_url={c.photo_url}
+                  position_name={c.position_name}
+                  group_name={c.group_name}
+                  organization_name={c.organization_name}
+                  manifesto={c.manifesto}
+                  hasVoted={votedPositions.includes(c.position_name.trim())}
+                  isElectionOver={electionStatus === "past"}
+                  onVote={() => handleVote(c)}
+                />
+              ))}
+            </Stack>
 
-          <Divider sx={{ mt: 4 }} />
-        </Box>
-      ))}
-    </Box>
+            <Divider sx={{ mt: 4 }} />
+          </Box>
+        ))}
+      </Box>
+      <Footer />
+    </>
   );
 }

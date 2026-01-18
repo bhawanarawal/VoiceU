@@ -113,22 +113,34 @@ def get_vote_counts(election_id: int, session: Session = Depends(get_session)):
     results = session.exec(
         select(
             Vote.candidate_id,
+            User.full_name,
+            Candidate.photo_url,
             Position.position_id,
             Position.position_name,
             func.count(Vote.vote_id).label("count"),
         )
         .join(Candidate, Candidate.candidate_id == Vote.candidate_id)
         .join(Position, Position.position_id == Candidate.position_id)
+        .join(Voter, Voter.voter_id == Candidate.voter_id)
+        .join(User, User.user_id == Voter.user_id)
         .where(Vote.election_id == election_id)
-        .group_by(Vote.candidate_id, Position.position_id)
+        .group_by(
+            Vote.candidate_id,
+            User.full_name,
+            Candidate.photo_url,
+            Position.position_id,
+            Position.position_name,
+        )
     ).all()
 
     vote_counts = [
         {
             "candidate_id": r[0],
-            "position_id": r[1],
-            "position_name": r[2],
-            "count": r[3],
+            "candidate_name": r[1],
+            "candidate_photo": r[2],
+            "position_id": r[3],
+            "position_name": r[4],
+            "count": r[5],
         }
         for r in results
     ]

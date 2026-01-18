@@ -5,6 +5,9 @@ import {
   Pressable,
   StyleSheet,
   Animated,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
 import { useState, useRef } from "react";
 import { useRouter } from "expo-router";
@@ -13,22 +16,17 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import api from "../../services/api";
 
-export default function SignIn() {
+export default function SignInScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-
   const scale = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = () => {
-    Animated.spring(scale, {
-      toValue: 0.95,
-      useNativeDriver: true,
-    }).start();
+    Animated.spring(scale, { toValue: 0.95, useNativeDriver: true }).start();
   };
-
   const handlePressOut = () => {
     Animated.spring(scale, {
       toValue: 1,
@@ -42,9 +40,7 @@ export default function SignIn() {
       alert("Please enter email and password");
       return;
     }
-
     setLoading(true);
-
     try {
       const formData = new URLSearchParams();
       formData.append("username", email);
@@ -55,7 +51,7 @@ export default function SignIn() {
       });
 
       await AsyncStorage.setItem("access_token", res.data.access_token);
-      router.replace("/(tabs)");
+      router.replace({ pathname: "/(tabs)" });
     } catch (err: any) {
       alert(err.response?.data?.detail || "Invalid email or password");
     } finally {
@@ -64,90 +60,93 @@ export default function SignIn() {
   };
 
   return (
-    <LinearGradient colors={["#4f46e5", "#3b82f6"]} style={styles.container}>
-      <Text style={styles.title}>Welcome Back Dalli !</Text>
-      <Text style={styles.subtitle}>Sign in to continue</Text>
-
-      <View style={styles.inputContainer}>
-        {/* Email Input */}
-        <View style={styles.inputWrapper}>
-          <Ionicons
-            name="mail-outline"
-            size={20}
-            color="#fff"
-            style={styles.icon}
-          />
-          <TextInput
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            placeholderTextColor="rgba(255,255,255,0.7)"
-            style={styles.input}
-          />
-        </View>
-
-        {/* Password Input */}
-        <View style={styles.inputWrapper}>
-          <Ionicons
-            name="lock-closed-outline"
-            size={20}
-            color="#fff"
-            style={styles.icon}
-          />
-          <TextInput
-            placeholder="Password"
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
-            placeholderTextColor="rgba(255,255,255,0.7)"
-            style={styles.input}
-          />
-          <Pressable
-            onPress={() => setShowPassword(!showPassword)}
-            style={{ marginLeft: 8 }}
-          >
-            <Ionicons
-              name={showPassword ? "eye-outline" : "eye-off-outline"}
-              size={20}
-              color="#fff"
-            />
-          </Pressable>
-        </View>
-      </View>
-
-      {/* Animated Sign In Button */}
-      <Animated.View style={{ transform: [{ scale }] }}>
-        <Pressable
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          onPress={login}
-          style={styles.button}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <LinearGradient
+          colors={["#4f46e5", "#3b82f6"]}
+          style={styles.container}
         >
-          <Text style={styles.buttonText}>
-            {loading ? "Signing in..." : "Sign In"}
-          </Text>
-        </Pressable>
-      </Animated.View>
+          <Text style={styles.title}>Welcome Back!</Text>
+          <Text style={styles.subtitle}>Sign in to continue</Text>
 
-      {/* Sign Up Link */}
-      <Pressable onPress={() => router.push("../(auth)/signup")}>
-        <Text style={styles.linkText}>
-          Don’t have an account?{" "}
-          <Text style={{ fontWeight: "bold" }}>Sign Up</Text>
-        </Text>
-      </Pressable>
-    </LinearGradient>
+          <View style={styles.inputContainer}>
+            <View style={styles.inputWrapper}>
+              <Ionicons
+                name="mail-outline"
+                size={20}
+                color="#fff"
+                style={styles.icon}
+              />
+              <TextInput
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                placeholderTextColor="rgba(255,255,255,0.7)"
+                style={styles.input}
+              />
+            </View>
+
+            <View style={styles.inputWrapper}>
+              <Ionicons
+                name="lock-closed-outline"
+                size={20}
+                color="#fff"
+                style={styles.icon}
+              />
+              <TextInput
+                placeholder="Password"
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+                placeholderTextColor="rgba(255,255,255,0.7)"
+                style={styles.input}
+              />
+              <Pressable
+                onPress={() => setShowPassword(!showPassword)}
+                style={{ marginLeft: 8 }}
+              >
+                <Ionicons
+                  name={showPassword ? "eye-outline" : "eye-off-outline"}
+                  size={20}
+                  color="#fff"
+                />
+              </Pressable>
+            </View>
+          </View>
+
+          <Animated.View style={{ transform: [{ scale }] }}>
+            <Pressable
+              onPressIn={handlePressIn}
+              onPressOut={handlePressOut}
+              onPress={login}
+              style={styles.button}
+              disabled={loading}
+            >
+              <Text style={styles.buttonText}>
+                {loading ? "Signing in..." : "Sign In"}
+              </Text>
+            </Pressable>
+          </Animated.View>
+
+          <Pressable onPress={() => router.push({ pathname: "/signup" })}>
+            <Text style={styles.linkText}>
+              Don’t have an account?{" "}
+              <Text style={{ fontWeight: "bold" }}>Sign Up</Text>
+            </Text>
+          </Pressable>
+        </LinearGradient>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    justifyContent: "center",
-  },
+  container: { flex: 1, padding: 24, justifyContent: "center" },
   title: {
     fontSize: 32,
     fontWeight: "bold",
@@ -161,9 +160,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
     textAlign: "center",
   },
-  inputContainer: {
-    marginBottom: 24,
-  },
+  inputContainer: { marginBottom: 24 },
   inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
@@ -173,14 +170,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
-  icon: {
-    marginRight: 8,
-  },
-  input: {
-    flex: 1,
-    color: "#fff",
-    fontSize: 16,
-  },
+  icon: { marginRight: 8 },
+  input: { flex: 1, color: "#fff", fontSize: 16 },
   button: {
     backgroundColor: "#2563eb",
     padding: 16,
@@ -192,14 +183,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 5,
   },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  linkText: {
-    textAlign: "center",
-    color: "#e0e7ff",
-    fontSize: 14,
-  },
+  buttonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  linkText: { textAlign: "center", color: "#e0e7ff", fontSize: 14 },
 });
