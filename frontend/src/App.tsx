@@ -35,12 +35,14 @@ import ElectionPage from "./pages/Election/ElectionPage";
 import HomeDashboard from "./pages/HomePages/HomeDashboard";
 import CandidatePage from "./pages/Candidate/CandidatePage";
 import VotingPage from "./pages/voting/VotingPage";
+import ResultPage from "./pages/voting/ResultPage";
 
 export default function App() {
   return (
     <Router>
       <ScrollToTop />
       <Routes>
+        <Route path="/election/result/:electionId" element={<ResultPage />} />
         <Route path="/election/:electionId/voting" element={<VotingPage />} />
         <Route path="/elections" element={<ElectionPage />} />
 

@@ -97,29 +97,31 @@ export default function VotingPage() {
   };
 
   useEffect(() => {
-    fetchVotes();
+    void fetchVotes();
+  }, [electionId]);
+
+  useEffect(() => {
+    if (!electionEndTime) return;
 
     const interval = setInterval(() => {
-      if (!electionEndTime) return;
-
       const diff = electionEndTime.getTime() - Date.now();
 
       if (diff <= 0) {
         setIsElectionOver(true);
         setTimeLeft("Election ended");
         navigate(`/election/result/${electionId}`, { replace: true });
+        clearInterval(interval);
       } else {
         const totalSeconds = Math.floor(diff / 1000);
         const hours = Math.floor(totalSeconds / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
         const seconds = totalSeconds % 60;
-
         setTimeLeft(`${hours}h ${minutes}m ${seconds}s left`);
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [electionId, electionEndTime]);
+  }, [electionEndTime, electionId]);
 
   return (
     <Box sx={{ px: 1, py: 4, maxWidth: 1250, mx: "auto" }}>
