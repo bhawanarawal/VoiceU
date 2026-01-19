@@ -9,7 +9,7 @@ from models.organization import Organization
 from models.group import Group
 from models.voter_group import VoterGroup
 from schemas.voter_schema import VoterCreate, VoterRead, GroupMembershipRead
-from auth import get_current_active_user
+from auth import get_current_active_user, require_roles
 
 router = APIRouter(prefix="/voters", tags=["Voters"])
 
@@ -155,7 +155,7 @@ def get_my_voter_info(
 @router.get("/", response_model=List[VoterRead])
 def list_all_voters(
     session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
 ):
     voters = session.exec(select(Voter)).all()
     result: List[VoterRead] = []
@@ -205,6 +205,7 @@ def list_all_voters(
 def approve_voter_group(
     voter_group_id: int,
     db: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
 ):
     vg = (
         db.query(VoterGroup).filter(VoterGroup.voter_group_id == voter_group_id).first()
@@ -222,6 +223,7 @@ def approve_voter_group(
 def reject_voter_group(
     voter_group_id: int,
     db: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
 ):
     vg = (
         db.query(VoterGroup).filter(VoterGroup.voter_group_id == voter_group_id).first()
@@ -236,7 +238,11 @@ def reject_voter_group(
 
 
 @router.delete("/{voter_id}/")
-def delete_voter(voter_id: int, session: Session = Depends(get_session)):
+def delete_voter(
+    voter_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
+):
     voter = session.get(Voter, voter_id)
     if not voter:
         raise HTTPException(status_code=404, detail="Voter not found")
