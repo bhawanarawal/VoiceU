@@ -6,10 +6,11 @@ from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone
 from typing import List
 from database import get_session
-from auth import get_current_active_user
+from auth import get_current_active_user, require_roles
 from models.election import Election
 from models.group import Group
 from models.organization import Organization
+
 from models.candidate import Candidate
 from models.user import User
 from models.position import Position
@@ -45,7 +46,7 @@ def compute_phase(start: datetime, end: datetime) -> str:
 def create_election(
     data: ElectionCreate,
     session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
 ):
     group = session.get(Group, data.group_id)
     if not group:
@@ -84,7 +85,7 @@ def update_election(
     election_id: int,
     data: ElectionCreate,
     session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
 ):
     election = session.get(Election, election_id)
     if not election:
@@ -207,7 +208,7 @@ def get_election(election_id: int, session: Session = Depends(get_session)):
 def delete_election(
     election_id: int,
     session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
 ):
     election = session.get(Election, election_id)
     if not election:
