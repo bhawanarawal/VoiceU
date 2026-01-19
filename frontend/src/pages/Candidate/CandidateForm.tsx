@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import ComponentCard from "../../components/common/ComponentCard";
 import Button from "../../components/ui/button/Button";
 import Toast from "../../components/common/Toast";
 import { createCandidate } from "./candidateService";
 import api from "../../utils/api";
+import Nav from "../../layout/Nav";
+import Footer from "../../layout/Footer";
 
 interface Position {
   position_id: number;
@@ -76,11 +77,15 @@ export default function CandidateForm() {
         const res = await api.get(`/elections/${electionId}`);
         const election = res.data;
 
-        const electionPositions: Position[] = Array.isArray(election.positions)
+        const rawPositions: Position[] = Array.isArray(election.positions)
           ? election.positions
           : [];
 
-        setPositions(electionPositions);
+        const uniquePositions = Array.from(
+          new Map(rawPositions.map((p) => [p.position_id, p])).values(),
+        );
+
+        setPositions(uniquePositions);
 
         setForm((prev) => ({
           ...prev,
@@ -88,8 +93,7 @@ export default function CandidateForm() {
           election_name: election.election_name,
           group_name: election.group_name || "",
           organization_name: election.organization_name || "",
-          position_id:
-            electionPositions.length > 0 ? electionPositions[0].position_id : 0,
+          position_id: 0,
         }));
       } catch (err) {
         console.error(err);
@@ -168,79 +172,91 @@ export default function CandidateForm() {
   };
 
   return (
-    <div>
-      <PageMeta title="Apply as Candidate" description="" />
-      <PageBreadcrumb pageTitle="Apply as Candidate" />
+    <>
+      <Nav />
+      <div>
+        <main className="min-h-screen pt-20 pb-24">
+          <PageMeta title="" description="" />
 
-      {toast && <Toast {...toast} onClose={() => setToast(null)} />}
+          {toast && <Toast {...toast} onClose={() => setToast(null)} />}
 
-      <div className="max-w-lg mx-auto mt-6">
-        <ComponentCard title="Candidate Application">
-          <div className="space-y-5">
-            <Input label="Username" value={form.username} />
-            <Input label="Election" value={form.election_name} />
-            <Input label="group" value={form.group_name} />
-            <Input label="Organization" value={form.organization_name} />
+          <div className="max-w-lg mx-auto mt-6">
+            <ComponentCard title="Candidate Application">
+              <div className="space-y-5">
+                <Input label="Username" value={form.username} />
+                <Input label="Election" value={form.election_name} />
+                <Input label="group" value={form.group_name} />
+                <Input label="Organization" value={form.organization_name} />
 
-            <div>
-              <label className="text-sm text-gray-500">Position</label>
-              <select
-                id="position"
-                name="position"
-                aria-label="Position"
-                value={form.position_id}
-                onChange={handlePositionChange}
-                className="w-full border px-4 py-3 rounded"
-              >
-                {positions.map((p) => (
-                  <option key={p.position_id} value={p.position_id}>
-                    {p.position_name}
-                  </option>
-                ))}
-              </select>
-            </div>
+                <div>
+                  <label className="text-sm text-gray-500">Position</label>
+                  <select
+                    id="position"
+                    name="position"
+                    aria-label="Position"
+                    value={form.position_id}
+                    onChange={handlePositionChange}
+                    className="w-full border px-4 py-3 rounded"
+                  >
+                    <option value={0} disabled>
+                      Select a position
+                    </option>
 
-            <div>
-              <label className="text-sm text-gray-500">Manifesto</label>
-              <textarea
-                id="manifesto"
-                name="manifesto"
-                aria-label="Manifesto"
-                rows={4}
-                value={form.manifesto}
-                onChange={handleManifestoChange}
-                className="w-full border px-4 py-3 rounded"
-              />
-            </div>
+                    {positions.map((p) => (
+                      <option key={p.position_id} value={p.position_id}>
+                        {p.position_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-            <div>
-              <label className="text-sm text-gray-500">Photo</label>
-              <label className="block mt-1 px-4 py-2 bg-blue-600 text-white rounded cursor-pointer w-fit">
-                Choose Image
-                <input hidden type="file" onChange={handlePhotoChange} />
-              </label>
+                <div>
+                  <label className="text-sm text-gray-500">Manifesto</label>
+                  <textarea
+                    id="manifesto"
+                    name="manifesto"
+                    aria-label="Manifesto"
+                    rows={4}
+                    value={form.manifesto}
+                    onChange={handleManifestoChange}
+                    className="w-full border px-4 py-3 rounded"
+                  />
+                </div>
 
-              {photoPreview && (
-                <img
-                  src={photoPreview}
-                  alt="Preview"
-                  className="mt-3 h-32 w-32 rounded object-cover border"
-                />
-              )}
-            </div>
+                <div>
+                  <label className="text-sm text-gray-500">Photo</label>
+                  <label className="block mt-1 px-4 py-2 bg-blue-600 text-white rounded cursor-pointer w-fit">
+                    Choose Image
+                    <input hidden type="file" onChange={handlePhotoChange} />
+                  </label>
 
-            <div className="flex justify-between">
-              <Button variant="outline" onClick={() => navigate("/candidate")}>
-                Back
-              </Button>
-              <Button onClick={handleSubmit} disabled={loading}>
-                {loading ? "Submitting..." : "Apply"}
-              </Button>
-            </div>
+                  {photoPreview && (
+                    <img
+                      src={photoPreview}
+                      alt="Preview"
+                      className="mt-3 h-32 w-32 rounded object-cover border"
+                    />
+                  )}
+                </div>
+
+                <div className="flex justify-between">
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate("/elections")}
+                  >
+                    Back
+                  </Button>
+                  <Button onClick={handleSubmit} disabled={loading}>
+                    {loading ? "Submitting..." : "Apply as Candidate"}
+                  </Button>
+                </div>
+              </div>
+            </ComponentCard>
           </div>
-        </ComponentCard>
+        </main>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 }
 

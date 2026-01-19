@@ -46,7 +46,7 @@ const ExpandMore = styled(IconButton, {
 
 const getStatusColor = (
   status: "upcoming" | "ongoing" | "past",
-  theme: any
+  theme: any,
 ) => {
   switch (status) {
     case "upcoming":
@@ -92,7 +92,7 @@ export default function ElectionCard({
               size="small"
               sx={{
                 color: theme.palette.getContrastText(
-                  getStatusColor(status, theme)
+                  getStatusColor(status, theme),
                 ),
                 backgroundColor: getStatusColor(status, theme),
                 fontWeight: 500,

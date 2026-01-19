@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import ElectionCard from "../../components/cards/ElectionCard";
 import { getElections } from "./electionService";
 import Toast from "../../components/common/Toast";
+import Footer from "../../layout/Footer";
+import Nav from "../../layout/Nav";
 
 interface Position {
   position_id: number;
@@ -50,7 +52,7 @@ export default function ElectionPage() {
   const [loading, setLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<"success" | "error" | "info">(
-    "info"
+    "info",
   );
   const [activeTab, setActiveTab] = useState<
     "All" | "ongoing" | "upcoming" | "past"
@@ -122,55 +124,60 @@ export default function ElectionPage() {
       : elections.filter((e) => e.status === activeTab);
 
   return (
-    <div className="p-6 w-full">
-      <h1 className="text-3xl font-bold mb-6 text-center">Elections</h1>
+    <>
+      <Nav />
+      <div className="p-6 w-full mt-20">
+        <h1 className="text-3xl font-bold mb-6 text-center">Elections</h1>
 
-      <div className="flex justify-center mb-6 gap-4">
-        {phases.map((phase) => (
-          <button
-            key={phase}
-            onClick={() => setActiveTab(phase)}
-            className={`px-4 py-2 rounded-full font-semibold transition ${
-              activeTab === phase
-                ? "bg-blue-500 text-white shadow-md"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            {phase}
-          </button>
-        ))}
-      </div>
-
-      {filteredElections.length === 0 ? (
-        <p className="text-center text-gray-500 mt-8">
-          No {activeTab.toLowerCase()} elections available.
-        </p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {filteredElections.map((election) => (
-            <ElectionCard
-              key={election.election_id}
-              electionId={election.election_id}
-              title={election.election_name}
-              description={election.description}
-              startDateTime={election.start_date}
-              endDateTime={election.end_date}
-              positions={election.positions}
-              group={election.group_name}
-              organization={election.organization_name}
-              status={election.status}
-            />
+        <div className="flex justify-center mb-6 gap-4">
+          {phases.map((phase) => (
+            <button
+              key={phase}
+              onClick={() => setActiveTab(phase)}
+              className={`px-4 py-2 rounded-full font-semibold transition ${
+                activeTab === phase
+                  ? "bg-blue-500 text-white shadow-md"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+              }`}
+            >
+              {phase}
+            </button>
           ))}
         </div>
-      )}
 
-      {toastMessage && (
-        <Toast
-          message={toastMessage}
-          type={toastType}
-          onClose={() => setToastMessage(null)}
-        />
-      )}
-    </div>
+        {filteredElections.length === 0 ? (
+          <p className="text-center text-gray-500 mt-8">
+            No {activeTab.toLowerCase()} elections available.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {filteredElections.map((election) => (
+              <ElectionCard
+                key={election.election_id}
+                electionId={election.election_id}
+                title={election.election_name}
+                description={election.description}
+                startDateTime={election.start_date}
+                endDateTime={election.end_date}
+                positions={election.positions}
+                group={election.group_name}
+                organization={election.organization_name}
+                status={election.status}
+              />
+            ))}
+          </div>
+        )}
+
+        {toastMessage && (
+          <Toast
+            message={toastMessage}
+            type={toastType}
+            onClose={() => setToastMessage(null)}
+          />
+        )}
+      </div>
+
+      <Footer />
+    </>
   );
 }

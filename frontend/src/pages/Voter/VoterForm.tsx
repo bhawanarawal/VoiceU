@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import ComponentCard from "../../components/common/ComponentCard";
 import Button from "../../components/ui/button/Button";
@@ -11,6 +10,8 @@ import {
   getOrganizations,
   getgroupsByOrg,
 } from "./voterService";
+import Footer from "../../layout/Footer";
+import Nav from "../../layout/Nav";
 
 interface VoterFormState {
   org_id: number;
@@ -130,7 +131,7 @@ export default function VoterForm() {
     try {
       await createVoter(form);
       setToast({ message: "Applied for voter registration", type: "success" });
-      setTimeout(() => navigate("/voter"), 1000);
+      setTimeout(() => navigate("/Home"), 1000);
     } catch (err: any) {
       setToast({
         message: err.response?.data?.detail || "Registration failed",
@@ -142,119 +143,150 @@ export default function VoterForm() {
   };
 
   return (
-    <div>
-      <PageMeta title="Register as Voter" description="Voter registration" />
-      <PageBreadcrumb pageTitle="Voter Registration" />
-      {toast && <Toast {...toast} onClose={() => setToast(null)} />}
+    <>
+      <Nav />
+      <div>
+        <main className="flex-1 pt-30 pb-20 ">
+          <PageMeta
+            title="Register as Voter"
+            description="Voter registration"
+          />
 
-      <div className="max-w-lg mx-auto mt-6">
-        <ComponentCard title="Voter Registration">
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm text-gray-500">Email</label>
-              <input
-                id="username"
-                placeholder="Email"
-                type="text"
-                value={username}
-                readOnly
-                className="w-full border px-4 py-3 rounded bg-gray-100"
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-500">Full Name</label>
-              <input
-                id="full_name"
-                placeholder="Full Name"
-                type="text"
-                value={fullName}
-                readOnly
-                className="w-full border px-4 py-3 rounded bg-gray-100"
-              />
-            </div>
+          {toast && <Toast {...toast} onClose={() => setToast(null)} />}
 
-            <div>
-              <label className="block text-sm text-gray-500">
-                Organization
-              </label>
-              <select
-                name="org_id"
-                aria-label="Select Organization"
-                value={form.org_id}
-                onChange={handleOrgChange}
-                disabled={isRegistered}
-                className="w-full border px-4 py-3 rounded"
-              >
-                <option value={0}>Select Organization</option>
-                {organizations.map((o) => (
-                  <option key={o.org_id} value={o.org_id}>
-                    {o.name}
-                  </option>
-                ))}
-              </select>
-              {errors.org_id && (
-                <p className="text-red-500 text-sm">{errors.org_id}</p>
-              )}
-            </div>
+          <div className="max-w-lg mx-auto mt-6">
+            <ComponentCard title="">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">Voter Registration</h2>
 
-            <div>
-              <label className="block text-sm text-gray-500">Groups</label>
-              <div className="relative">
-                <button
-                  type="button"
-                  className="w-full border px-4 py-3 rounded flex justify-between items-center bg-white"
-                  onClick={() => setDropdownOpen((prev) => !prev)}
-                  disabled={isRegistered}
-                >
-                  {form.group_ids.length
-                    ? `${form.group_ids.length} selected`
-                    : "Select Groups"}
-                  <span className="ml-2">&#9662;</span>
-                </button>
-
-                {dropdownOpen && (
-                  <div className="absolute z-10 w-full mt-1 border rounded bg-white max-h-60 overflow-y-auto shadow-lg">
-                    {filteredGroups.map((g) => (
-                      <label
-                        key={g.group_id}
-                        className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                      >
-                        <input
-                          type="checkbox"
-                          className="mr-2"
-                          checked={form.group_ids.includes(g.group_id)}
-                          onChange={(e) =>
-                            handleGroupCheckbox(g.group_id, e.target.checked)
-                          }
-                          disabled={isRegistered}
-                        />
-                        {g.group_name}
-                      </label>
-                    ))}
-                  </div>
+                {!isRegistered && (
+                  <button
+                    type="button"
+                    onClick={() => navigate("/Home")}
+                    className="text-gray-400 hover:text-gray-800 text-xl font-bold"
+                    title="Register later"
+                  >
+                    ✕
+                  </button>
                 )}
               </div>
-              {errors.group_ids && (
-                <p className="text-red-500 text-sm mt-1">{errors.group_ids}</p>
-              )}
-            </div>
 
-            <div className="flex justify-end">
-              <Button
-                variant="primary"
-                onClick={handleSubmit}
-                disabled={loading || isRegistered}
-              >
-                {isRegistered
-                  ? "Already Registered"
-                  : loading
-                  ? "Registering..."
-                  : "Register as Voter"}
-              </Button>
-            </div>
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm text-gray-500">Email</label>
+                  <input
+                    id="username"
+                    placeholder="Email"
+                    type="text"
+                    value={username}
+                    readOnly
+                    className="w-full border px-4 py-3 rounded bg-gray-100"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-500">
+                    Full Name
+                  </label>
+                  <input
+                    id="full_name"
+                    placeholder="Full Name"
+                    type="text"
+                    value={fullName}
+                    readOnly
+                    className="w-full border px-4 py-3 rounded bg-gray-100"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-500">
+                    Organization
+                  </label>
+                  <select
+                    name="org_id"
+                    aria-label="Select Organization"
+                    value={form.org_id}
+                    onChange={handleOrgChange}
+                    disabled={isRegistered}
+                    className="w-full border px-4 py-3 rounded"
+                  >
+                    <option value={0}>Select Organization</option>
+                    {organizations.map((o) => (
+                      <option key={o.org_id} value={o.org_id}>
+                        {o.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.org_id && (
+                    <p className="text-red-500 text-sm">{errors.org_id}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm text-gray-500">Groups</label>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      className="w-full border px-4 py-3 rounded flex justify-between items-center bg-white"
+                      onClick={() => setDropdownOpen((prev) => !prev)}
+                      disabled={isRegistered}
+                    >
+                      {form.group_ids.length
+                        ? `${form.group_ids.length} selected`
+                        : "Select Groups"}
+                      <span className="ml-2">&#9662;</span>
+                    </button>
+
+                    {dropdownOpen && (
+                      <div className="absolute z-10 w-full mt-1 border rounded bg-white max-h-60 overflow-y-auto shadow-lg">
+                        {filteredGroups.map((g) => (
+                          <label
+                            key={g.group_id}
+                            className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          >
+                            <input
+                              type="checkbox"
+                              className="mr-2"
+                              checked={form.group_ids.includes(g.group_id)}
+                              onChange={(e) =>
+                                handleGroupCheckbox(
+                                  g.group_id,
+                                  e.target.checked,
+                                )
+                              }
+                              disabled={isRegistered}
+                            />
+                            {g.group_name}
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {errors.group_ids && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.group_ids}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex justify-end">
+                  <Button
+                    variant="primary"
+                    onClick={handleSubmit}
+                    disabled={loading || isRegistered}
+                  >
+                    {isRegistered
+                      ? "Already Registered"
+                      : loading
+                        ? "Registering..."
+                        : "Register as Voter"}
+                  </Button>
+                </div>
+              </div>
+            </ComponentCard>
           </div>
-        </ComponentCard>
+        </main>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 }
