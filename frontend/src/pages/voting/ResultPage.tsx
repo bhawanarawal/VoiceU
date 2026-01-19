@@ -5,7 +5,7 @@ import api from "../../utils/api";
 
 interface CandidateResult {
   candidate_id: number;
-  candidate_name: string; // 🔑 use name instead of id
+  candidate_name: string;
   position_name: string;
   count: number;
 }
@@ -15,7 +15,7 @@ interface PositionResult {
   candidates: CandidateResult[];
 }
 
-const MAX_BAR_HEIGHT = 130;
+const MAX_BAR_HEIGHT = 150;
 
 export default function ResultPage() {
   const { electionId } = useParams<{ electionId: string }>();
@@ -38,7 +38,6 @@ export default function ResultPage() {
         pos.candidates.push(c);
       });
 
-      // Sort each position candidates by votes descending
       grouped.forEach((p) => p.candidates.sort((a, b) => b.count - a.count));
 
       setPositions(grouped);
@@ -48,13 +47,21 @@ export default function ResultPage() {
   }, [electionId]);
 
   return (
-    <Box sx={{ px: 3, py: 4, maxWidth: 1100, mx: "auto" }}>
-      <Button variant="outlined" sx={{ mb: 2 }} onClick={() => navigate(-1)}>
+    <Box sx={{ px: 3, py: 4, maxWidth: 1300, mx: "auto" }}>
+      <Button
+        variant="outlined"
+        sx={{
+          position: "absolute",
+          top: 20,
+          left: 20,
+        }}
+        onClick={() => navigate(-1)}
+      >
         ← Back
       </Button>
 
       <Typography variant="h4" fontWeight={700} textAlign="center" mb={4}>
-        🏆 Election Results
+        Election Results
       </Typography>
 
       {positions.map((pos) => {
@@ -63,20 +70,17 @@ export default function ResultPage() {
 
         return (
           <Box key={pos.name} sx={{ mb: 7 }}>
-            {/* Position Title */}
-            <Typography variant="h5" fontWeight={600} mb={1}>
+            <Typography variant="h5" fontWeight={600} mb={5}>
               {pos.name}
             </Typography>
 
-            {/* Winner Info */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 5 }}>
               <Chip label="🏆 Winner" color="success" />
               <Typography fontWeight={600}>
                 {winner.candidate_name} — {winner.count} votes
               </Typography>
             </Box>
 
-            {/* Vertical Bars */}
             <Box
               sx={{
                 display: "flex",
@@ -126,10 +130,14 @@ export default function ResultPage() {
               })}
             </Box>
 
-            {/* Result Table */}
             <Box
               component="table"
-              sx={{ width: "100%", borderCollapse: "collapse", mt: 2 }}
+              sx={{
+                width: "100%",
+                borderCollapse: "collapse",
+                mt: 2,
+                textAlign: "center",
+              }}
             >
               <Box component="thead" sx={{ bgcolor: "grey.100" }}>
                 <Box component="tr">
@@ -159,7 +167,7 @@ export default function ResultPage() {
                       component="tr"
                       key={c.candidate_id}
                       sx={{
-                        bgcolor: index === 0 ? "success.light" : "transparent",
+                        bgcolor: index === 0 ? "light" : "transparent",
                       }}
                     >
                       <Box component="td" sx={{ border: 1, p: 1 }}>
