@@ -20,6 +20,7 @@ from schemas.role_schema import RoleCreate, AssignRole, RoleRead
 from auth import (
     create_access_token,
     get_current_active_user,
+    require_roles,
     ACCESS_TOKEN_EXPIRE_MINUTES,
 )
 from datetime import timedelta
@@ -46,7 +47,10 @@ def register_user(user: UserCreate, db: Session = Depends(get_session)):
 
 
 @router.get("/users", response_model=List[UserRead])
-def read_all_users(db: Session = Depends(get_session)):
+def read_all_users(
+    db: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
+):
     users = get_all_users(db)
     return [
         UserRead(
@@ -75,7 +79,11 @@ def login_for_access_token(
 
 
 @router.post("/roles", response_model=RoleRead)
-def add_role(role: RoleCreate, db: Session = Depends(get_session)):
+def add_role(
+    role: RoleCreate,
+    db: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
+):
     existing_role = get_role_by_name(db, role.name)
     if existing_role:
         raise HTTPException(status_code=400, detail="Role already exists")
@@ -84,13 +92,20 @@ def add_role(role: RoleCreate, db: Session = Depends(get_session)):
 
 
 @router.get("/roles", response_model=List[RoleRead])
-def read_all_roles(db: Session = Depends(get_session)):
+def read_all_roles(
+    db: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
+):
     roles = get_all_roles(db)
     return [RoleRead(role_id=role.role_id, name=role.name) for role in roles]
 
 
 @router.post("/assign-role")
-def assign_roles(assign: AssignRole, db: Session = Depends(get_session)):
+def assign_roles(
+    assign: AssignRole,
+    db: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["superadmin"])),
+):
     user = db.get(User, assign.user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -114,7 +129,11 @@ def assign_roles(assign: AssignRole, db: Session = Depends(get_session)):
 
 
 @router.delete("/roles/{role_id}", status_code=204)
-def delete_role(role_id: int, db: Session = Depends(get_session)):
+def delete_role(
+    role_id: int,
+    db: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["superadmin"])),
+):
     role = db.get(Role, role_id)
     if not role:
         raise HTTPException(status_code=404, detail="Role not found")
