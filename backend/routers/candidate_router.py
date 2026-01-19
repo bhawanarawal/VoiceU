@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime, timezone
 import os, shutil
-
+from auth import require_roles, get_current_active_user
 from database import get_session
 from models.candidate import Candidate, ApprovalStatus
 from models.user import User
@@ -27,34 +27,33 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @router.post("/", response_model=CandidateBase)
 def apply_candidate(
-    user_id: int = Form(...),
     election_id: int = Form(...),
     position_id: int = Form(...),
     manifesto: str | None = Form(None),
     photo: UploadFile | None = File(None),
     session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_active_user),
 ):
-    # Get the voter
-    voter = session.exec(select(Voter).where(Voter.user_id == user_id)).first()
+
+    voter = session.exec(
+        select(Voter).where(Voter.user_id == current_user.user_id)
+    ).first()
     if not voter:
         raise HTTPException(status_code=403, detail="Only voters can apply")
 
-    # Get the election
     election = session.get(Election, election_id)
     if not election:
         raise HTTPException(status_code=404, detail="Election not found")
 
-    # Get all groups the voter belongs to
     voter_groups = session.exec(
         select(VoterGroup.group_id).where(VoterGroup.voter_id == voter.voter_id)
-    ).all()  # Returns list of ints
+    ).all()
     if election.group_id not in voter_groups:
         raise HTTPException(
             status_code=403,
             detail="You can only apply to elections of your own group",
         )
 
-    # Check if already applied
     exists = session.exec(
         select(Candidate)
         .where(Candidate.voter_id == voter.voter_id)
@@ -67,7 +66,6 @@ def apply_candidate(
             detail="You have already applied for this election",
         )
 
-    # Handle photo upload
     photo_path = None
     if photo:
         filename = f"{int(datetime.now().timestamp())}_{photo.filename}"
@@ -76,7 +74,6 @@ def apply_candidate(
             shutil.copyfileobj(photo.file, buffer)
         photo_path = f"/static/uploads/candidates/{filename}".replace("\\", "/")
 
-    # Create candidate
     candidate = Candidate(
         voter_id=voter.voter_id,
         election_id=election_id,
@@ -99,7 +96,10 @@ def apply_candidate(
 
 
 @router.get("/", response_model=list[CandidateRead])
-def get_all_candidates(session: Session = Depends(get_session)):
+def get_all_candidates(
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
+):
     stmt = (
         select(
             Candidate,
@@ -197,7 +197,11 @@ def get_approved_candidates_by_election(
 
 
 @router.get("/{candidate_id}", response_model=CandidateRead)
-def get_candidate(candidate_id: int, session: Session = Depends(get_session)):
+def get_candidate(
+    candidate_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
+):
     stmt = (
         select(
             Candidate,
@@ -256,6 +260,7 @@ def approve_candidate(
     candidate_id: int,
     data: CandidateApprovalUpdate,
     session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
 ):
     candidate = session.get(Candidate, candidate_id)
     if not candidate:
@@ -275,6 +280,7 @@ def update_candidate(
     manifesto: str | None = Form(None),
     photo: UploadFile | None = File(None),
     session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
 ):
     candidate = session.get(Candidate, candidate_id)
     if not candidate or not candidate.is_active:
@@ -301,13 +307,23 @@ def update_candidate(
 
 
 @router.delete("/{candidate_id}")
-def delete_candidate(candidate_id: int, session: Session = Depends(get_session)):
+def delete_candidate(
+    candidate_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
+):
     candidate = session.get(Candidate, candidate_id)
-    if not candidate or not candidate.is_active:
+    if not candidate:
         raise HTTPException(status_code=404, detail="Candidate not found")
+
+    if not candidate.is_active:
+        return {"message": "Candidate is already deleted"}
 
     candidate.is_active = False
     candidate.updated_at = datetime.now(timezone.utc)
+
+    session.add(candidate)
     session.commit()
+    session.refresh(candidate)
 
     return {"message": "Candidate deleted successfully"}

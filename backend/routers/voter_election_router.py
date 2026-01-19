@@ -5,7 +5,7 @@ from models.voter_election import VoterElection
 from schemas.voter_election_schema import VoterElectionCreate, VoterElectionRead
 from database import get_session
 from models.user import User
-from auth import get_current_active_user
+from auth import get_current_active_user, require_roles
 from models.voter import Voter
 from models.position import Position
 from models.candidate import Candidate
@@ -15,7 +15,9 @@ router = APIRouter(prefix="/voter-elections", tags=["Voter-Elections"])
 
 @router.post("/", response_model=VoterElectionRead)
 def assign_voter_to_election(
-    data: VoterElectionCreate, session: Session = Depends(get_session)
+    data: VoterElectionCreate,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
 ):
     assignment = VoterElection.model_validate(data)
 
@@ -33,12 +35,19 @@ def assign_voter_to_election(
 
 
 @router.get("/", response_model=list[VoterElectionRead])
-def get_all_assignments(session: Session = Depends(get_session)):
+def get_all_assignments(
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
+):
     return session.exec(select(VoterElection)).all()
 
 
 @router.get("/voter/{voter_id}", response_model=list[VoterElectionRead])
-def get_assignments_by_voter(voter_id: int, session: Session = Depends(get_session)):
+def get_assignments_by_voter(
+    voter_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
+):
     statement = select(VoterElection).where(VoterElection.voter_id == voter_id)
     return session.exec(statement).all()
 

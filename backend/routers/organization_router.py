@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from sqlalchemy.exc import IntegrityError
 from models.organization import Organization
-
+from models.user import User
+from auth import require_roles
 from models.group import Group
 from schemas.organization_schema import OrganizationCreate, OrganizationRead
 from database import get_session
@@ -12,7 +13,9 @@ router = APIRouter(prefix="/organizations", tags=["Organizations"])
 
 @router.post("/", response_model=OrganizationRead)
 def create_organization(
-    org: OrganizationCreate, session: Session = Depends(get_session)
+    org: OrganizationCreate,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
 ):
     db_org = Organization(
         name=org.name,
@@ -72,6 +75,7 @@ def update_organization(
     org_id: int,
     updated_org: OrganizationCreate,
     session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
 ):
     org = session.get(Organization, org_id)
     if not org:
@@ -100,7 +104,11 @@ def update_organization(
 
 
 @router.delete("/{org_id}")
-def delete_organization(org_id: int, session: Session = Depends(get_session)):
+def delete_organization(
+    org_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
+):
     org = session.get(Organization, org_id)
     if not org:
         raise HTTPException(status_code=404, detail="Organization not found")
