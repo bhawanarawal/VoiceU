@@ -40,9 +40,22 @@ export default function SignInForm() {
 
       const meRes = await api.get("/auth/users/me");
       const roles: string[] = meRes.data.roles || [];
+      localStorage.setItem("roles", JSON.stringify(roles));
 
-      if (roles.includes("superadmin") || roles.includes("admin")) {
+      const isAdmin = roles
+        .map((r) => r.toLowerCase())
+        .some((r) => r === "admin" || r === "superadmin");
+
+      if (isAdmin) {
         navigate("/", { replace: true });
+        return;
+      }
+
+      const voterRes = await api.get("/voters/me");
+      const skipped = localStorage.getItem("voter_skip");
+
+      if (!voterRes.data.is_voter && !skipped) {
+        navigate("/voter/new", { replace: true });
       } else {
         navigate("/Home", { replace: true });
       }

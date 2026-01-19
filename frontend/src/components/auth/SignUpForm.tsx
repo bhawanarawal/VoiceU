@@ -217,7 +217,7 @@ export default function SignUpForm() {
               <div>
                 <button
                   type="submit"
-                  className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition  bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
+                  className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
                   disabled={loading}
                 >
                   {loading ? "Signing up..." : "Sign Up"}
