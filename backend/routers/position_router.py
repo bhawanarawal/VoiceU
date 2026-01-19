@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from models.position import Position
+from models.user import User
+from auth import require_roles
 from schemas.position_schema import PositionCreate, PositionRead, PositionUpdate
 from database import get_session
 
@@ -8,7 +10,11 @@ router = APIRouter(prefix="/positions", tags=["Positions"])
 
 
 @router.post("/", response_model=PositionRead)
-def create_position(pos: PositionCreate, session: Session = Depends(get_session)):
+def create_position(
+    pos: PositionCreate,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
+):
     db_pos = Position.model_validate(pos)
     session.add(db_pos)
     session.commit()
@@ -34,6 +40,7 @@ def update_position(
     position_id: int,
     updated_position: PositionUpdate,
     session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
 ):
     position = session.get(Position, position_id)
     if not position:
@@ -53,7 +60,11 @@ def update_position(
 
 
 @router.delete("/{position_id}")
-def delete_position(position_id: int, session: Session = Depends(get_session)):
+def delete_position(
+    position_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
+):
     pos = session.get(Position, position_id)
     if not pos:
         raise HTTPException(status_code=404, detail="Position not found")
