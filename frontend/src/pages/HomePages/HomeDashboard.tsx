@@ -1,5 +1,4 @@
 import React from "react";
-
 import Nav from "../../layout/Nav";
 import HomeSection from "./HomeSection";
 import ServiceSection from "./ServiceSection";

@@ -5,7 +5,6 @@ import {
   GridIcon,
   HorizontaLDots,
   ListIcon,
-  PlugInIcon,
   TableIcon,
   UserCircleIcon,
   BoxIconLine,
@@ -26,7 +25,6 @@ const mainItems: NavItem[] = [
 
 const adminItems: NavItem[] = [
   { icon: <UserCircleIcon />, name: "Users", path: "/users" },
-  { icon: <UserCircleIcon />, name: "User Profile", path: "/profile" },
 ];
 
 const managementItems: NavItem[] = [
@@ -68,29 +66,12 @@ const electionItems: NavItem[] = [
   {
     name: "Candidate",
     icon: <UserCircleIcon />,
-    subItems: [
-      { name: "Add Candidate", path: "/candidate/new" },
-      { name: "View Candidates", path: "/candidate" },
-    ],
+    subItems: [{ name: "View Candidates", path: "/candidate" }],
   },
   {
     name: "Voter",
     icon: <UserCircleIcon />,
-    subItems: [
-      { name: "Add Voter", path: "/voter/new" },
-      { name: "View Voters", path: "/voter" },
-    ],
-  },
-];
-
-const accessItems: NavItem[] = [
-  {
-    icon: <PlugInIcon />,
-    name: "Authentication",
-    subItems: [
-      { name: "Sign In", path: "/signin" },
-      { name: "Sign Up", path: "/signup" },
-    ],
+    subItems: [{ name: "View Voters", path: "/voter" }],
   },
 ];
 
@@ -106,21 +87,21 @@ const AppSidebar: React.FC = () => {
 
   const isActive = useCallback(
     (path: string) => location.pathname === path,
-    [location.pathname]
+    [location.pathname],
   );
 
   const handleToggle = (section: string, index: number) => {
     setOpenSubmenu((prev) =>
       prev?.section === section && prev.index === index
         ? null
-        : { section, index }
+        : { section, index },
     );
   };
 
   const renderSection = (
     title: string,
     items: NavItem[],
-    sectionKey: string
+    sectionKey: string,
   ) => (
     <div>
       <h2
@@ -253,7 +234,6 @@ const AppSidebar: React.FC = () => {
         {renderSection("Admin", adminItems, "admin")}
         {renderSection("Management", managementItems, "management")}
         {renderSection("Election System", electionItems, "election")}
-        {renderSection("Access", accessItems, "access")}
       </nav>
     </aside>
   );
