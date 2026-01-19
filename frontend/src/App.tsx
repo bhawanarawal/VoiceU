@@ -24,6 +24,7 @@ import HomeDashboard from "./pages/HomePages/HomeDashboard";
 import CandidatePage from "./pages/Candidate/CandidatePage";
 import VotingPage from "./pages/voting/VotingPage";
 import ResultPage from "./pages/voting/ResultPage";
+import ProtectedRoute from "./components/routes/ProtectedRoute";
 
 export default function App() {
   return (
@@ -34,44 +35,49 @@ export default function App() {
         <Route path="/election/:electionId/voting" element={<VotingPage />} />
         <Route path="/elections" element={<ElectionPage />} />
 
-        <Route path="election/:id/apply" element={<CandidateForm />} />
+        <Route path="candidate/new" element={<CandidateForm />} />
         <Route path="election/:id/candidates" element={<CandidateList />} />
         <Route path="/candidates" element={<CandidatePage />} />
         <Route path="voter/new" element={<VoterForm />} />
 
-        {/* Dashboard Layout */}
-        <Route element={<AppLayout />}>
-          <Route index element={<Home />} />
+        <Route element={<ProtectedRoute />}>
+          {/* Dashboard Layout */}
+          <Route element={<AppLayout />}>
+            <Route index element={<Home />} />
 
-          <Route path="users" element={<UsersPage />} />
+            <Route path="users" element={<UsersPage />} />
 
-          {/* Organization Pages */}
-          <Route path="organization" element={<OrganizationList />} />
-          <Route path="organization/new" element={<OrganizationForm />} />
-          <Route path="organization/edit/:id" element={<OrganizationForm />} />
+            {/* Organization Pages */}
+            <Route path="organization" element={<OrganizationList />} />
+            <Route path="organization/new" element={<OrganizationForm />} />
+            <Route
+              path="organization/edit/:id"
+              element={<OrganizationForm />}
+            />
 
-          {/* Position Pages */}
-          <Route path="position" element={<PositionList />} />
-          <Route path="position/new" element={<PositionForm />} />
-          <Route path="position/edit/:id" element={<PositionForm />} />
+            {/* Position Pages */}
+            <Route path="position" element={<PositionList />} />
+            <Route path="position/new" element={<PositionForm />} />
+            <Route path="position/edit/:id" element={<PositionForm />} />
 
-          {/* group Pages */}
-          <Route path="group" element={<GroupList />} />
-          <Route path="group/new" element={<GroupForm />} />
-          <Route path="group/edit/:id" element={<GroupForm />} />
+            {/* group Pages */}
+            <Route path="group" element={<GroupList />} />
+            <Route path="group/new" element={<GroupForm />} />
+            <Route path="group/edit/:id" element={<GroupForm />} />
 
-          {/*  Election Pages */}
-          <Route path="election" element={<ElectionList />} />
-          <Route path="election/new" element={<ElectionForm />} />
-          <Route path="election/edit/:id" element={<ElectionForm />} />
+            {/*  Election Pages */}
+            <Route path="election" element={<ElectionList />} />
+            <Route path="election/new" element={<ElectionForm />} />
+            <Route path="election/edit/:id" element={<ElectionForm />} />
 
-          {/* Candidate Pages */}
-          <Route path="candidate" element={<CandidateList />} />
-          <Route path="candidate/edit/:id" element={<CandidateForm />} />
+            {/* Candidate Pages */}
+            <Route path="candidate" element={<CandidateList />} />
+            <Route path="candidate/edit/:id" element={<CandidateForm />} />
 
-          {/* Voter Pages */}
-          <Route path="voter" element={<VoterList />} />
-          <Route path="voter/edit/:id" element={<VoterForm />} />
+            {/* Voter Pages */}
+            <Route path="voter" element={<VoterList />} />
+            <Route path="voter/edit/:id" element={<VoterForm />} />
+          </Route>
         </Route>
 
         <Route path="profile" element={<UserProfiles />} />
