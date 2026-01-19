@@ -3,6 +3,7 @@ from sqlmodel import Session, select
 from typing import List, Optional
 from database import get_session
 from models.group import Group
+from auth import require_roles
 from models.organization import Organization
 from schemas.group_schema import (
     GroupCreate,
@@ -17,7 +18,11 @@ router = APIRouter(prefix="/groups", tags=["groups"])
 
 
 @router.post("/", response_model=GroupRead)
-def create_group(group: GroupCreate, session: Session = Depends(get_session)):
+def create_group(
+    group: GroupCreate,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
+):
     org = session.get(Organization, group.org_id)
     if not org:
         raise HTTPException(status_code=404, detail="Organization not found")
@@ -78,6 +83,7 @@ def update_group(
     group_id: int,
     updated_group: GroupUpdate,
     session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
 ):
     group = session.get(Group, group_id)
     if not group:
@@ -117,7 +123,11 @@ def update_group(
 
 
 @router.delete("/{group_id}")
-def delete_group(group_id: int, session: Session = Depends(get_session)):
+def delete_group(
+    group_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
+):
     group = session.get(Group, group_id)
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
