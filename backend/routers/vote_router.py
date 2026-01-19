@@ -9,7 +9,7 @@ from models.user import User
 from models.voter import Voter
 from schemas.vote_schema import VoteCreate, VoteRead
 from database import get_session
-from auth import get_current_active_user
+from auth import get_current_active_user, require_roles
 from models.voter_election import VoterElection
 
 router = APIRouter(prefix="/votes", tags=["Votes"])
@@ -91,12 +91,19 @@ def cast_vote(
 
 
 @router.get("/", response_model=list[VoteRead])
-def get_all_votes(session: Session = Depends(get_session)):
+def get_all_votes(
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
+):
     return session.exec(select(Vote)).all()
 
 
 @router.get("/{vote_id}", response_model=VoteRead)
-def get_vote(vote_id: int, session: Session = Depends(get_session)):
+def get_vote(
+    vote_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(require_roles(["admin", "superadmin"])),
+):
     vote = session.get(Vote, vote_id)
     if not vote:
         raise HTTPException(status_code=404, detail="Vote not found")
