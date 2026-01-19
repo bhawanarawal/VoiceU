@@ -60,7 +60,7 @@ export default function CandidateList() {
 
   const handleApproval = async (
     id: number,
-    status: "approved" | "rejected"
+    status: "approved" | "rejected",
   ) => {
     try {
       await updateCandidateApproval(id, status);
@@ -68,8 +68,8 @@ export default function CandidateList() {
 
       setData((prev) =>
         prev.map((c) =>
-          c.candidate_id === id ? { ...c, approval_status: status } : c
-        )
+          c.candidate_id === id ? { ...c, approval_status: status } : c,
+        ),
       );
     } catch {
       setToast({ message: "Failed to update approval", type: "error" });
@@ -94,8 +94,8 @@ export default function CandidateList() {
           row.approval_status === "approved"
             ? "text-green-600"
             : row.approval_status === "rejected"
-            ? "text-red-600"
-            : "text-yellow-600";
+              ? "text-red-600"
+              : "text-yellow-600";
 
         return (
           <span className={`font-semibold ${color}`}>
@@ -152,19 +152,18 @@ export default function CandidateList() {
         emptyMessage="No candidates found"
         renderActions={(row: Candidate) => (
           <div className="flex flex-col gap-2">
-            {row.approval_status === "pending" && (
-              <button
-                onClick={() =>
-                  setConfirmDelete({
-                    id: row.candidate_id,
-                    name: row.username,
-                  })
-                }
-                className="text-red-600 hover:underline"
-              >
-                Delete
-              </button>
-            )}
+            {/* Always show Delete */}
+            <button
+              onClick={() =>
+                setConfirmDelete({
+                  id: row.candidate_id,
+                  name: row.username,
+                })
+              }
+              className="text-red-600 hover:underline"
+            >
+              Delete
+            </button>
 
             {row.approval_status === "pending" ? (
               <>
