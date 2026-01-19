@@ -90,6 +90,7 @@ def register_voter(
         group_status=first_group.status if first_group else "PENDING",
         registered_at=voter.registered_at,
         groups=groups_list,
+        is_voter=True,
     )
 
 
@@ -115,6 +116,7 @@ def get_my_voter_info(
             group_status="",
             registered_at=None,
             groups=[],
+            is_voter=False,
         )
 
     org = session.get(Organization, voter.org_id)
@@ -149,6 +151,7 @@ def get_my_voter_info(
         group_status=first_group.status if first_group else "PENDING",
         registered_at=voter.registered_at,
         groups=groups_list,
+        is_voter=True,
     )
 
 

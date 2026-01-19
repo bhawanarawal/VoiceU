@@ -38,6 +38,7 @@ class VoterRead(BaseModel):
     group_status: str
     registered_at: Optional[datetime]
     groups: List[GroupMembershipRead] = []
+    is_voter: Optional[bool] = None
 
     model_config = {"from_attributes": True}
 
