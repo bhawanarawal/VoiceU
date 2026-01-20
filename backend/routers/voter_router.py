@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List, Optional
 from datetime import datetime
+from models.election import Election
+from models.vote import Vote
 from database import get_session
 from models.voter import Voter
 from models.user import User
@@ -260,3 +262,17 @@ def delete_voter(
     session.commit()
 
     return {"detail": "Voter deleted successfully"}
+
+
+@router.get("/stats")
+def get_public_stats(session: Session = Depends(get_session)):
+
+    total_voters = len(session.exec(select(Voter)).all())
+    total_elections = len(session.exec(select(Election)).all())
+    total_votes = len(session.exec(select(Vote)).all())
+
+    return {
+        "total_voters": total_voters,
+        "total_elections": total_elections,
+        "total_votes": total_votes,
+    }
