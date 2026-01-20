@@ -108,7 +108,9 @@ export default function MonthlySalesChart() {
         </h3>
         <div className="relative inline-block">
           <button className="dropdown-toggle" onClick={toggleDropdown}>
-            <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6" />
+            <div className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 size-6">
+              <MoreDotIcon />
+            </div>
           </button>
           <Dropdown
             isOpen={isOpen}
