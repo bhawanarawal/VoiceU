@@ -12,17 +12,14 @@ const Nav = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ AUTH STATE LISTENER
   useEffect(() => {
     const checkAuth = () => {
       const token = localStorage.getItem("access_token");
       setIsLoggedIn(!!token);
     };
 
-    // initial check
     checkAuth();
 
-    // listen for login/logout
     window.addEventListener("auth-changed", checkAuth);
 
     return () => {
@@ -30,7 +27,6 @@ const Nav = () => {
     };
   }, []);
 
-  // Scroll active section
   useEffect(() => {
     const handleScroll = () => {
       const scrollPos = window.scrollY + 100;
@@ -70,7 +66,6 @@ const Nav = () => {
   return (
     <header className="fixed top-0 w-full bg-white bg-opacity-80 backdrop-blur-md shadow-md z-50">
       <div className="flex justify-between items-center w-full px-6 py-3">
-        {/* Logo */}
         <div className="flex items-center gap-3">
           <h1 className="text-4xl font-extrabold">
             <span className="text-blue-600">Voice</span>
@@ -79,7 +74,6 @@ const Nav = () => {
           <img src={Logo} alt="Logo" className="w-14 h-14 object-contain" />
         </div>
 
-        {/* Navigation */}
         <nav className="hidden md:flex items-center gap-6 font-medium">
           {sections.map((sec) => (
             <div
@@ -105,7 +99,6 @@ const Nav = () => {
             </div>
           ))}
 
-          {/* RIGHT SIDE */}
           {isLoggedIn ? (
             <UserDropdown />
           ) : (

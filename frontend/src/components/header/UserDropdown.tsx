@@ -12,23 +12,39 @@ export default function UserDropdown() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const token = localStorage.getItem("access_token");
-        if (!token) return;
+        const token =
+          sessionStorage.getItem("access_token") ||
+          localStorage.getItem("access_token");
+        if (!token) {
+          handleLogout();
+          return;
+        }
 
         const response = await api.get("/auth/users/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (response.data && response.data.full_name) {
+        if (response.data?.full_name) {
           setFullName(response.data.full_name);
+        } else {
+          handleLogout();
         }
       } catch (err) {
         console.error("Failed to fetch user info:", err);
-        setFullName("User");
+        handleLogout();
       }
     };
 
     fetchUser();
+
+    const onAuthChanged = () => fetchUser();
+    window.addEventListener("auth-changed", onAuthChanged);
+    window.addEventListener("storage", onAuthChanged);
+
+    return () => {
+      window.removeEventListener("auth-changed", onAuthChanged);
+      window.removeEventListener("storage", onAuthChanged);
+    };
   }, []);
 
   const toggleDropdown = () => setIsOpen(!isOpen);
