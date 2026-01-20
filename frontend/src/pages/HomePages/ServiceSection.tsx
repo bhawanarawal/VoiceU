@@ -13,7 +13,7 @@ const ServiceSection = () => {
           observer.disconnect();
         }
       },
-      { threshold: 0.2 }
+      { threshold: 0.2 },
     );
 
     if (sectionRef.current) observer.observe(sectionRef.current);
@@ -22,24 +22,24 @@ const ServiceSection = () => {
 
   const services = [
     {
-      title: "Secure Voting",
-      desc: "End-to-end encrypted voting system ensuring your vote remains private and secure with blockchain verification.",
+      title: "Secure Digital Voting",
+      desc: "A reliable online voting system that allows organizations to conduct elections and decision-making securely, ensuring vote privacy and protection against unauthorized access.",
       bgFrom: "from-blue-50",
       bgTo: "to-blue-100",
       iconBg: "bg-blue-600",
       icon: <FaLock size={28} className="text-white" />,
     },
     {
-      title: "Student Engagement",
-      desc: "Real-time voting statistics, candidate profiles, and interactive forums to keep students engaged and informed.",
+      title: "Member Engagement & Participation",
+      desc: "Designed to increase participation across organizations by providing members with a simple, accessible, and transparent voting experience from anywhere, at any time.",
       bgFrom: "from-purple-50",
       bgTo: "to-purple-100",
       iconBg: "bg-purple-600",
       icon: <FaUsers size={28} className="text-white" />,
     },
     {
-      title: "Fair Elections",
-      desc: "Transparent process with real-time auditing, automated counting, and instant results to ensure complete fairness.",
+      title: "Fair & Transparent Elections",
+      desc: "Ensures a fair election process with automated vote counting, real-time result visibility, and accountability within the organization.",
       bgFrom: "from-green-50",
       bgTo: "to-green-100",
       iconBg: "bg-green-600",
@@ -51,13 +51,13 @@ const ServiceSection = () => {
     <section
       id="services"
       ref={sectionRef}
-      className="py-20 bg-gray-50 px-6 md:px-12"
+      className="py-15 bg-gray-50 px-6 md:px-12"
     >
       <div className="text-center mb-12">
         <h2 className="text-4xl font-bold text-gray-900">Our Services</h2>
         <p className="text-gray-600 mt-2 max-w-xl mx-auto text-lg">
-          Comprehensive voting solutions designed to make college elections
-          secure, fair, and engaging.
+          Comprehensive voting solutions designed to make organizational
+          elections secure, transparent, and inclusive.
         </p>
       </div>
 

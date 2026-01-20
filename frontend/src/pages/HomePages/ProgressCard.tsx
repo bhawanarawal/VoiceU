@@ -13,8 +13,8 @@ const ProgressCard: React.FC<ProgressCardProps> = ({
   description,
 }) => {
   return (
-    <div className="bg-white/80 backdrop-blur-md shadow-xl  p-6 flex flex-col items-center gap-5 ">
-      <h3 className="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+    <div className="bg-white/80 backdrop-blur-md shadow-xl  p-7 flex flex-col items-center gap-5 ">
+      <h3 className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
         {title}
       </h3>
 

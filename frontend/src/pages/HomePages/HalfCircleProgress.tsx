@@ -12,7 +12,7 @@ interface HalfCircleProgressProps {
 const HalfCircleProgress: React.FC<HalfCircleProgressProps> = ({
   percentage,
   size = 150,
-  strokeWidth = 15,
+  strokeWidth = 20,
   colorStart = "#3b82f6",
   colorEnd = "#8b5cf6",
   bgColor = "#e5e7eb",
@@ -45,7 +45,7 @@ const HalfCircleProgress: React.FC<HalfCircleProgressProps> = ({
           <stop offset="100%" stopColor={colorEnd} />
         </linearGradient>
         <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor={colorEnd} />
+          <feDropShadow dx="0" dy="0" stdDeviation="10" floodColor={colorEnd} />
         </filter>
       </defs>
 
@@ -82,7 +82,7 @@ const HalfCircleProgress: React.FC<HalfCircleProgressProps> = ({
         fontWeight="bold"
         fill="#111827"
       >
-        {Math.round(progress)}%
+        {Math.round(progress)}
       </text>
     </svg>
   );

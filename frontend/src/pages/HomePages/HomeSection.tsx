@@ -1,15 +1,46 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import BackgroundImage from "./../../assets/HomeBackground.jpg";
 import ProgressCard from "./ProgressCard";
+import { useNavigate } from "react-router-dom";
+import api from "../../utils/api";
 
 const HomeSection: React.FC = () => {
+  const navigate = useNavigate();
+
+  const [totalVoters, setTotalVoters] = useState(0);
+  const [totalElections, setTotalElections] = useState(0);
+  const [totalVotes, setTotalVotes] = useState(0);
+
+  const fetchStats = async () => {
+    try {
+      const res = await api.get("/voters/stats");
+      setTotalVoters(res.data.total_voters);
+      setTotalElections(res.data.total_elections);
+      setTotalVotes(res.data.total_votes);
+    } catch (err) {
+      console.error("Failed to load stats", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
   const features = [
-    { title: "Total Voters", percentage: 70, description: "Registered voters" },
-    { title: "Votes Cast", percentage: 55, description: "Votes completed" },
     {
-      title: "Election Progress",
-      percentage: 40,
-      description: "Ongoing elections",
+      title: "Total   Voters",
+      number: totalVoters,
+      description: "Registered voters",
+    },
+    {
+      title: "Total Elections",
+      number: totalElections,
+      description: "All Elections",
+    },
+    {
+      title: "Total Vote Cast",
+      number: totalVotes,
+      description: "Votes completed",
     },
   ];
 
@@ -33,20 +64,23 @@ const HomeSection: React.FC = () => {
             Every voice matters. Every story deserves a stage. At VoiceU, we
             make your words count.
           </p>
-          <button className="px-8 py-3 bg-gradient-to-r from-blue-400 to-blue-500 text-gray-900 font-semibold rounded-lg shadow-lg hover:scale-105 transition-transform duration-300">
+          <button
+            onClick={() => navigate("/elections")}
+            className="px-8 py-3 bg-gradient-to-r from-blue-400 to-blue-500 text-gray-900 font-semibold rounded-lg shadow-lg hover:scale-105 transition-transform duration-300"
+          >
             Share Your Voice
           </button>
         </div>
       </div>
 
-      <div className="bg-white py-16">
+      <div className="bg-white py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
             {features.map((feature, i) => (
               <ProgressCard
                 key={i}
                 title={feature.title}
-                percentage={feature.percentage}
+                percentage={feature.number}
                 description={feature.description}
               />
             ))}

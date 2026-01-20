@@ -22,21 +22,21 @@ const About: React.FC = () => {
           </h2>
 
           <p className="text-gray-700 text-base md:text-lg leading-relaxed">
-            VoiceU is a comprehensive digital voting system designed for college
-            elections. It ensures{" "}
+            VoiceU is a comprehensive digital voting system designed for
+            organizations of all types. It ensures{" "}
             <span className="font-semibold text-blue-500">
               secure, fair, and transparent
             </span>{" "}
-            elections by leveraging modern technologies and blockchain
-            verification.
+            elections by leveraging modern technologies and reliable
+            verification mechanisms.
           </p>
 
           <p className="text-gray-700 text-base md:text-lg leading-relaxed">
-            With real-time voting statistics, interactive candidate profiles,
-            and automated results, VoiceU makes it easier for students and
+            With real-time voting insights, structured candidate profiles, and
+            automated result processing, VoiceU enables members and
             administrators to participate in a{" "}
             <span className="font-semibold text-blue-500">
-              seamless election process
+              seamless and efficient election process
             </span>
             .
           </p>
@@ -44,10 +44,10 @@ const About: React.FC = () => {
           <p className="text-gray-700 text-base md:text-lg leading-relaxed">
             Our platform prioritizes{" "}
             <span className="font-semibold text-blue-500">
-              security, engagement, and transparency
+              security, trust, and transparency
             </span>
-            , empowering students to make their voices heard and ensuring fair
-            elections every time.
+            , empowering organizations to conduct elections with confidence and
+            integrity every time.
           </p>
         </div>
       </div>
