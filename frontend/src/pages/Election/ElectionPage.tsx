@@ -22,12 +22,13 @@ interface Election {
   status: "upcoming" | "ongoing" | "past";
 }
 
-const NPT_OFFSET_MS = 5.75 * 60 * 60 * 1000;
+const formatNepalDate = (dateStr: string) => {
+  const date = new Date(dateStr);
+  const utc = date.getTime() + date.getTimezoneOffset() * 60000;
+  const nptOffset = 5.75 * 60 * 60 * 1000;
+  const nptDate = new Date(utc + nptOffset);
 
-const formatNepalDate = (utcDate: string) => {
-  const date = new Date(utcDate);
-  const nptDate = new Date(date.getTime() + NPT_OFFSET_MS);
-  return nptDate.toLocaleString("en-US", {
+  return nptDate.toLocaleString("en-NP", {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -38,9 +39,22 @@ const formatNepalDate = (utcDate: string) => {
 };
 
 const getElectionPhase = (startUTC: string, endUTC: string) => {
-  const start = new Date(new Date(startUTC).getTime() + NPT_OFFSET_MS);
-  const end = new Date(new Date(endUTC).getTime() + NPT_OFFSET_MS);
-  const now = new Date(Date.now() + NPT_OFFSET_MS);
+  const startUTCDate = new Date(startUTC);
+  const endUTCDate = new Date(endUTC);
+  const nowUTC = new Date();
+
+  const nptOffset = 5.75 * 60 * 60 * 1000;
+  const start = new Date(
+    startUTCDate.getTime() +
+      startUTCDate.getTimezoneOffset() * 60000 +
+      nptOffset,
+  );
+  const end = new Date(
+    endUTCDate.getTime() + endUTCDate.getTimezoneOffset() * 60000 + nptOffset,
+  );
+  const now = new Date(
+    nowUTC.getTime() + nowUTC.getTimezoneOffset() * 60000 + nptOffset,
+  );
 
   if (now < start) return "upcoming";
   if (now >= start && now <= end) return "ongoing";

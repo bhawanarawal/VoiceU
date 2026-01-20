@@ -33,14 +33,12 @@ export default function SignInForm() {
 
       const token = res.data.access_token;
 
-      if (isChecked) localStorage.setItem("access_token", token);
-      else sessionStorage.setItem("access_token", token);
-
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      const storage = isChecked ? localStorage : sessionStorage;
+      storage.setItem("access_token", token);
 
       const meRes = await api.get("/auth/users/me");
       const roles: string[] = meRes.data.roles || [];
-      localStorage.setItem("roles", JSON.stringify(roles));
+      storage.setItem("roles", JSON.stringify(roles));
 
       const isAdmin = roles
         .map((r) => r.toLowerCase())
@@ -72,11 +70,11 @@ export default function SignInForm() {
     <div className="flex flex-col flex-1">
       <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
         <div className="w-full max-w-lg bg-white dark:bg-gray-800 rounded-1xl shadow-2xl p-8 sm:p-10 lg:p-20">
-          <div className="mb-5 sm:mb-8">
-            <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md text-center">
+          <div className="mb-5 sm:mb-8 text-center">
+            <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
               Sign In
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Enter your email and password to sign in!
             </p>
           </div>
@@ -136,7 +134,7 @@ export default function SignInForm() {
               </div>
 
               <Button
-                className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition  bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
+                className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg"
                 size="sm"
                 type="submit"
                 disabled={loading}
