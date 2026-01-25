@@ -45,7 +45,7 @@ export default function SignInForm() {
         .some((r) => r === "admin" || r === "superadmin");
 
       if (isAdmin) {
-        navigate("/", { replace: true });
+        navigate("/dashboard", { replace: true });
         return;
       }
 
