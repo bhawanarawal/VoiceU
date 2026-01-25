@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
@@ -31,6 +31,8 @@ export default function App() {
     <Router>
       <ScrollToTop />
       <Routes>
+        {/* ROOT redirect */}
+        <Route path="/" element={<Navigate to="/Home" replace />} />
         <Route path="/election/result/:electionId" element={<ResultPage />} />
         <Route path="/election/:electionId/voting" element={<VotingPage />} />
         <Route path="/elections" element={<ElectionPage />} />
@@ -42,7 +44,7 @@ export default function App() {
 
         <Route element={<ProtectedRoute />}>
           {/* Dashboard Layout */}
-          <Route element={<AppLayout />}>
+          <Route path="/dashboard" element={<AppLayout />}>
             <Route index element={<Home />} />
 
             <Route path="users" element={<UsersPage />} />

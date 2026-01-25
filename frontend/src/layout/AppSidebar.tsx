@@ -20,11 +20,11 @@ type NavItem = {
 };
 
 const mainItems: NavItem[] = [
-  { icon: <GridIcon />, name: "Dashboard", path: "/" },
+  { icon: <GridIcon />, name: "Dashboard", path: "/dashboard" },
 ];
 
 const adminItems: NavItem[] = [
-  { icon: <UserCircleIcon />, name: "Users", path: "/users" },
+  { icon: <UserCircleIcon />, name: "Users", path: "/dashboard/users" },
 ];
 
 const managementItems: NavItem[] = [
@@ -32,16 +32,16 @@ const managementItems: NavItem[] = [
     name: "Organization",
     icon: <GroupIcon />,
     subItems: [
-      { name: "Add Organization", path: "/organization/new" },
-      { name: "View Organizations", path: "/organization" },
+      { name: "Add Organization", path: "/dashboard/organization/new" },
+      { name: "View Organizations", path: "/dashboard/organization" },
     ],
   },
   {
     name: "group",
     icon: <BoxIconLine />,
     subItems: [
-      { name: "Add group", path: "/group/new" },
-      { name: "View groups", path: "/group" },
+      { name: "Add group", path: "/dashboard/group/new" },
+      { name: "View groups", path: "/dashboard/group" },
     ],
   },
 ];
@@ -51,27 +51,27 @@ const electionItems: NavItem[] = [
     name: "Position",
     icon: <ListIcon />,
     subItems: [
-      { name: "Add Position", path: "/position/new" },
-      { name: "View Positions", path: "/position" },
+      { name: "Add Position", path: "/dashboard/position/new" },
+      { name: "View Positions", path: "/dashboard/position" },
     ],
   },
   {
     name: "Election",
     icon: <TableIcon />,
     subItems: [
-      { name: "Add Election", path: "/election/new" },
-      { name: "View Elections", path: "/election" },
+      { name: "Add Election", path: "/dashboard/election/new" },
+      { name: "View Elections", path: "/dashboard/election" },
     ],
   },
   {
     name: "Candidate",
     icon: <UserCircleIcon />,
-    subItems: [{ name: "View Candidates", path: "/candidate" }],
+    subItems: [{ name: "View Candidates", path: "/dashboard/candidate" }],
   },
   {
     name: "Voter",
     icon: <UserCircleIcon />,
-    subItems: [{ name: "View Voters", path: "/voter" }],
+    subItems: [{ name: "View Voters", path: "/dashboard/voter" }],
   },
 ];
 
