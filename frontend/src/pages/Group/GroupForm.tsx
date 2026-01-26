@@ -66,13 +66,13 @@ export default function GroupForm() {
           }
         })
         .catch(() =>
-          setToast({ message: "Failed to fetch group", type: "error" })
+          setToast({ message: "Failed to fetch group", type: "error" }),
         );
     }
   }, [id]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({
@@ -101,7 +101,7 @@ export default function GroupForm() {
         await creategroup(form);
         setToast({ message: "Group created successfully", type: "success" });
       }
-      setTimeout(() => navigate("/group"), 1000);
+      setTimeout(() => navigate("/dashboard/group"), 1000);
     } catch {
       setToast({ message: "Failed to save group", type: "error" });
     }
