@@ -41,13 +41,13 @@ export default function OrganizationForm() {
       getOrganizationById(Number(id))
         .then((res) => setForm(res.data))
         .catch(() =>
-          setToast({ message: "Failed to fetch organization", type: "error" })
+          setToast({ message: "Failed to fetch organization", type: "error" }),
         );
     }
   }, [id]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({
@@ -82,7 +82,7 @@ export default function OrganizationForm() {
           type: "success",
         });
       }
-      setTimeout(() => navigate("/organization"), 1000);
+      setTimeout(() => navigate("/dashboard/organization"), 1000);
     } catch {
       setToast({ message: "Failed to save organization", type: "error" });
     }
