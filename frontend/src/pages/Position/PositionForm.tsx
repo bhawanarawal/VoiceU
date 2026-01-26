@@ -50,13 +50,13 @@ export default function PositionForm() {
           });
         })
         .catch(() =>
-          setToast({ message: "Failed to fetch position", type: "error" })
+          setToast({ message: "Failed to fetch position", type: "error" }),
         );
     }
   }, [id]);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
 
@@ -93,7 +93,7 @@ export default function PositionForm() {
         setToast({ message: "Position created successfully", type: "success" });
       }
 
-      setTimeout(() => navigate("/position"), 1000);
+      setTimeout(() => navigate("/dashboard/position"), 1000);
     } catch {
       setToast({ message: "Failed to save position", type: "error" });
     }
