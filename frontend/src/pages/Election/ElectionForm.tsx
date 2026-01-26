@@ -57,7 +57,7 @@ export default function ElectionForm() {
   const [positionsOpen, setPositionsOpen] = useState(false);
 
   const [phase, setPhase] = useState<"Upcoming" | "Ongoing" | "Past">(
-    "Upcoming"
+    "Upcoming",
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [toast, setToast] = useState<{
@@ -101,7 +101,7 @@ export default function ElectionForm() {
           end_date: utcToLocalInput(data.end_date),
         });
         setSelectedPositions(
-          data.positions?.map((p: any) => p.position_id) || []
+          data.positions?.map((p: any) => p.position_id) || [],
         );
         setPhase(getElectionPhase(data.start_date, data.end_date));
       })
@@ -111,14 +111,14 @@ export default function ElectionForm() {
   useEffect(() => {
     if (!form.start_date || !form.end_date) return;
     setPhase(
-      getElectionPhase(localToUTC(form.start_date), localToUTC(form.end_date))
+      getElectionPhase(localToUTC(form.start_date), localToUTC(form.end_date)),
     );
   }, [form.start_date, form.end_date]);
 
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -167,7 +167,7 @@ export default function ElectionForm() {
         await api.post("/elections/", payload);
         setToast({ message: "Election created successfully", type: "success" });
       }
-      setTimeout(() => navigate("/election"), 500);
+      setTimeout(() => navigate("/dashboard/election"), 500);
     } catch (err: any) {
       let errorMessage: string | any[] = "Failed to save election";
       if (
@@ -175,7 +175,7 @@ export default function ElectionForm() {
         Array.isArray(err.response.data.detail)
       ) {
         errorMessage = err.response.data.detail.map(
-          (e: any) => `${e.loc.join(" > ")}: ${e.msg}`
+          (e: any) => `${e.loc.join(" > ")}: ${e.msg}`,
         );
       } else if (err.response?.data?.detail)
         errorMessage = err.response.data.detail;
@@ -215,8 +215,8 @@ export default function ElectionForm() {
               phase === "Upcoming"
                 ? "info"
                 : phase === "Ongoing"
-                ? "success"
-                : "dark"
+                  ? "success"
+                  : "dark"
             }
           >
             {phase}
@@ -327,7 +327,7 @@ export default function ElectionForm() {
                             setSelectedPositions((prev) =>
                               checked
                                 ? [...prev, pos.position_id]
-                                : prev.filter((id) => id !== pos.position_id)
+                                : prev.filter((id) => id !== pos.position_id),
                             );
                           }}
                           className="mr-2"
@@ -403,8 +403,8 @@ export default function ElectionForm() {
                   {loading
                     ? "Saving..."
                     : id
-                    ? "Update Election"
-                    : "Save Election"}
+                      ? "Update Election"
+                      : "Save Election"}
                 </Button>
               )}
             </div>

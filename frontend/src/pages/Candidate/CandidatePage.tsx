@@ -43,7 +43,7 @@ export default function CandidatePage() {
 
   const computeHasVotedAll = (
     allCandidates: Candidate[],
-    votedPos: string[]
+    votedPos: string[],
   ) => {
     const positionsWithCandidates = [
       ...new Set(allCandidates.map((c) => c.position_name.trim())),
@@ -75,7 +75,7 @@ export default function CandidatePage() {
         setCandidates(candidatesData);
 
         const voteRes = await api.get(
-          `/voter-elections/voted-positions/${electionId}`
+          `/voter-elections/voted-positions/${electionId}`,
         );
         const votedPosFromBackend: string[] = voteRes.data || [];
         setVotedPositions(votedPosFromBackend);
@@ -118,54 +118,56 @@ export default function CandidatePage() {
 
   return (
     <>
-      <Nav />
-      <Box px={3} py={4} mt="80px">
-        <Typography variant="h4" textAlign="center" fontWeight={700} mb={3}>
-          Approved Candidates
-        </Typography>
+      <Box display="flex" flexDirection="column" minHeight="100vh">
+        <Nav />
+        <Box px={3} py={4} mt="80px" flex="1">
+          <Typography variant="h4" textAlign="center" fontWeight={700} mb={3}>
+            Approved Candidates
+          </Typography>
 
-        {hasVotedAll && (
-          <Box textAlign="center" mb={4}>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={() => navigate(`/election/${electionId}/voting`)}
-            >
-              View Live Voting
-            </Button>
-          </Box>
-        )}
+          {hasVotedAll && (
+            <Box textAlign="center" mb={4}>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={() => navigate(`/election/${electionId}/voting`)}
+              >
+                View Live Voting
+              </Button>
+            </Box>
+          )}
 
-        {Object.entries(grouped).map(([position, list]) => (
-          <Box key={position} mt={5}>
-            <Typography variant="h5" mb={2}>
-              {position}
-            </Typography>
+          {Object.entries(grouped).map(([position, list]) => (
+            <Box key={position} mt={5}>
+              <Typography variant="h5" mb={2}>
+                {position}
+              </Typography>
 
-            <Stack direction="row" spacing={3} flexWrap="wrap">
-              {list.map((c) => (
-                <CandidateCard
-                  key={c.candidate_id}
-                  candidate_id={c.candidate_id}
-                  election_id={electionId}
-                  full_name={c.full_name}
-                  photo_url={c.photo_url}
-                  position_name={c.position_name}
-                  group_name={c.group_name}
-                  organization_name={c.organization_name}
-                  manifesto={c.manifesto}
-                  hasVoted={votedPositions.includes(c.position_name.trim())}
-                  isElectionOver={electionStatus === "past"}
-                  onVote={() => handleVote(c)}
-                />
-              ))}
-            </Stack>
+              <Stack direction="row" spacing={3} flexWrap="wrap">
+                {list.map((c) => (
+                  <CandidateCard
+                    key={c.candidate_id}
+                    candidate_id={c.candidate_id}
+                    election_id={electionId}
+                    full_name={c.full_name}
+                    photo_url={c.photo_url}
+                    position_name={c.position_name}
+                    group_name={c.group_name}
+                    organization_name={c.organization_name}
+                    manifesto={c.manifesto}
+                    hasVoted={votedPositions.includes(c.position_name.trim())}
+                    isElectionOver={electionStatus === "past"}
+                    onVote={() => handleVote(c)}
+                  />
+                ))}
+              </Stack>
 
-            <Divider sx={{ mt: 4 }} />
-          </Box>
-        ))}
+              <Divider sx={{ mt: 4 }} />
+            </Box>
+          ))}
+        </Box>
+        <Footer />
       </Box>
-      <Footer />
     </>
   );
 }
