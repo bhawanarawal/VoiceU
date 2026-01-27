@@ -15,7 +15,7 @@ router = APIRouter(prefix="/organizations", tags=["Organizations"])
 def create_organization(
     org: OrganizationCreate,
     session: Session = Depends(get_session),
-    current_user: User = Depends(require_roles(["admin", "superadmin"])),
+    current_user: User = Depends(require_roles(["superadmin"])),
 ):
     db_org = Organization(
         name=org.name,
