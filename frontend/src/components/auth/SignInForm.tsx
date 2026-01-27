@@ -55,7 +55,7 @@ export default function SignInForm() {
       if (!voterRes.data.is_voter && !skipped) {
         navigate("/voter/new", { replace: true });
       } else {
-        navigate("/Home", { replace: true });
+        navigate("/elections", { replace: true });
       }
     } catch (err: any) {
       let message = "Invalid username or password";
