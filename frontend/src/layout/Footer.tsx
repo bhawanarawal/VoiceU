@@ -75,19 +75,13 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a
-                  href="/vote"
-                  className="hover:text-blue-100 transition-colors"
-                >
-                  Vote Now
+                <a href="/" className="hover:text-blue-100 transition-colors">
+                  Services
                 </a>
               </li>
               <li>
-                <a
-                  href="/results"
-                  className="hover:text-blue-100 transition-colors"
-                >
-                  Results
+                <a href="/" className="hover:text-blue-100 transition-colors">
+                  Contact
                 </a>
               </li>
             </ul>
@@ -101,22 +95,6 @@ const Footer = () => {
               </li>
               <li className="flex items-center gap-2">
                 <FaPhone className="text-blue-200" /> +977 9800000000
-              </li>
-              <li>
-                <a
-                  href="/help"
-                  className="hover:text-blue-100 transition-colors"
-                >
-                  Help Center
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/faq"
-                  className="hover:text-blue-100 transition-colors"
-                >
-                  FAQ
-                </a>
               </li>
             </ul>
           </div>

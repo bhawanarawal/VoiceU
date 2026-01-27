@@ -102,11 +102,12 @@ export default function ElectionPage() {
         };
       });
 
-      const statusOrder: Record<string, number> = {
-        Ongoing: 0,
-        Upcoming: 1,
-        Past: 2,
+      const statusOrder: Record<"ongoing" | "upcoming" | "past", number> = {
+        ongoing: 0,
+        upcoming: 1,
+        past: 2,
       };
+
       formatted.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
 
       setElections(formatted);

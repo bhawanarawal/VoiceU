@@ -16,6 +16,12 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { styled } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
+import Avatar from "@mui/material/Avatar";
+import HowToVoteIcon from "@mui/icons-material/HowToVote";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import EventIcon from "@mui/icons-material/Event";
+import BusinessIcon from "@mui/icons-material/Business";
+import GroupsIcon from "@mui/icons-material/Groups";
 
 interface Position {
   position_id: number;
@@ -83,10 +89,21 @@ export default function ElectionCard({
     >
       <CardHeader
         title={
-          <Stack direction="row" spacing={1} alignItems="center">
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            <Avatar
+              sx={{
+                bgcolor: getStatusColor(status, theme),
+                width: 36,
+                height: 36,
+              }}
+            >
+              <HowToVoteIcon fontSize="small" />
+            </Avatar>
+
             <Typography variant="h6" fontWeight={700}>
               {title}
             </Typography>
+
             <Chip
               label={status}
               size="small"
@@ -96,18 +113,26 @@ export default function ElectionCard({
                 ),
                 backgroundColor: getStatusColor(status, theme),
                 fontWeight: 500,
+                textTransform: "capitalize",
               }}
             />
           </Stack>
         }
         subheader={
           <Stack spacing={0.5} mt={1}>
-            <Typography variant="body2">
-              <strong>Start:</strong> {startDateTime}
-            </Typography>
-            <Typography variant="body2">
-              <strong>End:</strong> {endDateTime}
-            </Typography>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <EventIcon fontSize="small" color="action" />
+              <Typography variant="body2">
+                <strong>Start:</strong> {startDateTime}
+              </Typography>
+            </Stack>
+
+            <Stack direction="row" spacing={1} alignItems="center">
+              <AccessTimeIcon fontSize="small" color="action" />
+              <Typography variant="body2">
+                <strong>End:</strong> {endDateTime}
+              </Typography>
+            </Stack>
           </Stack>
         }
       />
@@ -115,21 +140,28 @@ export default function ElectionCard({
       <CardContent sx={{ pt: 0, pb: 1 }}>
         <Stack spacing={0.5}>
           {organization && (
-            <Typography variant="body2">
-              <strong>Organization Name:</strong> {organization}
-            </Typography>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <BusinessIcon fontSize="small" color="action" />
+              <Typography variant="body2">
+                <strong>Organization:</strong> {organization}
+              </Typography>
+            </Stack>
           )}
+
           {group && (
-            <Typography variant="body2">
-              <strong>Group:</strong> {group}
-            </Typography>
+            <Stack direction="row" spacing={1} alignItems="center">
+              <GroupsIcon fontSize="small" color="action" />
+              <Typography variant="body2">
+                <strong>Group:</strong> {group}
+              </Typography>
+            </Stack>
           )}
         </Stack>
 
         <Divider sx={{ my: 1.5 }} />
 
         <Typography variant="subtitle2" gutterBottom>
-          Available Positions:
+          <strong>Available Positions:</strong>
         </Typography>
 
         {positions.length > 0 ? (
@@ -140,6 +172,7 @@ export default function ElectionCard({
                 label={p.position_name}
                 size="small"
                 variant="outlined"
+                sx={{ boxShadow: 1 }}
               />
             ))}
           </Stack>
@@ -175,14 +208,23 @@ export default function ElectionCard({
           </>
         )}
 
-        {status === "ongoing" && (
+        {status === "ongoing" && positions.length > 0 && (
           <Button
-            variant="outlined"
+            variant="contained"
             color="success"
-            sx={{ textTransform: "none", fontWeight: 500 }}
+            startIcon={<HowToVoteIcon />}
+            sx={{
+              textTransform: "none",
+              fontWeight: 600,
+              boxShadow: 2,
+              "&:hover": {
+                transform: "scale(1.03)",
+                boxShadow: 4,
+              },
+            }}
             onClick={() => navigate(`/candidates?electionId=${electionId}`)}
           >
-            View Candidates
+            Vote
           </Button>
         )}
 
