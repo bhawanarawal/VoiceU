@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import ElectionCard from "../../components/cards/ElectionCard";
 import { getElections } from "./electionService";
 import Toast from "../../components/common/Toast";
@@ -68,9 +69,17 @@ export default function ElectionPage() {
   const [toastType, setToastType] = useState<"success" | "error" | "info">(
     "info",
   );
+  const [searchParams] = useSearchParams();
+
   const [activeTab, setActiveTab] = useState<
     "All" | "ongoing" | "upcoming" | "past"
-  >("All");
+  >(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "ongoing" || tab === "upcoming" || tab === "past") {
+      return tab;
+    }
+    return "All";
+  });
 
   const fetchElections = async () => {
     try {

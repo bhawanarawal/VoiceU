@@ -22,6 +22,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import EventIcon from "@mui/icons-material/Event";
 import BusinessIcon from "@mui/icons-material/Business";
 import GroupsIcon from "@mui/icons-material/Groups";
+import { isLoggedIn } from "../../utils/auth";
 
 interface Position {
   position_id: number;
@@ -190,9 +191,17 @@ export default function ElectionCard({
               variant="contained"
               color="primary"
               sx={{ textTransform: "none", fontWeight: 500 }}
-              onClick={() =>
-                navigate(`/candidate/new?electionId=${electionId}`)
-              }
+              onClick={() => {
+                if (!isLoggedIn()) {
+                  navigate("/signin", {
+                    state: {
+                      redirectTo: `/elections`,
+                    },
+                  });
+                } else {
+                  navigate(`/candidate/new?electionId=${electionId}`);
+                }
+              }}
             >
               Apply as Candidate
             </Button>
@@ -222,7 +231,17 @@ export default function ElectionCard({
                 boxShadow: 4,
               },
             }}
-            onClick={() => navigate(`/candidates?electionId=${electionId}`)}
+            onClick={() => {
+              if (!isLoggedIn()) {
+                navigate("/signin", {
+                  state: {
+                    redirectTo: `/candidates?electionId=${electionId}`,
+                  },
+                });
+              } else {
+                navigate(`/candidates?electionId=${electionId}`);
+              }
+            }}
           >
             Vote
           </Button>

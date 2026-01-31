@@ -4,7 +4,7 @@ import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import api from "../../utils/api";
 
 export default function SignInForm() {
@@ -15,6 +15,7 @@ export default function SignInForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -44,6 +45,10 @@ export default function SignInForm() {
         .map((r) => r.toLowerCase())
         .some((r) => r === "admin" || r === "superadmin");
 
+      if (location.state?.redirectTo) {
+        navigate(location.state.redirectTo, { replace: true });
+        return;
+      }
       if (isAdmin) {
         navigate("/dashboard", { replace: true });
         return;
@@ -55,7 +60,7 @@ export default function SignInForm() {
       if (!voterRes.data.is_voter && !skipped) {
         navigate("/voter/new", { replace: true });
       } else {
-        navigate("/elections", { replace: true });
+        navigate("/elections?tab=ongoing", { replace: true });
       }
     } catch (err: any) {
       let message = "Invalid username or password";

@@ -25,6 +25,8 @@ import CandidatePage from "./pages/Candidate/CandidatePage";
 import VotingPage from "./pages/voting/VotingPage";
 import ResultPage from "./pages/voting/ResultPage";
 import ProtectedRoute from "./components/routes/ProtectedRoute";
+import RoleList from "./pages/Users/RoleList";
+import RoleForm from "./pages/Users/RoleForm";
 
 export default function App() {
   return (
@@ -48,6 +50,8 @@ export default function App() {
             <Route index element={<Home />} />
 
             <Route path="users" element={<UsersPage />} />
+            <Route path="roles" element={<RoleList />} />
+            <Route path="roles/new" element={<RoleForm />} />
 
             {/* Organization Pages */}
             <Route path="organization" element={<OrganizationList />} />

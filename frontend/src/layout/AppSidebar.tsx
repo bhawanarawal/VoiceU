@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import { Link, useLocation } from "react-router";
 import {
   ChevronDownIcon,
@@ -11,6 +11,7 @@ import {
   GroupIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
+import api from "../utils/api";
 
 type NavItem = {
   name: string;
@@ -21,29 +22,6 @@ type NavItem = {
 
 const mainItems: NavItem[] = [
   { icon: <GridIcon />, name: "Dashboard", path: "/dashboard" },
-];
-
-const adminItems: NavItem[] = [
-  { icon: <UserCircleIcon />, name: "Users", path: "/dashboard/users" },
-];
-
-const managementItems: NavItem[] = [
-  {
-    name: "Organization",
-    icon: <GroupIcon />,
-    subItems: [
-      { name: "Add Organization", path: "/dashboard/organization/new" },
-      { name: "View Organizations", path: "/dashboard/organization" },
-    ],
-  },
-  {
-    name: "group",
-    icon: <BoxIconLine />,
-    subItems: [
-      { name: "Add group", path: "/dashboard/group/new" },
-      { name: "View groups", path: "/dashboard/group" },
-    ],
-  },
 ];
 
 const electionItems: NavItem[] = [
@@ -78,7 +56,58 @@ const electionItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
+  const [roles, setRoles] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const fetchMe = async () => {
+      try {
+        const res = await api.get("/auth/users/me");
+        setRoles(res.data?.roles || []);
+      } catch (err) {
+        console.error("Failed to load user roles", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMe();
+  }, []);
+
+  const isSuperAdmin = roles.includes("superadmin");
+
+  const adminItems: NavItem[] = [
+    {
+      icon: <UserCircleIcon />,
+      name: "Users",
+      subItems: [
+        { name: "View Users", path: "/dashboard/users" },
+
+        ...(isSuperAdmin ? [{ name: "Roles", path: "/dashboard/roles" }] : []),
+      ],
+    },
+  ];
+
+  const managementItems: NavItem[] = [
+    {
+      name: "Organization",
+      icon: <GroupIcon />,
+      subItems: [
+        ...(isSuperAdmin
+          ? [{ name: "Add Organization", path: "/dashboard/organization/new" }]
+          : []),
+        { name: "View Organizations", path: "/dashboard/organization" },
+      ],
+    },
+    {
+      name: "Group",
+      icon: <BoxIconLine />,
+      subItems: [
+        { name: "Add group", path: "/dashboard/group/new" },
+        { name: "View groups", path: "/dashboard/group" },
+      ],
+    },
+  ];
   const [openSubmenu, setOpenSubmenu] = useState<{
     section: string;
     index: number;
@@ -231,7 +260,7 @@ const AppSidebar: React.FC = () => {
   scrollbar-thin scrollbar-thumb-white-900 scrollbar-track-gray-700"
       >
         {renderSection("Main", mainItems, "main")}
-        {renderSection("Admin", adminItems, "admin")}
+        {!loading && renderSection("Admin", adminItems, "admin")}
         {renderSection("Management", managementItems, "management")}
         {renderSection("Election System", electionItems, "election")}
       </nav>
