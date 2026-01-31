@@ -82,7 +82,7 @@ def login_for_access_token(
 def add_role(
     role: RoleCreate,
     db: Session = Depends(get_session),
-    current_user: User = Depends(require_roles(["admin", "superadmin"])),
+    current_user: User = Depends(require_roles(["superadmin"])),
 ):
     existing_role = get_role_by_name(db, role.name)
     if existing_role:
