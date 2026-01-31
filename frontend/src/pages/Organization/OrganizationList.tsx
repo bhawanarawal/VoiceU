@@ -5,6 +5,7 @@ import { Modal } from "../../components/ui/modal";
 import Toast from "../../components/common/Toast";
 import { DataTable } from "../../components/ui/table";
 import { getOrganizations, deleteOrganization } from "./organizationService";
+import api from "../../utils/api";
 
 interface Organization {
   org_id: number;
@@ -35,10 +36,23 @@ export default function OrganizationList() {
       });
     }
   };
+  const [currentUserRoles, setCurrentUserRoles] = useState<string[]>([]);
 
   useEffect(() => {
+    const fetchMe = async () => {
+      try {
+        const res = await api.get("/auth/users/me");
+        setCurrentUserRoles(res.data?.roles || []);
+      } catch (err) {
+        console.error("Failed to load user roles", err);
+      }
+    };
+
+    fetchMe();
     fetchData();
   }, []);
+
+  const isSuperAdmin = currentUserRoles.includes("superadmin");
 
   const handleDelete = async (id: number) => {
     try {
@@ -73,36 +87,40 @@ export default function OrganizationList() {
 
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Organizations</h2>
-        <Link
-          to="/organization/new"
-          className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition"
-        >
-          Add Organization
-        </Link>
+        {isSuperAdmin && (
+          <Link
+            to="/organization/new"
+            className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition"
+          >
+            Add Organization
+          </Link>
+        )}
       </div>
 
       <DataTable
         columns={columns}
         data={data}
         emptyMessage="No organizations found"
-        renderActions={(org) => (
-          <div className="flex gap-3">
-            <Link
-              to={`/organization/edit/${org.org_id}`}
-              className="text-blue-600 hover:underline"
-            >
-              Edit
-            </Link>
-            <button
-              onClick={() =>
-                setConfirmDelete({ id: org.org_id, name: org.name })
-              }
-              className="text-red-600 hover:underline"
-            >
-              Delete
-            </button>
-          </div>
-        )}
+        renderActions={(org) =>
+          isSuperAdmin ? (
+            <div className="flex gap-3">
+              <Link
+                to={`/organization/edit/${org.org_id}`}
+                className="text-blue-600 hover:underline"
+              >
+                Edit
+              </Link>
+              <button
+                onClick={() =>
+                  setConfirmDelete({ id: org.org_id, name: org.name })
+                }
+                className="text-red-600 hover:underline"
+              >
+                Delete
+              </button>
+            </div>
+          ) : null
+        }
       />
 
       {confirmDelete && (
