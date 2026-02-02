@@ -41,7 +41,9 @@ const Nav = () => {
         }
       }
     };
-
+    if (location.pathname === "/elections") {
+      setActive("elections");
+    }
     if (location.pathname === "/Home") {
       window.addEventListener("scroll", handleScroll);
     }
@@ -51,6 +53,7 @@ const Nav = () => {
 
   const handleClick = (section: string) => {
     if (section === "elections") {
+      setActive("elections");
       navigate("/elections");
       return;
     }
