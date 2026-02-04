@@ -5,7 +5,6 @@ import {
   CardContent,
   CardActions,
   Collapse,
-  IconButton,
   Typography,
   Chip,
   Stack,
@@ -14,7 +13,6 @@ import {
   Button,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { styled } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 import Avatar from "@mui/material/Avatar";
 import HowToVoteIcon from "@mui/icons-material/HowToVote";
@@ -40,16 +38,6 @@ interface ElectionCardProps {
   organization?: string;
   status: "upcoming" | "ongoing" | "past";
 }
-
-const ExpandMore = styled(IconButton, {
-  shouldForwardProp: (prop) => prop !== "expand",
-})<{ expand: boolean }>(({ theme, expand }) => ({
-  marginLeft: "auto",
-  transform: expand ? "rotate(180deg)" : "rotate(0deg)",
-  transition: theme.transitions.create("transform", {
-    duration: theme.transitions.duration.shortest,
-  }),
-}));
 
 const getStatusColor = (
   status: "upcoming" | "ongoing" | "past",
@@ -183,6 +171,27 @@ export default function ElectionCard({
           </Typography>
         )}
       </CardContent>
+      <Button
+        variant="text"
+        endIcon={
+          expanded ? (
+            <ExpandMoreIcon />
+          ) : (
+            <ExpandMoreIcon
+              sx={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
+            />
+          )
+        }
+        sx={{
+          textTransform: "none",
+          fontWeight: 500,
+          color: "#2563eb",
+          px: 2,
+        }}
+        onClick={() => setExpanded(!expanded)}
+      >
+        {expanded ? "Hide Details" : "View Details"}
+      </Button>
 
       <CardActions sx={{ px: 1.5, pb: 1.5, gap: 1, flexWrap: "wrap" }}>
         {status === "upcoming" && positions.length > 0 && (
@@ -243,7 +252,7 @@ export default function ElectionCard({
               }
             }}
           >
-            Vote
+            Vote Now
           </Button>
         )}
 
@@ -257,14 +266,6 @@ export default function ElectionCard({
             View Result
           </Button>
         )}
-
-        <ExpandMore
-          expand={expanded}
-          onClick={() => setExpanded(!expanded)}
-          aria-expanded={expanded}
-        >
-          <ExpandMoreIcon />
-        </ExpandMore>
       </CardActions>
 
       <Collapse in={expanded} timeout="auto" unmountOnExit>

@@ -48,30 +48,22 @@ export default function Voter() {
       try {
         const voterRes = await getMyVoter();
         const user = voterRes.data;
-
+        if (user.voter_id) {
+          router.replace("/(tabs)/elections");
+          return;
+        }
         setFullName(user.full_name);
         setUsername(user.username);
 
-        if (user.voter_id) {
-          setIsRegistered(true);
-          setOrgId(user.org_id);
-          setSelectedGroups(user.groups?.map((g: any) => g.group_id) || []);
-
-          const orgRes = await getOrganizations();
-          setOrganizations(orgRes.data);
-
-          const grpRes = await getGroupsByOrg(user.org_id);
-          setGroups(grpRes.data);
-        } else {
-          const orgRes = await getOrganizations();
-          setOrganizations(orgRes.data);
-        }
+        const orgRes = await getOrganizations();
+        setOrganizations(orgRes.data);
       } catch {
         setError("Failed to load voter data");
       } finally {
         setLoading(false);
       }
     };
+
     loadData();
   }, []);
 
@@ -337,7 +329,7 @@ export default function Voter() {
 
           <TouchableOpacity
             onPress={handleSubmit}
-            disabled={submitting || isRegistered}
+            disabled={submitting}
             style={{
               backgroundColor: "#2563eb",
               padding: 16,
@@ -350,7 +342,7 @@ export default function Voter() {
               <ActivityIndicator color="#fff" />
             ) : (
               <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>
-                {isRegistered ? "Already Registered" : "Register as Voter"}
+                Register as Voter
               </Text>
             )}
           </TouchableOpacity>
