@@ -37,7 +37,19 @@ export default function SignInScreen() {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
       });
 
-      await AsyncStorage.setItem("access_token", res.data.access_token);
+      const token = res.data.access_token;
+      await AsyncStorage.setItem("access_token", token);
+
+      const userRes = await api.get("/auth/users/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      await AsyncStorage.setItem(
+        "full_name",
+        userRes.data.full_name || userRes.data.username,
+      );
+      await AsyncStorage.setItem("username", userRes.data.username);
+
       router.replace("/(auth)/voter");
     } catch (err: any) {
       alert(err.response?.data?.detail || "Invalid email or password");
