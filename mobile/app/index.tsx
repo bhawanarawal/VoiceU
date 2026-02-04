@@ -8,9 +8,14 @@ export default function Index() {
   useEffect(() => {
     const checkAuth = async () => {
       const token = await AsyncStorage.getItem("access_token");
-      if (token) router.replace("/(tabs)");
-      else router.replace("../(auth)/signin");
+
+      if (token) {
+        router.replace("/(tabs)/elections");
+      } else {
+        router.replace("/(auth)/signin");
+      }
     };
+
     checkAuth();
   }, []);
 
