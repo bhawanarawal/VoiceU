@@ -1,6 +1,15 @@
 import { useState, useEffect } from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  Modal,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import api from "../services/api";
 
 interface CandidateCardProps {
   full_name: string;
@@ -25,16 +34,21 @@ export default function CandidateCard({
   isElectionOver,
   onVote,
 }: CandidateCardProps) {
+  const router = useRouter();
   const [showManifesto, setShowManifesto] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
+  const [localVoted, setLocalVoted] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
-  const isDisabled = hasVoted || isElectionOver;
-  const buttonText = hasVoted ? "Voted" : isElectionOver ? "Ended" : "Vote";
+  const isDisabled = hasVoted || isElectionOver || localVoted;
+  const buttonText =
+    hasVoted || localVoted ? "Voted" : isElectionOver ? "Ended" : "Vote";
 
   const normalizedPhoto = photo_url
-    ? `http://localhost:8000/${photo_url
-        .replace(/\\/g, "/")
-        .replace(/^\/+/, "")}`
+    ? `${(api.defaults?.baseURL || "http://localhost:8000").replace(
+        /\/+$/,
+        "",
+      )}/${photo_url.replace(/\\/g, "/").replace(/^\/+/, "")}`
     : undefined;
 
   useEffect(() => {
@@ -44,154 +58,360 @@ export default function CandidateCard({
       return () => clearTimeout(timer);
     }
   }, [hasVoted]);
-
   return (
-    <View style={styles.card}>
+    <View style={styles.tile}>
       {showBanner && (
-        <View style={styles.banner}>
-          <Text style={styles.bannerText}>You voted for {full_name}</Text>
+        <View style={styles.smallBanner}>
+          <Text style={styles.smallBannerText}>Voted</Text>
         </View>
       )}
-      <View style={styles.header}>
-        {normalizedPhoto && (
-          <Image source={{ uri: normalizedPhoto }} style={styles.avatar} />
-        )}
-        <Text style={styles.name}>{full_name}</Text>
-      </View>
 
-      <Text style={styles.info}>
-        <Text style={styles.label}>Position: </Text>
-        {position_name}
+      {normalizedPhoto ? (
+        <Image source={{ uri: normalizedPhoto }} style={styles.tileAvatar} />
+      ) : (
+        <View style={styles.tileAvatarPlaceholder} />
+      )}
+
+      <Text style={styles.tileName} numberOfLines={1} ellipsizeMode="tail">
+        {full_name}
       </Text>
-      {group_name && (
-        <Text style={styles.info}>
-          <Text style={styles.label}>Group: </Text>
-          {group_name}
-        </Text>
-      )}
-      {organization_name && (
-        <Text style={styles.info}>
-          <Text style={styles.label}>Organization Name: </Text>
-          {organization_name}
-        </Text>
-      )}
+
+      <Text style={styles.tileGroup} numberOfLines={1} ellipsizeMode="tail">
+        {group_name || organization_name || ""}
+      </Text>
 
       {manifesto && (
-        <>
-          <TouchableOpacity
-            onPress={() => setShowManifesto((v) => !v)}
-            style={styles.manifestoToggle}
-          >
-            <Text style={styles.manifestoToggleText}>
-              {showManifesto ? "Hide Manifesto" : "Show Manifesto"}
-            </Text>
-          </TouchableOpacity>
-          {showManifesto && <Text style={styles.manifesto}>{manifesto}</Text>}
-        </>
+        <TouchableOpacity
+          style={styles.manifestoToggle}
+          onPress={() => setShowManifesto((v) => !v)}
+        >
+          <Text style={styles.manifestoToggleText}>
+            {showManifesto ? "Hide " : "Manifesto"}
+          </Text>
+          <Ionicons
+            name={showManifesto ? "chevron-up" : "chevron-down"}
+            size={16}
+            color="#2563eb"
+            style={styles.manifestoToggleIcon}
+          />
+        </TouchableOpacity>
+      )}
+
+      {manifesto && showManifesto && (
+        <Text style={styles.manifestoCompactFull}>{manifesto}</Text>
       )}
 
       <TouchableOpacity
-        style={[styles.voteBtn, isDisabled && styles.disabledBtn]}
-        onPress={onVote}
+        style={[styles.voteButton, isDisabled && styles.disabledBtn]}
+        onPress={() => {
+          if (isDisabled) return;
+          setLocalVoted(true);
+          setShowPopup(true);
+          try {
+            onVote();
+          } catch (e) {
+            // swallow - parent handles errors
+          }
+        }}
         disabled={isDisabled}
       >
-        <View style={styles.voteContent}>
-          <Ionicons name="thumbs-up" size={16} color="#fff" />
-          <Text style={styles.voteBtnText}>{buttonText}</Text>
-        </View>
+        <Ionicons
+          name="thumbs-up"
+          size={14}
+          color="#fff"
+          style={styles.voteIcon}
+        />
+        <Text style={styles.voteButtonText}>
+          {buttonText === "Vote" ? "Vote" : buttonText}
+        </Text>
       </TouchableOpacity>
 
-      {hasVoted && (
-        <Text style={styles.votedMessage}>You have voted for {full_name}.</Text>
-      )}
+      <Modal visible={showPopup} transparent animationType="fade">
+        <View style={styles.popupOverlay}>
+          <View style={styles.popupBoxSquare}>
+            <View style={styles.popupVotedRow}>
+              <Text style={styles.popupText}>You Voted for {full_name} </Text>
+            </View>
+
+            <View style={styles.popupThanksRow}>
+              <Ionicons
+                name="thumbs-up"
+                size={16}
+                color="#2563eb"
+                style={styles.popupThanksIcon}
+              />
+              <Text style={styles.popupSubText}>Thanks for voting!</Text>
+            </View>
+
+            <TouchableOpacity
+              style={styles.popupOkBottom}
+              onPress={() => {
+                setShowPopup(false);
+                router.replace("/(tabs)/elections");
+              }}
+            >
+              <Text style={styles.popupOkText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
+  cardSingle: {
     backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-    elevation: 2,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    marginBottom: 10,
+    elevation: 1,
   },
-  header: {
+  rowSingle: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
   },
-  avatar: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+  smallAvatar: {
+    width: 45,
+    height: 45,
+    borderRadius: 24,
     marginRight: 12,
   },
-  name: {
-    fontSize: 16,
+  placeholderAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
+    backgroundColor: "#e2e8f0",
+  },
+  singleLineText: {
+    flex: 1,
+    fontSize: 15,
     fontWeight: "700",
-    flexShrink: 1,
+    color: "#0f172a",
   },
-  info: {
-    fontSize: 14,
-    marginTop: 4,
-    color: "#333",
-  },
-  label: {
-    fontWeight: "600",
-  },
-  manifestoToggle: {
-    marginTop: 8,
-  },
-  manifestoToggleText: {
-    color: "#2563eb",
-    fontWeight: "600",
-  },
-  manifesto: {
-    marginTop: 4,
-    fontSize: 14,
-    color: "#444",
-  },
-  voteBtn: {
-    marginTop: 12,
+  compactVoteBtn: {
     backgroundColor: "#16a34a",
-    paddingVertical: 10,
+    paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 8,
     alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 12,
   },
-  disabledBtn: {
-    backgroundColor: "#aaa",
-  },
-  voteContent: {
+  voteInner: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
   },
-  voteBtnText: {
+  voteTextSmall: {
     color: "#fff",
     fontWeight: "700",
+    fontSize: 13,
+    marginLeft: 6,
   },
-  votedMessage: {
-    marginTop: 6,
-    fontSize: 12,
-    color: "#2563eb",
-    fontStyle: "italic",
+  disabledBtn: {
+    backgroundColor: "#94a3b8",
   },
-  banner: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "rgba(22,163,74,0.9)",
-    paddingVertical: 4,
+  detailsRow: {
+    marginTop: 8,
+    flexDirection: "row",
     alignItems: "center",
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+    flexWrap: "wrap",
+    gap: 8,
   },
-  bannerText: {
+  detailText: {
+    fontSize: 12,
+    color: "#475569",
+    marginRight: 6,
+  },
+  manifestoToggleCompact: {
+    color: "#2563eb",
+    fontSize: 12,
+    marginLeft: 6,
+  },
+  manifestoCompactFull: {
+    marginTop: 6,
+    fontSize: 13,
+    color: "#334155",
+  },
+  manifestoToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 4,
+    marginBottom: 6,
+    paddingHorizontal: 6,
+  },
+  manifestoToggleText: {
+    color: "#2563eb",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  manifestoToggleIcon: {
+    marginLeft: 4,
+  },
+  smallBanner: {
+    position: "absolute",
+    top: -8,
+    right: 8,
+    backgroundColor: "#16a34a",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    elevation: 2,
+  },
+  smallBannerText: {
     color: "#fff",
     fontSize: 12,
+    fontWeight: "600",
+  },
+  tile: {
+    width: 120,
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    margin: 6,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    borderRadius: 8,
+  },
+  tileAvatar: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    marginBottom: 8,
+    backgroundColor: "#f8fafc",
+  },
+  tileAvatarPlaceholder: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    marginBottom: 8,
+    backgroundColor: "#e2e8f0",
+  },
+  tileName: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#0f172a",
+    textAlign: "center",
+    width: "100%",
+  },
+  tileGroup: {
+    fontSize: 11,
+    color: "#64748b",
+    textAlign: "center",
+    marginTop: 2,
+    width: "100%",
+  },
+  voteCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#16a34a",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 8,
+  },
+  voteButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#16a34a",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginTop: 8,
+  },
+  voteIcon: {
+    marginRight: 6,
+  },
+  voteButtonText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 13,
+  },
+  popupOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  popupBox: {
+    width: 280,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 20,
+    alignItems: "center",
+    elevation: 6,
+  },
+  popupBoxSquare: {
+    width: 300,
+    height: 200,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 8,
+  },
+  popupTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 8,
+    color: "#0f172a",
+  },
+  popupText: {
+    fontSize: 18,
+    color: "#334155",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  popupOk: {
+    backgroundColor: "#2563eb",
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+  },
+  popupOkBottom: {
+    backgroundColor: "#2563eb",
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    marginTop: 16,
+  },
+  popupOkText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+  popupVotedRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+  },
+  popupIcon: {
+    marginBottom: 8,
+  },
+  popupName: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#0f172a",
+    textAlign: "center",
+  },
+  popupThanksRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  popupThanksIcon: {
+    marginRight: 8,
+  },
+  popupSubText: {
+    color: "#2563eb",
     fontWeight: "600",
   },
 });

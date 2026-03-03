@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   TouchableOpacity,
+  FlatList,
 } from "react-native";
 import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
@@ -139,21 +140,28 @@ export default function CandidateScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       {Object.entries(grouped).map(([position, list]) => (
         <View key={position} style={styles.positionGroup}>
-          <Text style={styles.positionTitle}>{position}</Text>
-          {list.map((c) => (
-            <CandidateCard
-              key={c.candidate_id}
-              full_name={c.full_name}
-              photo_url={c.photo_url}
-              position_name={c.position_name}
-              group_name={c.group_name}
-              organization_name={c.organization_name}
-              manifesto={c.manifesto}
-              hasVoted={votedPositions.includes(c.position_name.trim())}
-              isElectionOver={electionStatus === "past"}
-              onVote={() => handleVote(c)}
-            />
-          ))}
+          <Text style={styles.positionTitle}>{position} Position</Text>
+
+          <FlatList
+            data={list}
+            keyExtractor={(item) => String(item.candidate_id)}
+            numColumns={3}
+            columnWrapperStyle={styles.columnWrapper}
+            scrollEnabled={false}
+            renderItem={({ item }) => (
+              <CandidateCard
+                full_name={item.full_name}
+                photo_url={item.photo_url}
+                position_name={item.position_name}
+                group_name={item.group_name}
+                organization_name={item.organization_name}
+                manifesto={item.manifesto}
+                hasVoted={votedPositions.includes(item.position_name.trim())}
+                isElectionOver={electionStatus === "past"}
+                onVote={() => handleVote(item)}
+              />
+            )}
+          />
         </View>
       ))}
     </ScrollView>
@@ -177,6 +185,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     marginBottom: 12,
+  },
+  columnWrapper: {
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
   },
   headerRight: {
     flexDirection: "row",
