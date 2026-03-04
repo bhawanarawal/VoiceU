@@ -159,7 +159,12 @@ function ElectionCard({ election }: { election: Election }) {
         </View>
       )}
 
-      <TouchableOpacity style={styles.voteBtn}>
+      <TouchableOpacity
+        style={styles.voteBtn}
+        onPress={() => {
+          router.push(`/candidate?electionId=${election.election_id}`);
+        }}
+      >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
           <Ionicons name="thumbs-up" size={16} color="#fff" />
           <Text style={styles.voteText}>Vote Now</Text>
