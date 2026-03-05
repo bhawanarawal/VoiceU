@@ -78,6 +78,7 @@ export default function App() {
 
             {/* Candidate Pages */}
             <Route path="candidate" element={<CandidateList />} />
+            <Route path="candidate/new" element={<CandidateForm/>}/>
             <Route path="candidate/edit/:id" element={<CandidateForm />} />
 
             {/* Voter Pages */}

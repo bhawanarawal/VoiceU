@@ -18,6 +18,7 @@ from schemas.candidate_schema import (
     CandidateApprovalUpdate,
     CandidateBase,
 )
+from models.notification import Notification
 
 router = APIRouter(prefix="/candidates", tags=["Candidates"])
 
@@ -87,6 +88,12 @@ def apply_candidate(
 
     try:
         session.add(candidate)
+
+        new_notif = Notification(
+            message=f"new candidate application:{current_user.full_name} for {election.election_name}",
+            category= "candidate application"
+        )
+        session.add(new_notif)
         session.commit()
         session.refresh(candidate)
         return candidate

@@ -44,7 +44,10 @@ const electionItems: NavItem[] = [
   {
     name: "Candidate",
     icon: <UserCircleIcon />,
-    subItems: [{ name: "View Candidates", path: "/dashboard/candidate" }],
+    subItems: [
+      { name: "View Candidates", path: "/dashboard/candidate" }
+
+    ],
   },
   {
     name: "Voter",

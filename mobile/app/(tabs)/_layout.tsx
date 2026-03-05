@@ -14,7 +14,7 @@ export default function TabLayout() {
     useCallback(() => {
       const fetchFullName = async () => {
         const name = await AsyncStorage.getItem("full_name");
-        setFullName(name);
+        if (name) setFullName(name);
       };
       fetchFullName();
     }, []),
@@ -51,13 +51,20 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="profile"
+      <Tabs.Screen name="profile"
+      options={{
+        title: "Profile",
+        tabBarIcon: ({color}) =>(
+          <Ionicons size={28} name="person-outline" color={color}/>
+      )
+      }}/>
+
+        <Tabs.Screen
+        name="Candidate" 
         options={{
-          title: "Profile",
-          tabBarIcon: ({ color }) => (
-            <Ionicons size={28} name="person-circle" color={color} />
-          ),
+          href: null, 
+          headerShown: true, // Keep this true if you want a back button
+          title: "Select Candidate"
         }}
       />
     </Tabs>
