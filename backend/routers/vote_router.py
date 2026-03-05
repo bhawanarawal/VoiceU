@@ -153,3 +153,26 @@ def get_vote_counts(election_id: int, session: Session = Depends(get_session)):
     ]
 
     return vote_counts
+
+@router.get("/my-votes/{election_id}")
+def get_my_voted_candidates(
+    election_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_active_user),
+):
+    voter = session.exec(
+        select(Voter).where(Voter.user_id == current_user.user_id)
+    ).first()
+    if not voter:
+        return []
+
+    # Get all votes cast by this voter in this election
+    votes = session.exec(
+        select(Vote).where(
+            (Vote.voter_id == voter.voter_id) & 
+            (Vote.election_id == election_id)
+        )
+    ).all()
+    
+    # Return just the list of candidate IDs
+    return [v.candidate_id for v in votes]
