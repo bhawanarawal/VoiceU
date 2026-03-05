@@ -200,6 +200,7 @@ export default function ElectionList() {
             >
               Delete
             </Button>
+    
           </div>
         </Modal>
       )}

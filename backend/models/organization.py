@@ -1,5 +1,6 @@
 from typing import Optional, TYPE_CHECKING, List
 from sqlmodel import SQLModel, Field, Relationship
+from datetime import datetime
 
 
 if TYPE_CHECKING:

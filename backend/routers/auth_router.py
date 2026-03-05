@@ -17,6 +17,7 @@ from sqlmodel import select
 from models.role import Role
 from schemas.user_schema import UserCreate, UserRead
 from schemas.role_schema import RoleCreate, AssignRole, RoleRead
+from models.notification import Notification
 from auth import (
     create_access_token,
     get_current_active_user,
@@ -37,6 +38,14 @@ def register_user(user: UserCreate, db: Session = Depends(get_session)):
     if get_user_by_email(db, user.email):
         raise HTTPException(status_code=400, detail="Email already registered")
     db_user = create_user(db, user)
+    new_notif = Notification(
+        message= f"new user registered:{db_user.full_name}({db_user.email})",
+        category="voter_registration"
+    )
+    db.add(new_notif)
+    db.commit()
+    db.refresh(db_user)
+
     return UserRead(
         user_id=db_user.user_id,
         username=db_user.username,

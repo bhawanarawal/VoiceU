@@ -86,7 +86,7 @@ export default function ElectionsScreen() {
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.topBar}>
-        <Text style={styles.pageTitle}>Ongoing Elections</Text>
+        <Text style={styles.pageTitle}>Ongoing  Elections</Text>
       </View>
 
       {loading ? (
