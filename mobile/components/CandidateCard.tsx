@@ -46,9 +46,9 @@ export default function CandidateCard({
 
   const normalizedPhoto = photo_url
     ? `${(api.defaults?.baseURL || "http://localhost:8000").replace(
-        /\/+$/,
-        "",
-      )}/${photo_url.replace(/\\/g, "/").replace(/^\/+/, "")}`
+      /\/+$/,
+      "",
+    )}/${photo_url.replace(/\\/g, "/").replace(/^\/+/, "")}`
     : undefined;
 
   useEffect(() => {
@@ -100,31 +100,38 @@ export default function CandidateCard({
       {manifesto && showManifesto && (
         <Text style={styles.manifestoCompactFull}>{manifesto}</Text>
       )}
+      {(!isElectionOver || hasVoted || localVoted) && (
 
-      <TouchableOpacity
-        style={[styles.voteButton, isDisabled && styles.disabledBtn]}
-        onPress={() => {
-          if (isDisabled) return;
-          setLocalVoted(true);
-          setShowPopup(true);
-          try {
-            onVote();
-          } catch (e) {
-            // swallow - parent handles errors
-          }
-        }}
-        disabled={isDisabled}
-      >
-        <Ionicons
-          name="thumbs-up"
-          size={14}
-          color="#fff"
-          style={styles.voteIcon}
-        />
-        <Text style={styles.voteButtonText}>
-          {buttonText === "Vote" ? "Vote" : buttonText}
-        </Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.voteButton, isDisabled && styles.disabledBtn]}
+          onPress={async () => {
+            if (isDisabled) return;
+
+            try {
+
+              await onVote();
+
+              setLocalVoted(true);
+              setShowPopup(true);
+            } catch (e) {
+              setLocalVoted(false);
+              setShowPopup(false);
+              // swallow - parent handles errors
+            }
+          }}
+          disabled={isDisabled}
+        >
+          <Ionicons
+            name="thumbs-up"
+            size={14}
+            color="#fff"
+            style={styles.voteIcon}
+          />
+          <Text style={styles.voteButtonText}>
+            {buttonText === "Vote" ? "Vote" : buttonText}
+          </Text>
+        </TouchableOpacity>
+      )}
 
       <Modal visible={showPopup} transparent animationType="fade">
         <View style={styles.popupOverlay}>

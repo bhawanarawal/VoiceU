@@ -29,6 +29,7 @@ router = APIRouter(prefix="/elections", tags=["Elections"])
 def compute_phase(start: datetime, end: datetime) -> str:
 
     now = datetime.now(timezone.utc)
+
     if start.tzinfo is None:
         start = start.replace(tzinfo=timezone.utc)
     if end.tzinfo is None:

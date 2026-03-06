@@ -12,3 +12,4 @@ from .vote import Vote
 from .voter import Voter
 from .voter_election import VoterElection
 from .voter_group import VoterGroup
+from .notification import Notification

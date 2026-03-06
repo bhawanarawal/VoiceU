@@ -11,6 +11,7 @@ from schemas.vote_schema import VoteCreate, VoteRead
 from database import get_session
 from auth import get_current_active_user, require_roles
 from models.voter_election import VoterElection
+from models.voter_group import VoterGroup
 
 router = APIRouter(prefix="/votes", tags=["Votes"])
 
@@ -27,6 +28,18 @@ def cast_vote(
     ).first()
     if not voter:
         raise HTTPException(status_code=404, detail="Voter not found")
+    
+    is_approved = session.exec(
+         select(VoterGroup).where(
+            (VoterGroup.voter_id == voter.voter_id) & 
+            (VoterGroup.status == "APPROVED")
+        )
+         ).first()
+    if not is_approved:
+        raise HTTPException(
+            status_code=403, 
+            detail="Your voter registration has not been approved by an admin yet."
+        )
 
     candidate = session.get(Candidate, data.candidate_id)
     if not candidate:
