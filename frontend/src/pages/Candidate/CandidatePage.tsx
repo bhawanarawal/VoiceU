@@ -6,6 +6,8 @@ import {
   CircularProgress,
   Divider,
   Button,
+  Snackbar,
+  Alert
 } from "@mui/material";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import CandidateCard from "../../components/cards/CandidateCard";
@@ -40,6 +42,17 @@ export default function CandidatePage() {
     "upcoming" | "ongoing" | "past"
   >("ongoing");
   const [hasVotedAll, setHasVotedAll] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "error" as "error" | "success" | "warning" | "info"
+  });
+  const [votedCandidateId, setVotedCandidateId] = useState<number[]>([]);
+
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
 
   const computeHasVotedAll = (
     allCandidates: Candidate[],
@@ -67,8 +80,25 @@ export default function CandidatePage() {
     const fetchData = async () => {
       setLoading(true);
       try {
+        const votedIdRes = await api.get(`/votes/my-votes/${electionId}`);
+        setVotedCandidateId(votedIdRes.data || []);
         const electionRes = await api.get(`/elections/${electionId}`);
         setElectionStatus(electionRes.data.status);
+        const startDate = new Date(electionRes.data.start_date);
+        const endDate = new Date(electionRes.data.end_date);
+        const now = new Date();
+
+        const isActuallyOngoing = now >= startDate && now <= endDate;
+        const isActuallyPast = now > endDate;
+
+        if (isActuallyPast) {
+          setElectionStatus("past");
+        } else if (isActuallyOngoing) {
+          setElectionStatus("ongoing");
+        } else {
+          setElectionStatus("upcoming");
+        }
+
 
         const candidatesRes = await getApprovedCandidatesByElection(electionId);
         const candidatesData: Candidate[] = candidatesRes.data || [];
@@ -97,6 +127,12 @@ export default function CandidatePage() {
         candidate_id: candidate.candidate_id,
         election_id: electionId,
       });
+      setSnackbar({
+        open: true,
+        message: "vote casts successfully",
+        severity: "success"
+      });
+      setVotedCandidateId((prev) => [...prev, candidate.candidate_id]);
 
       setVotedPositions((prev) => {
         const newPositions = [...prev, candidate.position_name.trim()];
@@ -104,7 +140,12 @@ export default function CandidatePage() {
         return newPositions;
       });
     } catch (err: any) {
-      alert(err.response?.data?.detail || "Vote failed");
+      const customMessage = err.response?.data?.detail || "vote failed";
+      setSnackbar({
+        open: true,
+        message: customMessage,
+        severity: "error"
+      });
     }
   };
 
@@ -144,22 +185,30 @@ export default function CandidatePage() {
               </Typography>
 
               <Stack direction="row" spacing={3} flexWrap="wrap">
-                {list.map((c) => (
-                  <CandidateCard
-                    key={c.candidate_id}
-                    candidate_id={c.candidate_id}
-                    election_id={electionId}
-                    full_name={c.full_name}
-                    photo_url={c.photo_url}
-                    position_name={c.position_name}
-                    group_name={c.group_name}
-                    organization_name={c.organization_name}
-                    manifesto={c.manifesto}
-                    hasVoted={votedPositions.includes(c.position_name.trim())}
-                    isElectionOver={electionStatus === "past"}
-                    onVote={() => handleVote(c)}
-                  />
-                ))}
+                {list.map((c) => {
+                  const isThisCandidate = votedCandidateId.includes(c.candidate_id);
+                  const isPositionFilled = votedPositions.includes(c.position_name.trim());
+
+
+                  return (
+                    <CandidateCard
+                      key={c.candidate_id}
+                      candidate_id={c.candidate_id}
+                      election_id={electionId}
+                      full_name={c.full_name}
+                      photo_url={c.photo_url}
+                      position_name={c.position_name}
+                      group_name={c.group_name}
+                      organization_name={c.organization_name}
+                      manifesto={c.manifesto}
+                      hasVoted={isThisCandidate}
+                      isElectionOver={electionStatus !== "ongoing" ||
+                        (isPositionFilled && !isThisCandidate)
+                      }
+                      onVote={() => handleVote(c)}
+                    />
+                  );
+                })}
               </Stack>
 
               <Divider sx={{ mt: 4 }} />
@@ -168,6 +217,16 @@ export default function CandidatePage() {
         </Box>
         <Footer />
       </Box>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} variant="filled" sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 }

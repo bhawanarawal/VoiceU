@@ -51,8 +51,8 @@ export default function CandidateCard({
           src={
             photo_url
               ? `http://localhost:8000/${photo_url
-                  .replace(/\\/g, "/")
-                  .replace(/^\/+/, "")}`
+                .replace(/\\/g, "/")
+                .replace(/^\/+/, "")}`
               : undefined
           }
           sx={{ width: 90, height: 90 }}
@@ -101,17 +101,20 @@ export default function CandidateCard({
       <Divider />
 
       <CardActions sx={{ justifyContent: "center" }}>
-        <Button
-          variant="contained"
-          color={hasVoted ? "secondary" : "success"}
-          startIcon={<ThumbUpIcon />}
-          disabled={isDisabled}
-          onClick={() => {
-            if (!isDisabled) onVote();
-          }}
-        >
-          {buttonText}
-        </Button>
+        {(!isElectionOver || hasVoted) && (
+          <Button
+            variant="contained"
+            color={hasVoted ? "secondary" : "success"}
+            startIcon={<ThumbUpIcon />}
+            disabled={hasVoted}
+            onClick={() => {
+              if (!hasVoted) onVote();
+            }}
+          >
+            {hasVoted ? "voted" : "vote"}
+            {/* {buttonText} */}
+          </Button>
+        )}
       </CardActions>
     </Card>
   );

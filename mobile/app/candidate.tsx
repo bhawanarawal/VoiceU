@@ -7,6 +7,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
+  Alert,
 } from "react-native";
 import { useLocalSearchParams, router, useFocusEffect } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
@@ -68,7 +69,7 @@ export default function CandidateScreen() {
       headerRight: () => <HeaderRight />,
     });
   }, [navigation]);
-
+  const [votedCandidateId, setVotedCandidateId] = useState<number[]>([]);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [votedPositions, setVotedPositions] = useState<string[]>([]);
   const [electionStatus, setElectionStatus] = useState<
@@ -89,6 +90,8 @@ export default function CandidateScreen() {
     const fetchData = async () => {
       setLoading(true);
       try {
+        const votedIdRes = await api.get(`/votes/my-votes/${electionIdNum}`);
+        setVotedCandidateId(votedIdRes.data || []);
         const electionRes = await api.get(`/elections/${electionIdNum}`);
         setElectionStatus(electionRes.data.status);
 
@@ -114,17 +117,28 @@ export default function CandidateScreen() {
 
   const handleVote = async (candidate: Candidate) => {
     try {
-      await voteForCandidate({
-        candidate_id: candidate.candidate_id,
-        election_id: electionIdNum,
-      });
+      const rsponse =
+        await voteForCandidate({
+          candidate_id: candidate.candidate_id,
+          election_id: electionIdNum,
+        });
+      setVotedCandidateId((prev) => [...prev, candidate.candidate_id]);
 
       setVotedPositions((prev) => {
         const newPositions = [...prev, candidate.position_name.trim()];
         return newPositions;
       });
     } catch (err: any) {
-      alert(err.response?.data?.detail || "Vote failed");
+      const errorMessage = err.response?.data?.detail || "An unspected error occured.";
+      if (err.response?.status === 403) {
+        Alert.alert("Registration Pending",
+          errorMessage || "Your account is awaiting admin approval. You cannot vote yet.",
+          [{ text: "Understood", style: "cancel" }]
+        );
+      } else {
+        Alert.alert("Vote failed", errorMessage || "Something went wrong")
+      }
+      throw err;
     }
   };
 
@@ -148,19 +162,23 @@ export default function CandidateScreen() {
             numColumns={3}
             columnWrapperStyle={styles.columnWrapper}
             scrollEnabled={false}
-            renderItem={({ item }) => (
-              <CandidateCard
-                full_name={item.full_name}
-                photo_url={item.photo_url}
-                position_name={item.position_name}
-                group_name={item.group_name}
-                organization_name={item.organization_name}
-                manifesto={item.manifesto}
-                hasVoted={votedPositions.includes(item.position_name.trim())}
-                isElectionOver={electionStatus === "past"}
-                onVote={() => handleVote(item)}
-              />
-            )}
+            renderItem={({ item }) => {
+              const isThisCandidate = votedCandidateId.includes(item.candidate_id);
+              const isPositionFilled = votedPositions.includes(item.position_name.trim());
+              return (
+                <CandidateCard
+                  full_name={item.full_name}
+                  photo_url={item.photo_url}
+                  position_name={item.position_name}
+                  group_name={item.group_name}
+                  organization_name={item.organization_name}
+                  manifesto={item.manifesto}
+                  hasVoted={isThisCandidate}
+                  isElectionOver={electionStatus === "past" || (isPositionFilled && !isThisCandidate)}
+                  onVote={() => handleVote(item)}
+                />
+              )
+            }}
           />
         </View>
       ))}

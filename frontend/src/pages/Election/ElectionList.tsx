@@ -199,8 +199,7 @@ export default function ElectionList() {
               onClick={() => handleDelete(confirmDelete.id)}
             >
               Delete
-            </Button>
-    
+            </Button>   
           </div>
         </Modal>
       )}
