@@ -6,17 +6,18 @@ export default function Index() {
   const router = useRouter();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = await AsyncStorage.getItem("access_token");
+    const initApp = async () => {
+      try {
+        await AsyncStorage.removeItem("access_token");
 
-      if (token) {
-        router.replace("/(tabs)/elections");
-      } else {
+        router.replace("/(auth)/signin");
+      } catch (error) {
+        console.error("Error clearing token:", error);
         router.replace("/(auth)/signin");
       }
     };
 
-    checkAuth();
+    initApp();
   }, []);
 
   return null;
