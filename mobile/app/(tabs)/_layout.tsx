@@ -51,20 +51,13 @@ export default function TabLayout() {
           ),
         }}
       />
-      <Tabs.Screen name="profile"
-      options={{
-        title: "Profile",
-        tabBarIcon: ({color}) =>(
-          <Ionicons size={28} name="person-outline" color={color}/>
-      )
-      }}/>
-
-        <Tabs.Screen
-        name="Candidate" 
+      <Tabs.Screen
+        name="profile"
         options={{
-          href: null, 
-          headerShown: true, // Keep this true if you want a back button
-          title: "Select Candidate"
+          title: "Profile",
+          tabBarIcon: ({ color }) => (
+            <Ionicons size={28} name="person-outline" color={color} />
+          ),
         }}
       />
     </Tabs>
