@@ -35,8 +35,8 @@ const getElectionPhase = (startUTC: string, endUTC: string) => {
 
   const start = new Date(
     startUTCDate.getTime() +
-      startUTCDate.getTimezoneOffset() * 60000 +
-      nptOffset,
+    startUTCDate.getTimezoneOffset() * 60000 +
+    nptOffset,
   );
 
   const end = new Date(

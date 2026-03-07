@@ -1,8 +1,12 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Device from "expo-device"
+
 
 const api = axios.create({
-  baseURL: "http://10.0.2.2:8000", 
+  baseURL: Device.isDevice 
+  ?"http://192.168.1.5:8000"
+  :"http://10.0.2.2:8000", 
   timeout: 10000,
 });
 
