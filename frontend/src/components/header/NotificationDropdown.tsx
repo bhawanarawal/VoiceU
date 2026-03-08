@@ -3,6 +3,7 @@ import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Link } from "react-router";
 import api from "../../utils/api";
+import { Button } from "@mui/material";
 
 interface Notification{
   notification_id:number;
@@ -15,6 +16,15 @@ interface Notification{
 export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [notification, setNotification] = useState<Notification[]>([]);
+  const [showHistory, setShowHistory] =useState(false);
+  const now = new Date();
+  const oneDayAgo =new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+  const recentNotification =notification.filter(n => new Date(n.created_at) > oneDayAgo);
+  const historyNotification = notification.filter( n => new Date(n.created_at) <= oneDayAgo);
+  const displayList = showHistory ? historyNotification :recentNotification;
+
+  
 
 
   const fetchNotification = async ()=>{
@@ -123,15 +133,24 @@ export default function NotificationDropdown() {
       >
         <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-100 dark:border-gray-700">
           <h5 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-            Notifications ({notification.length})
+            {showHistory ? "History" : " Recent Notification"}
           </h5>
+          {showHistory && (
+            <button 
+            onClick={() => setShowHistory(false)}
+            className="text-xs text-blue-500 hover:underline">
+              Back
+            </button>
+          )}
         </div>
         
-        <ul className="flex flex-col h-auto overflow-y-auto custom-scrollbar">
-    {notification.length === 0 ? (
-      <li className="p-4 text-center text-gray-500">No new alerts</li>
+        <ul className="flex flex-col flex-1 overflow-y-auto custom-scrollbar">
+    {displayList.length === 0 ? (
+      <li className="p-4 text-center text-gray-500">
+        No {showHistory ? "history" : "recent alerts"}
+      </li>
     ) : (
-      notification.map((notif) => (
+      displayList.map((notif) => (
         <li key={notif.notification_id}>
           <DropdownItem className="flex gap-3 rounded-lg border-b border-gray-100 p-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5">
             <span className="relative block h-10 w-10 shrink-0">
@@ -154,6 +173,15 @@ export default function NotificationDropdown() {
       ))
     )}
   </ul>
+  {!showHistory && historyNotification.length > 0 &&(
+    <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+      <button
+      onClick={()=> setShowHistory(true)}
+      className=" w-full py-2 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50 rounded-lg dark:text-blue-400 dark:hover:bg-white/5">
+        View History ({historyNotification.length})
+      </button>
+    </div>
+  )}
       </Dropdown>
     </div>
   );
