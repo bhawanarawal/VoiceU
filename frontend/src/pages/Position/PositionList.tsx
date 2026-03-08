@@ -82,7 +82,7 @@ export default function PositionList() {
         renderActions={(pos) => (
           <div className="flex gap-3">
             <Link
-              to={`/position/edit/${pos.position_id}`}
+              to={`/dashboard/position/edit/${pos.position_id}`}
               className="text-blue-600 hover:underline"
             >
               Edit

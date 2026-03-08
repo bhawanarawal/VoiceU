@@ -106,7 +106,7 @@ export default function GroupList() {
         renderActions={(group) => (
           <div className="flex gap-3">
             <Link
-              to={`/group/edit/${group.group_id}`}
+              to={`/dashboard/group/edit/${group.group_id}`}
               className="text-blue-600 hover:underline"
             >
               Edit

@@ -105,7 +105,7 @@ export default function OrganizationList() {
           isSuperAdmin ? (
             <div className="flex gap-3">
               <Link
-                to={`/organization/edit/${org.org_id}`}
+                to={`/dashboard/organization/edit/${org.org_id}`}
                 className="text-blue-600 hover:underline"
               >
                 Edit
