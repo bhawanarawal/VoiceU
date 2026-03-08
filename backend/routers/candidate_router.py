@@ -42,6 +42,18 @@ def apply_candidate(
     if not voter:
         raise HTTPException(status_code=403, detail="Only voters can apply")
 
+    approved_groups = session.exec(
+        select(VoterGroup).where(
+            (VoterGroup.voter_id == voter.voter_id) & (VoterGroup.status == "APPROVED")
+        )
+    ).all()
+
+    if not approved_groups:
+        raise HTTPException(
+            status_code=403,
+            detail="You are not approved by admin to apply for elections",
+        )
+
     election = session.get(Election, election_id)
     if not election:
         raise HTTPException(status_code=404, detail="Election not found")
@@ -91,7 +103,7 @@ def apply_candidate(
 
         new_notif = Notification(
             message=f"new candidate application:{current_user.full_name} for {election.election_name}",
-            category= "candidate application"
+            category="candidate application",
         )
         session.add(new_notif)
         session.commit()
