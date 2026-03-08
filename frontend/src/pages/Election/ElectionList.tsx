@@ -74,7 +74,7 @@ export default function ElectionList() {
           ...e,
           phase: getElectionPhase(e.start_date, e.end_date),
           positions: e.positions || [],
-        }))
+        })),
       );
     } catch {
       setToast({ message: "Failed to fetch elections", type: "error" });
@@ -160,7 +160,7 @@ export default function ElectionList() {
         renderActions={(row) => (
           <div className="flex gap-3">
             <Link
-              to={`/election/edit/${row.election_id}`}
+              to={`/dashboard/election/edit/${row.election_id}`}
               className="text-blue-600 hover:underline"
             >
               Edit
@@ -199,7 +199,7 @@ export default function ElectionList() {
               onClick={() => handleDelete(confirmDelete.id)}
             >
               Delete
-            </Button>   
+            </Button>
           </div>
         </Modal>
       )}
